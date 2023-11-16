@@ -1,0 +1,5 @@
+isort
+black
+pylint
+pydocstyle
+pycodestyle
