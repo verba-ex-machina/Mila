@@ -36,7 +36,7 @@ async def status(ctx):
 @BOT.command(description="Ask Mila for a joke.")
 async def joke(ctx):
     """Ask Mila for a joke."""
-    await ctx.send(MILA._consciousness.prompt("Tell me a joke."))
+    await ctx.send(MILA.prompt("Tell me a joke."))
 
 
 BOT.run(os.getenv("DISCORD_TOKEN"))
