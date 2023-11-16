@@ -5,7 +5,7 @@ import os
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
 
-from lib.constants import SYSTEM_MESSAGE
+from mila.constants import SYSTEM_MESSAGE
 
 
 class Consciousness:

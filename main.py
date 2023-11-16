@@ -6,10 +6,7 @@ import os
 
 import discord
 
-from lib import Mila
-from lib.constants import DESCRIPTION
-
-MILA = Mila()
+from mila import MILA
 
 INTENTS = discord.Intents.default()
 INTENTS.members = True
@@ -29,10 +26,13 @@ class MilaBot(discord.Client):
             return
         # Respond to messages that mention the bot.
         if self.user.mentioned_in(message):
-            await message.channel.send(MILA.prompt(message.content))
+            msg = await message.reply("_Thinking..._")
+            response = MILA.prompt(message.content)
+            await msg.delete()
+            await message.reply(content=response)
 
 
-BOT = MilaBot(description=DESCRIPTION, intents=INTENTS)
+BOT = MilaBot(description=MILA.description, intents=INTENTS)
 
 
 def main():
