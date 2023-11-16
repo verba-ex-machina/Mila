@@ -25,7 +25,10 @@ class MilaBot(discord.Client):
         if message.author == self.user:
             return
         # Respond to messages that mention the bot.
-        if self.user.mentioned_in(message):
+        if (
+            self.user.mentioned_in(message)
+            or message.channel.type == discord.ChannelType.private
+        ):
             msg = await message.reply("_Thinking..._")
             response = MILA.prompt(message.content)
             await msg.delete()
