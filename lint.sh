@@ -1,4 +1,4 @@
-PATHS="main.py"
+PATHS="main.py mila/*.py"
 
 isort $PATHS
 black -l 79 $PATHS
