@@ -4,6 +4,7 @@ from lib.communication import Communication
 from lib.connections import Connections
 from lib.consciousness import Consciousness
 
+
 class Mila:
     """Represent Mila."""
 

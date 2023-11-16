@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from lib import Mila
 from lib.constants import DESCRIPTION
+
 MILA = Mila()
 
 INTENTS = discord.Intents.default()
