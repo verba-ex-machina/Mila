@@ -39,4 +39,10 @@ async def joke(ctx):
     await ctx.send(MILA.prompt("Tell me a joke."))
 
 
-BOT.run(os.getenv("DISCORD_TOKEN"))
+def main():
+    """Launch Mila as a service."""
+    BOT.run(os.getenv("DISCORD_TOKEN"))
+
+
+if __name__ == "__main__":
+    main()
