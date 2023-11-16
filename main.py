@@ -18,7 +18,7 @@ INTENTS.members = True
 INTENTS.message_content = True
 
 BOT = commands.Bot(
-    command_prefix=",", description=DESCRIPTION, intents=INTENTS
+    command_prefix=";", description=DESCRIPTION, intents=INTENTS
 )
 
 
