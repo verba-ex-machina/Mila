@@ -1,42 +1,54 @@
 #!/usr/bin/env python3
 
-import discord, openai
-from discord.ext import commands
+"""Provide a Discord bot interface for Mila."""
+
 import os
+
+import discord
+from discord.ext import commands
+from langchain.chat_models import ChatOpenAI
+from langchain.schema import HumanMessage, SystemMessage
 
 DESCRIPTION = """Mila: The Mindful, Interactive Lifestyle Assistant"""
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
-AI = openai.OpenAI()
+LLM = ChatOpenAI(openai_api_key=os.getenv("OPENAI_API_KEY"))
 
 INTENTS = discord.Intents.default()
 INTENTS.members = True
 INTENTS.message_content = True
 
-BOT = commands.Bot(command_prefix=',', description=DESCRIPTION, intents=INTENTS)
+BOT = commands.Bot(
+    command_prefix=",", description=DESCRIPTION, intents=INTENTS
+)
+
 
 @BOT.event
 async def on_ready():
-    print(f'Logged in as {BOT.user}.')
+    """Print a message when the bot is ready."""
+    print(f"Logged in as {BOT.user}.")
+
 
 @BOT.command()
 async def status(ctx):
-    await ctx.send('**Status:** Online')
+    """Print the bot's status."""
+    await ctx.send("**Status:** Online")
+
 
 @BOT.command(description="Ask Mila for a joke.")
 async def joke(ctx):
-    completion = AI.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are Mila, the mindful, interactive AI lifestyle assistant."},
-            {"role": "user", "content": "Tell me a joke."},
+    """Ask Mila for a joke."""
+    response = LLM.invoke(
+        [
+            SystemMessage(
+                content=f"You are {DESCRIPTION}. You are an ethical AI."
+            ),
+            HumanMessage(content="Tell me a joke."),
         ]
     )
     try:
-        await ctx.send(
-            completion.choices[0].message.content
-        )
+        await ctx.send(response.content)
     except Exception as err:
-        await ctx.send(f"**Error:** `{err}`")
+        await ctx.send(err)
+
 
 BOT.run(os.getenv("DISCORD_TOKEN"))
