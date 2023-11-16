@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 
-"""Provide a Discord bot interface for Mila."""
+"""Launch Mila as a service."""
 
 import os
 
 import discord
 from discord.ext import commands
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage, SystemMessage
 
-DESCRIPTION = """Mila: The Mindful, Interactive Lifestyle Assistant"""
-
-LLM = ChatOpenAI(openai_api_key=os.getenv("OPENAI_API_KEY"))
+from lib import Mila
+from lib.constants import DESCRIPTION
+MILA = Mila()
 
 INTENTS = discord.Intents.default()
 INTENTS.members = True
@@ -37,18 +35,7 @@ async def status(ctx):
 @BOT.command(description="Ask Mila for a joke.")
 async def joke(ctx):
     """Ask Mila for a joke."""
-    response = LLM.invoke(
-        [
-            SystemMessage(
-                content=f"You are {DESCRIPTION}. You are an ethical AI."
-            ),
-            HumanMessage(content="Tell me a joke."),
-        ]
-    )
-    try:
-        await ctx.send(response.content)
-    except Exception as err:
-        await ctx.send(err)
+    await ctx.send(MILA._consciousness.prompt("Tell me a joke."))
 
 
 BOT.run(os.getenv("DISCORD_TOKEN"))
