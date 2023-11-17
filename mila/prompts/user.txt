@@ -1,0 +1,9 @@
+Greetings, Mila! We've got a request for you. Please read through the following chat transcript:
+
+{context}
+
+The user {user} has made the following query:
+
+> {message}
+
+Please respond appropriately.

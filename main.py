@@ -7,6 +7,7 @@ import os
 import discord
 
 from mila import MILA
+from mila.constants import DESCRIPTION
 
 INTENTS = discord.Intents.default()
 INTENTS.members = True
@@ -39,7 +40,7 @@ class MilaBot(discord.Client):
             await message.reply(content=response)
 
 
-BOT = MilaBot(description=MILA.description, intents=INTENTS)
+BOT = MilaBot(description=DESCRIPTION, intents=INTENTS)
 
 
 def main():
