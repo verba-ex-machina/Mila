@@ -50,8 +50,13 @@ class Mila:
         """Prompt Mila with a message."""
         if not context:
             return "No context provided."
-        prompt = ChatPromptTemplate.from_template(USER_PROMPT)
-        chain = prompt | self._llm
+        prompt_chain = ChatPromptTemplate.from_messages(
+            [
+                ("system", SYSTEM_MESSAGE),
+                ("user", USER_PROMPT),
+            ]
+        )
+        chain =  prompt_chain | self._llm
         context = context[::-1]  # Discord provides them in reverse order.
         context.pop()  # Ignore Mila's *Thinking...* message.
         user = context[-1][0]
