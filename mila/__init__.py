@@ -27,7 +27,7 @@ class Mila:
             ]
         )
 
-    def _parse_context(self, context: list) -> tuple(tuple(str, str), str):
+    def _parse_context(self, context: list) -> tuple:
         """Parse the Discord chat context."""
         context = context[::-1]  # Discord provides LIFO.
         context.pop()  # Ignore Mila's *Thinking...* message.
