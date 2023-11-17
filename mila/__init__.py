@@ -4,7 +4,6 @@ import os
 
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
-from langchain.schema import HumanMessage, SystemMessage
 
 DESCRIPTION = "Mila: The Mindful, Interactive Lifestyle Assistant"
 SYSTEM_MESSAGE = f"""
