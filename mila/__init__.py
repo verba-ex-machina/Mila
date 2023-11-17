@@ -27,24 +27,13 @@ class Mila:
             ]
         )
 
-    def _parse_context(self, context: list) -> tuple:
-        """Parse the Discord chat context."""
-        context = context[::-1]  # Discord provides LIFO.
-        context.pop()  # Ignore Mila's *Thinking...* message.
-        user = context[-1][0]
-        message = context[-1][1]
-        context = "\n".join([f"> {usr}: {msg}" for (usr, msg) in context[:-1]])
-        return ((user, message), context)
-
-    def prompt(self, context: list) -> str:
+    def prompt(self, query: str, context: str) -> str:
         """Prompt Mila with a message."""
         chain = self._craft_prompt() | self._llm
-        ((user, message), context) = self._parse_context(context)
-        print(f"{user}: {message}")
+        print(query)
         response = chain.invoke(
             {
-                "user": user,
-                "message": message,
+                "query": query,
                 "context": context,
             }
         )

@@ -17,6 +17,19 @@ INTENTS.message_content = True
 class MilaBot(discord.Client):
     """Implement a Discord Bot for Mila."""
 
+    async def _parse_history(self, message: discord.Message) -> tuple:
+        """Gather context for Mila."""
+        context = [
+            (msg.author.display_name, msg.content)
+            async for msg in message.channel.history(limit=20)
+        ][
+            ::-1
+        ]  # Reverse Discord's LIFO history.
+        context.pop()  # Ignore Mila's *Thinking...* message.
+        context_str = "\n".join(f"> {msg[0]}: {msg[1]}" for msg in context)
+        query = f"{message.author.display_name}: {message.content}"
+        return (query, context_str)
+
     async def on_ready(self):
         """Print a message when the bot is ready."""
         print(f"Logged in as {self.user}.")
@@ -31,11 +44,9 @@ class MilaBot(discord.Client):
             or message.channel.type == discord.ChannelType.private
         ):
             msg = await message.reply("_Thinking..._")
-            context = []
-            async for _msg in message.channel.history(limit=20):
-                context.append((_msg.author.display_name, _msg.content))
+            (query, context) = await self._parse_history(message)
             # Prompt Mila with the message.
-            response = MILA.prompt(context=context)
+            response = MILA.prompt(query, context)
             await msg.delete()
             await message.reply(content=response)
 

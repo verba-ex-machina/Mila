@@ -1,9 +1,9 @@
-Greetings, Mila! We've got a request for you. Please read through the following chat transcript:
+Please examine the following context:
 
 {context}
 
-The user {user} has made the following query:
+The following query was directed at Mila:
 
-> {message}
+> {query}
 
-Please respond appropriately.
+Please respond appropriately, as Mila.
