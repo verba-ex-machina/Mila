@@ -1,7 +1,11 @@
 """Provide the Mila library."""
 
-from mila.consciousness import Consciousness
-from mila.constants import DESCRIPTION
+import os
+
+from langchain.chat_models import ChatOpenAI
+from langchain.schema import HumanMessage, SystemMessage
+
+from mila.constants import DESCRIPTION, SYSTEM_MESSAGE
 
 
 class Mila:
@@ -11,8 +15,21 @@ class Mila:
 
     def __init__(self):
         """Initialize Mila."""
-        self._consciousness = Consciousness()
-        self.prompt = self._consciousness.prompt
+        self._llm = ChatOpenAI(openai_api_key=os.getenv("OPENAI_API_KEY"))
+
+    def prompt(self, message: str) -> str:
+        """Prompt Mila with a message."""
+        try:
+            return self._llm.invoke(
+                [
+                    SystemMessage(
+                        content=SYSTEM_MESSAGE,
+                    ),
+                    HumanMessage(content=message),
+                ]
+            ).content
+        except Exception as err:
+            return str(err)
 
 
 MILA = Mila()
