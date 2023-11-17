@@ -41,7 +41,10 @@ class Mila:
 
     def __init__(self):
         """Initialize Mila."""
-        self._llm = ChatOpenAI(openai_api_key=os.getenv("OPENAI_API_KEY"))
+        self._llm = ChatOpenAI(
+            model="gpt-3.5-turbo-16k",
+            openai_api_key=os.getenv("OPENAI_API_KEY")
+        )
 
     async def prompt(self, context: list = []) -> str:
         """Prompt Mila with a message."""
