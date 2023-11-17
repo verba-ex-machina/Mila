@@ -19,7 +19,6 @@ class Mila:
             model="gpt-3.5-turbo-16k",
             openai_api_key=os.getenv("OPENAI_API_KEY"),
         )
-        self._logger.info("Mila initialized.")
 
     def _craft_prompt(self) -> ChatPromptTemplate:
         """Craft a prompt for Mila."""
