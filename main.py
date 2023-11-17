@@ -30,13 +30,13 @@ class MilaBot(discord.Client):
             or message.channel.type == discord.ChannelType.private
         ):
             msg = await message.reply("_Thinking..._")
-            context = []
-            async for _msg in message.channel.history(limit=20):
-                context.append((_msg.author.display_name, _msg.content))
+            context = [
+                (_msg.author.display_name, _msg.content)
+                async for _msg in message.channel.history(limit=20)
+            ]
             # Prompt Mila with the message.
             response = MILA.prompt(context=context)
-            await msg.delete()
-            await message.reply(content=response)
+            await msg.edit(content=response)
 
 
 BOT = MilaBot(description=MILA.description, intents=INTENTS)
