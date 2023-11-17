@@ -2,11 +2,11 @@
 
 """Launch Mila as a service."""
 
-import logging
 import os
 
 import discord
 
+from lib.logging import logger
 from mila import Mila
 from mila.constants import DESCRIPTION
 
@@ -18,12 +18,11 @@ INTENTS.message_content = True
 class MilaBot(discord.Client):
     """Implement a Discord Bot for Mila."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, _logger, *args, **kwargs):
         """Initialize MilaBot."""
         super().__init__(*args, **kwargs)
-        self._logger = logging.getLogger("discord")
+        self._logger = _logger
         self._mila = Mila(logger=self._logger)
-        self._logger.info("Initializing MilaBot.")
 
     async def _parse_history(self, message: discord.Message) -> tuple:
         """Gather context for Mila."""
@@ -58,5 +57,5 @@ class MilaBot(discord.Client):
 
 
 if __name__ == "__main__":
-    bot = MilaBot(description=DESCRIPTION, intents=INTENTS)
-    bot.run(os.getenv("DISCORD_TOKEN"))
+    bot = MilaBot(_logger=logger, description=DESCRIPTION, intents=INTENTS)
+    bot.run(os.getenv("DISCORD_TOKEN"), log_handler=logger.handlers[1])
