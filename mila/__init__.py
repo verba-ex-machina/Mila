@@ -21,16 +21,18 @@ but your response must adhere to the following guidelines:
 3. Keep it simple.
 """.strip()
 USER_PROMPT = """
-Greetings, Mila! We've got a request for you. Please read through the
-following chat transcript:
+Please read through the following chat transcript:
 
+---TRANSCRIPT START---
 {context}
+---TRANSCRIPT END---
 
-The user {user} has made the following query:
+The user {user} mentioned you in the following message:
 
 > {message}
 
-Please respond appropriately.
+Speaking as Mila, considering the conversation so far, please provide an
+appropriate response.
 """.strip()
 
 
