@@ -12,13 +12,14 @@ from mila.prompts import PROMPTS
 class Mila:
     """Represent Mila."""
 
-    def __init__(self, logger: logging.Logger = None):
+    def __init__(self, logger: logging.Logger):
         """Initialize Mila."""
-        self._logger = logger or logging.getLogger(__name__)
+        self._logger = logger
         self._llm = ChatOpenAI(
             model="gpt-3.5-turbo-16k",
             openai_api_key=os.getenv("OPENAI_API_KEY"),
         )
+        self._logger.info("Mila initialized.")
 
     def _craft_prompt(self) -> ChatPromptTemplate:
         """Craft a prompt for Mila."""
