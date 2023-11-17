@@ -1,0 +1,9 @@
+Please examine the following context:
+
+{context}
+
+The following query was directed at Mila:
+
+> {query}
+
+Please respond appropriately, as Mila.
