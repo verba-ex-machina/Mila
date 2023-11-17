@@ -35,8 +35,7 @@ class MilaBot(discord.Client):
                 context.append((_msg.author.display_name, _msg.content))
             # Prompt Mila with the message.
             response = MILA.prompt(context=context)
-            await msg.delete()
-            await message.reply(content=response)
+            await msg.edit(content=response)
 
 
 BOT = MilaBot(description=MILA.description, intents=INTENTS)
