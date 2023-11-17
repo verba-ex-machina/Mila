@@ -46,7 +46,7 @@ class Mila:
             openai_api_key=os.getenv("OPENAI_API_KEY")
         )
 
-    async def prompt(self, context: list = []) -> str:
+    def prompt(self, context: list = []) -> str:
         """Prompt Mila with a message."""
         if not context:
             return "No context provided."
@@ -59,7 +59,7 @@ class Mila:
         context = "\n".join([f"> {usr}: {msg}" for (usr, msg) in context[:-1]])
         print(f"{user}: {query}")
         try:
-            response = await chain.ainvoke(
+            response = chain.invoke(
                 {
                     "user": user,
                     "message": query,

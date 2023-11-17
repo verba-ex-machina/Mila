@@ -34,7 +34,7 @@ class MilaBot(discord.Client):
             async for _msg in message.channel.history(limit=20):
                 context.append((_msg.author.display_name, _msg.content))
             # Prompt Mila with the message.
-            response = await MILA.prompt(context=context)
+            response = MILA.prompt(context=context)
             await msg.delete()
             await message.reply(content=response)
 
