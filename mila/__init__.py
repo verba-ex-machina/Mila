@@ -45,7 +45,7 @@ class Mila:
         """Initialize Mila."""
         self._llm = ChatOpenAI(
             model="gpt-3.5-turbo-16k",
-            openai_api_key=os.getenv("OPENAI_API_KEY")
+            openai_api_key=os.getenv("OPENAI_API_KEY"),
         )
 
     def prompt(self, context: list = []) -> str:
@@ -58,7 +58,7 @@ class Mila:
                 ("user", USER_PROMPT),
             ]
         )
-        chain =  prompt_chain | self._llm
+        chain = prompt_chain | self._llm
         context = context[::-1]  # Discord provides them in reverse order.
         context.pop()  # Ignore Mila's *Thinking...* message.
         user = context[-1][0]
