@@ -24,7 +24,7 @@ class MilaBot(discord.Client):
         """Respond to messages."""
         if message.author == self.user:
             return
-        # Respond to messages that mention the bot.
+        # Respond to DMs and messages that mention the bot.
         if (
             self.user.mentioned_in(message)
             or message.channel.type == discord.ChannelType.private
