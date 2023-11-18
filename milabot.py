@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Launch Mila as a service."""
+"""Launch Mila as a Discord bot."""
 
 import os
 from logging import Logger
@@ -14,7 +14,7 @@ CHAT_CONTEXT_LENGTH = 20
 
 
 class MilaBot(discord.Client):
-    """Implement a Discord Bot for Mila."""
+    """Implement a Discord bot for interacting with Mila."""
 
     def __init__(self, mila: Mila, logger: Logger, *args, **kwargs):
         """Initialize MilaBot."""
@@ -55,8 +55,8 @@ class MilaBot(discord.Client):
         self._logger.info("Logged in as %s.", self.user)
 
 
-def main():
-    """Launch the Mila Discord bot."""
+def launch_milabot():
+    """Launch MilaBot."""
     mila = Mila(logger=LOGGER)
     intents = discord.Intents.default()
     intents.members = True
@@ -71,4 +71,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    launch_milabot()
