@@ -8,7 +8,7 @@ from logging import Logger
 import discord
 
 from lib.logging import LOGGER
-from mila import Mila
+from mila import Mila, MilaRequest
 
 CHAT_CONTEXT_LENGTH = 20
 
@@ -32,12 +32,12 @@ class MilaBot(discord.Client):
         ]  # Discord returns messages LIFO.
         return context
 
-    async def _parse_query(self, message: discord.Message) -> tuple:
+    async def _parse_query(self, message: discord.Message) -> MilaRequest:
         """Gather the query and related context for Mila."""
         context = await self._get_chat_history(message)
         query = context.pop()  # Get the user's query.
         context = "> " + "\n> ".join(context)
-        return (query, context)
+        return MilaRequest(query, context)
 
     async def on_ready(self):
         """Print a message when the bot is ready."""
@@ -49,9 +49,9 @@ class MilaBot(discord.Client):
             self.user.mentioned_in(message)
             or message.channel.type == discord.ChannelType.private
         ) and message.author != self.user:
-            (query, context) = await self._parse_query(message)
+            request = await self._parse_query(message)
             msg = await message.reply("_Thinking..._")
-            response = self._mila.prompt(query, context)
+            response = self._mila.prompt(request)
             await msg.edit(content=response)
 
 
