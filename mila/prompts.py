@@ -3,9 +3,7 @@
 from langchain.chat_models.base import BaseChatModel
 from langchain.prompts import ChatPromptTemplate
 
-from mila.constants import DESCRIPTION
-
-_PATH = "mila/prompts/"
+from mila.constants import DESCRIPTION, PROMPT_PATH
 
 
 class Prompts:
@@ -24,7 +22,7 @@ class Prompts:
 
     def __getitem__(self, name: str) -> str:
         """Get a prompt by name."""
-        with open(f"{_PATH}{name}.txt", "r", encoding="utf-8") as file:
+        with open(f"{PROMPT_PATH}{name}.txt", "r", encoding="utf-8") as file:
             return self._make_subs(file.read().strip())
 
     def __or__(self, other: BaseChatModel):
