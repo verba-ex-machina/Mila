@@ -3,8 +3,8 @@
 import logging
 
 # Create a logger for the Mila bot, used by both the Discord and AI modules.
-logger = logging.getLogger("mila")
-logger.setLevel(logging.DEBUG)
+LOGGER = logging.getLogger("mila")
+LOGGER.setLevel(logging.DEBUG)
 
 # Create a file handler for the logger.
 fh = logging.FileHandler("logs/mila.log")
@@ -24,5 +24,5 @@ fh.setFormatter(formatter)
 sh.setFormatter(formatter)
 
 # Add the handlers to the logger.
-logger.addHandler(fh)
-logger.addHandler(sh)
+LOGGER.addHandler(fh)
+LOGGER.addHandler(sh)

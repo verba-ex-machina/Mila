@@ -6,17 +6,20 @@ import os
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 
+from mila.constants import DESCRIPTION, MODEL
 from mila.prompts import PROMPTS
 
 
 class Mila:
     """Represent Mila."""
 
+    description = DESCRIPTION
+
     def __init__(self, logger: logging.Logger):
         """Initialize Mila."""
         self._logger = logger
         self._llm = ChatOpenAI(
-            model="gpt-3.5-turbo-16k",
+            model=MODEL,
             openai_api_key=os.getenv("OPENAI_API_KEY"),
         )
 

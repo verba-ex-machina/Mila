@@ -3,37 +3,41 @@
 """Launch Mila as a service."""
 
 import os
+from logging import Logger
 
 import discord
 
-from lib.logging import logger
+from lib.logging import LOGGER
 from mila import Mila
-from mila.constants import DESCRIPTION
 
-INTENTS = discord.Intents.default()
-INTENTS.members = True
-INTENTS.message_content = True
+CHAT_CONTEXT_LENGTH = 20
 
 
 class MilaBot(discord.Client):
     """Implement a Discord Bot for Mila."""
 
-    def __init__(self, _logger, *args, **kwargs):
+    def __init__(self, mila: Mila, logger: Logger, *args, **kwargs):
         """Initialize MilaBot."""
         super().__init__(*args, **kwargs)
-        self._logger = _logger
-        self._mila = Mila(logger=self._logger)
+        self._logger = logger
+        self._mila = mila
 
-    async def _parse_history(self, message: discord.Message) -> tuple:
-        """Gather context for Mila."""
+    async def _get_chat_history(self, message: discord.Message) -> list:
+        """Gather chat history from the given message."""
         context = [
-            (msg.author.display_name, msg.content)
-            async for msg in message.channel.history(limit=20)
-        ][::-1]
-        context.pop()  # Ignore Mila's *Thinking...* message.
-        context_str = "\n".join(f"> {msg[0]}: {msg[1]}" for msg in context)
-        query = f"{message.author.display_name}: {message.content}"
-        return (query, context_str)
+            f"{msg.author.display_name}: {msg.content}"
+            async for msg in message.channel.history(limit=CHAT_CONTEXT_LENGTH)
+        ][
+            ::-1
+        ]  # Discord returns messages LIFO.
+        return context
+
+    async def _parse_query(self, message: discord.Message) -> tuple:
+        """Gather the query and related context for Mila."""
+        context = await self._get_chat_history(message)
+        query = context.pop()  # Get the user's query.
+        context = "> " + "\n> ".join(context)
+        return (query, context)
 
     async def on_ready(self):
         """Print a message when the bot is ready."""
@@ -41,21 +45,30 @@ class MilaBot(discord.Client):
 
     async def on_message(self, message):
         """Respond to messages."""
-        if message.author == self.user:
-            return
-        # Respond to DMs and messages that mention the bot.
         if (
             self.user.mentioned_in(message)
             or message.channel.type == discord.ChannelType.private
-        ):
+        ) and message.author != self.user:
+            (query, context) = await self._parse_query(message)
             msg = await message.reply("_Thinking..._")
-            (query, context) = await self._parse_history(message)
-            # Prompt Mila with the message.
             response = self._mila.prompt(query, context)
-            await msg.delete()
-            await message.reply(content=response)
+            await msg.edit(content=response)
+
+
+def main():
+    """Launch the Mila Discord bot."""
+    mila = Mila(logger=LOGGER)
+    intents = discord.Intents.default()
+    intents.members = True
+    intents.message_content = True
+    bot = MilaBot(
+        mila=mila,
+        logger=LOGGER,
+        description=mila.description,
+        intents=intents,
+    )
+    bot.run(os.getenv("DISCORD_TOKEN"), log_handler=LOGGER.handlers[1])
 
 
 if __name__ == "__main__":
-    bot = MilaBot(_logger=logger, description=DESCRIPTION, intents=INTENTS)
-    bot.run(os.getenv("DISCORD_TOKEN"), log_handler=logger.handlers[1])
+    main()
