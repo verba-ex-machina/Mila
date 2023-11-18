@@ -30,7 +30,7 @@ class Mila:
 
     async def prompt(self, request: MilaRequest) -> str:
         """Prompt Mila with a message."""
-        self._logger.info("Query: %s", query)
+        self._logger.info("Query: %s", request.query)
         chain = PROMPTS | LLM
         response = await chain.ainvoke(
             {

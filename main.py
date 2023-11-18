@@ -38,7 +38,6 @@ class MilaBot(discord.Client):
         ]  # Discord returns messages LIFO.
         return context
 
-
     async def on_message(self, message):
         """Respond to messages."""
         if (
@@ -48,7 +47,7 @@ class MilaBot(discord.Client):
             history = await self._get_chat_history(message)
             request = await self._format_request(history)
             msg = await message.reply("_Thinking..._")
-            response = self._mila.prompt(request)
+            response = await self._mila.prompt(request)
             await msg.edit(content=response)
 
     async def on_ready(self):
