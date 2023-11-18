@@ -6,11 +6,14 @@ import os
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 
+from mila.constants import DESCRIPTION
 from mila.prompts import PROMPTS
 
 
 class Mila:
     """Represent Mila."""
+
+    description = DESCRIPTION
 
     def __init__(self, logger: logging.Logger):
         """Initialize Mila."""

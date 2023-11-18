@@ -6,23 +6,19 @@ import os
 
 import discord
 
-from lib.logging import logger
+from lib.logging import LOGGER
 from mila import Mila
 from mila.constants import DESCRIPTION
-
-INTENTS = discord.Intents.default()
-INTENTS.members = True
-INTENTS.message_content = True
 
 
 class MilaBot(discord.Client):
     """Implement a Discord Bot for Mila."""
 
-    def __init__(self, _logger, *args, **kwargs):
+    def __init__(self, mila, logger, *args, **kwargs):
         """Initialize MilaBot."""
         super().__init__(*args, **kwargs)
-        self._logger = _logger
-        self._mila = Mila(logger=self._logger)
+        self._logger = logger
+        self._mila = mila
 
     async def _parse_history(self, message: discord.Message) -> tuple:
         """Gather context for Mila."""
@@ -57,5 +53,11 @@ class MilaBot(discord.Client):
 
 
 if __name__ == "__main__":
-    bot = MilaBot(_logger=logger, description=DESCRIPTION, intents=INTENTS)
-    bot.run(os.getenv("DISCORD_TOKEN"), log_handler=logger.handlers[1])
+    mila = Mila(logger=LOGGER)
+    intents = discord.Intents.default()
+    intents.members = True
+    intents.message_content = True
+    bot = MilaBot(
+        mila=mila, logger=LOGGER, description=mila.description, intents=intents
+    )
+    bot.run(os.getenv("DISCORD_TOKEN"), log_handler=LOGGER.handlers[1])
