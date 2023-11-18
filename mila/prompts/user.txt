@@ -2,7 +2,7 @@ Please examine the following context:
 
 {context}
 
-The following query was directed at Mila:
+The user has given the following query:
 
 > {query}
 
