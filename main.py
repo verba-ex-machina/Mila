@@ -8,7 +8,6 @@ import discord
 
 from lib.logging import LOGGER
 from mila import Mila
-from mila.constants import DESCRIPTION
 
 
 class MilaBot(discord.Client):
@@ -51,12 +50,20 @@ class MilaBot(discord.Client):
             await msg.edit(content=response)
 
 
-if __name__ == "__main__":
+def main():
+    """Launch the Mila Discord bot."""
     mila = Mila(logger=LOGGER)
     intents = discord.Intents.default()
     intents.members = True
     intents.message_content = True
     bot = MilaBot(
-        mila=mila, logger=LOGGER, description=mila.description, intents=intents
+        mila=mila,
+        logger=LOGGER,
+        description=mila.description,
+        intents=intents,
     )
     bot.run(os.getenv("DISCORD_TOKEN"), log_handler=LOGGER.handlers[1])
+
+
+if __name__ == "__main__":
+    main()
