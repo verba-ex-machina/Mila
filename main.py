@@ -8,7 +8,7 @@ from logging import Logger
 import discord
 
 from lib.logging import LOGGER
-from mila import Mila
+from mila import Mila, MilaRequest
 
 CHAT_CONTEXT_LENGTH = 20
 
@@ -22,6 +22,12 @@ class MilaBot(discord.Client):
         self._logger = logger
         self._mila = mila
 
+    async def _format_request(self, history: list) -> MilaRequest:
+        """Gather the query and related context for Mila."""
+        query = history.pop()  # Get the user's query.
+        history = "> " + "\n> ".join(history)
+        return MilaRequest(query=query, context=history)
+
     async def _get_chat_history(self, message: discord.Message) -> list:
         """Gather chat history from the given message."""
         context = [
@@ -32,27 +38,21 @@ class MilaBot(discord.Client):
         ]  # Discord returns messages LIFO.
         return context
 
-    async def _parse_query(self, message: discord.Message) -> tuple:
-        """Gather the query and related context for Mila."""
-        context = await self._get_chat_history(message)
-        query = context.pop()  # Get the user's query.
-        context = "> " + "\n> ".join(context)
-        return (query, context)
-
-    async def on_ready(self):
-        """Print a message when the bot is ready."""
-        self._logger.info("Logged in as %s.", self.user)
-
     async def on_message(self, message):
         """Respond to messages."""
         if (
             self.user.mentioned_in(message)
             or message.channel.type == discord.ChannelType.private
         ) and message.author != self.user:
-            (query, context) = await self._parse_query(message)
-            msg = await message.reply("_Thinking..._")
-            response = self._mila.prompt(query, context)
-            await msg.edit(content=response)
+            history = await self._get_chat_history(message)
+            request = await self._format_request(history)
+            reply = await message.reply("_Thinking..._")
+            response = await self._mila.prompt(request)
+            await reply.edit(content=response)
+
+    async def on_ready(self):
+        """Print a message when the bot is ready."""
+        self._logger.info("Logged in as %s.", self.user)
 
 
 def main():
