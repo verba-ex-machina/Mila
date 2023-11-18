@@ -48,8 +48,7 @@ class MilaBot(discord.Client):
             (query, context) = await self._parse_history(message)
             # Prompt Mila with the message.
             response = self._mila.prompt(query, context)
-            await msg.delete()
-            await message.reply(content=response)
+            await msg.edit(content=response)
 
 
 if __name__ == "__main__":
