@@ -3,7 +3,6 @@
 import logging
 from hashlib import sha256
 
-
 from mila.constants import DESCRIPTION
 from mila.llm import LLM
 from mila.prompts import PROMPTS
@@ -11,7 +10,7 @@ from mila.prompts import PROMPTS
 
 class MilaRequest:
     """Represent a single request to the Mila AI."""
-    
+
     def __init__(self, query: str, context: str):
         """Initialize a MilaRequest."""
         self.id = sha256((query + context).encode("utf-8")).hexdigest()

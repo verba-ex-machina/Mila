@@ -46,9 +46,9 @@ class MilaBot(discord.Client):
         ) and message.author != self.user:
             history = await self._get_chat_history(message)
             request = await self._format_request(history)
-            msg = await message.reply("_Thinking..._")
+            reply = await message.reply("_Thinking..._")
             response = await self._mila.prompt(request)
-            await msg.edit(content=response)
+            await reply.edit(content=response)
 
     async def on_ready(self):
         """Print a message when the bot is ready."""
