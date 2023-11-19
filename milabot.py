@@ -9,7 +9,7 @@ import discord
 from discord.ext import tasks
 
 from lib.logging import LOGGER
-from mila import Mila, MilaTask
+from mila import Mila
 
 CHAT_CONTEXT_LENGTH = 20
 
@@ -26,7 +26,7 @@ class MilaBot(discord.Client):
             self.context = context
             self.reply = reply
             self.status = "pending"
-        
+
         async def update(self, message: str):
             """Update the task's reply message."""
             await self.reply.edit(content=message)
@@ -69,7 +69,7 @@ class MilaBot(discord.Client):
     async def on_ready(self):
         """Print a message when the bot is ready."""
         self._logger.info("Logged in as %s.", self.user)
-    
+
     async def setup_hook(self) -> None:
         """Set up the bot."""
         self.tick.start()
@@ -77,10 +77,18 @@ class MilaBot(discord.Client):
     @tasks.loop(seconds=1)
     async def tick(self):
         """Update all tasks."""
-        for id, task in self._tasks.items():
+        for task_id in list(self._tasks.keys()):
+            task = self._tasks[task_id]
             if task.status == "pending":
                 # Check to see if the task is complete.
-                pass
+                if await self._mila.check(task_id):
+                    task.status = "complete"
+            if task.status == "complete":
+                # Send the response.
+                response = self._mila.get_response(task_id)
+                await task.update(response)
+                self._mila.drop_task(task_id)
+                del self._tasks[task_id]
 
 
 def launch_milabot():
