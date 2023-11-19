@@ -8,26 +8,32 @@ from mila.llm import LLM
 from mila.prompts import PROMPTS
 
 
-class MilaRequest:
-    """Represent a single request to the Mila AI."""
-
-    def __init__(self, query: str, context: str):
-        """Initialize a MilaRequest."""
-        self.id = sha256((query + context).encode("utf-8")).hexdigest()
-        self.query = query
-        self.context = context
 
 
 class Mila:
     """Represent Mila."""
+    
+    class MilaTask:
+        """Represent a single request to the Mila AI."""
 
-    description = DESCRIPTION
+        def __init__(self, query: str, context: str):
+            """Initialize the task."""
+            self.query = query
+            self.context = context
 
     def __init__(self, logger: logging.Logger):
         """Initialize Mila."""
+        self.description = DESCRIPTION
         self._logger = logger
+        self._tasks = {}
 
-    async def prompt(self, request: MilaRequest) -> str:
+    def add_task(self, query: str, context: str) -> str:
+        """Add a task to Mila."""
+        task_id = sha256((query + context).encode("utf-8")).hexdigest()
+        self._tasks[task_id] = self.MilaTask(query, context)
+        return task_id
+
+    async def prompt(self, request: MilaTask) -> str:
         """Prompt Mila with a message."""
         self._logger.info("Query: %s", request.query)
         chain = PROMPTS | LLM
