@@ -47,7 +47,8 @@ class Mila:
         task = self._tasks[task_id]
         try:
             # Retrieve the next chunk of text.
-            task.response += await task.generator.__anext__()
+            chunk = await task.generator.__anext__()
+            task.response += chunk.content
         except StopAsyncIteration:
             self._logger.info("Task %s complete.", task_id)
             return True
@@ -55,10 +56,8 @@ class Mila:
 
     def drop_task(self, task_id: str) -> None:
         """Drop a task."""
-        self._logger.info("Task %s dropped.", task_id)
         del self._tasks[task_id]
 
     def get_response(self, task_id: str) -> str:
         """Get the response to a task."""
-        self._logger.info("Task %s response retrieved.", task_id)
         return self._tasks[task_id].response
