@@ -6,9 +6,10 @@ import os
 from logging import Logger
 
 import discord
+from discord.ext import tasks
 
 from lib.logging import LOGGER
-from mila import Mila, MilaRequest
+from mila import Mila
 
 CHAT_CONTEXT_LENGTH = 20
 
@@ -16,17 +17,34 @@ CHAT_CONTEXT_LENGTH = 20
 class MilaBot(discord.Client):
     """Implement a Discord bot for interacting with Mila."""
 
+    class BotTask:
+        """Represent a task to be executed by Mila."""
+
+        def __init__(self, query: str, context: str, reply: discord.Message):
+            """Initialize the task."""
+            self.query = query
+            self.context = context
+            self.reply = reply
+            self.status = "pending"
+
+        async def update(self, message: str):
+            """Update the task's reply message."""
+            await self.reply.edit(content=message)
+
     def __init__(self, mila: Mila, logger: Logger, *args, **kwargs):
         """Initialize MilaBot."""
         super().__init__(*args, **kwargs)
         self._logger = logger
         self._mila = mila
+        self._tasks = {}
 
-    async def _format_request(self, history: list) -> MilaRequest:
+    async def _new_task(self, message: discord.Message) -> BotTask:
         """Gather the query and related context for Mila."""
+        history = await self._get_chat_history(message)
         query = history.pop()  # Get the user's query.
-        history = "> " + "\n> ".join(history)
-        return MilaRequest(query=query, context=history)
+        context = "> " + "\n> ".join(history)
+        reply = await message.reply("_Thinking..._")
+        return self.BotTask(query=query, context=context, reply=reply)
 
     async def _get_chat_history(self, message: discord.Message) -> list:
         """Gather chat history from the given message."""
@@ -44,15 +62,33 @@ class MilaBot(discord.Client):
             self.user.mentioned_in(message)
             or message.channel.type == discord.ChannelType.private
         ) and message.author != self.user:
-            history = await self._get_chat_history(message)
-            request = await self._format_request(history)
-            reply = await message.reply("_Thinking..._")
-            response = await self._mila.prompt(request)
-            await reply.edit(content=response)
+            task = await self._new_task(message)
+            task_id = self._mila.add_task(task.query, task.context)
+            self._tasks[task_id] = task
 
     async def on_ready(self):
         """Print a message when the bot is ready."""
         self._logger.info("Logged in as %s.", self.user)
+
+    async def setup_hook(self) -> None:
+        """Set up the bot."""
+        self.tick.start()
+
+    @tasks.loop(seconds=1)
+    async def tick(self):
+        """Update all tasks."""
+        for task_id in list(self._tasks.keys()):
+            task = self._tasks[task_id]
+            if task.status == "pending":
+                # Check to see if the task is complete.
+                if await self._mila.check(task_id):
+                    task.status = "complete"
+            if task.status == "complete":
+                # Send the response.
+                response = self._mila.get_response(task_id)
+                await task.update(response)
+                self._mila.drop_task(task_id)
+                del self._tasks[task_id]
 
 
 def launch_milabot():
