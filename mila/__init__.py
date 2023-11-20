@@ -4,7 +4,6 @@ import logging
 from hashlib import sha256
 
 from openai import AsyncOpenAI
-from openai.types.chat.chat_completion import ChatCompletion
 
 from mila.constants import DESCRIPTION, MODEL
 from mila.prompts import PROMPTS
@@ -26,90 +25,9 @@ def make_subs(prompt_list: list, query: str, context: str) -> str:
 class Mila:
     """Represent Mila."""
 
-    class MilaTask:
-        """Represent a single request to the Mila AI."""
-
-        def __init__(
-            self,
-            query: str,
-            context: str,
-        ):
-            """Initialize the task."""
-            self.query = query
-            self.context = context
-            self.response = ""
-            self.run = None
-            self.thread = LLM.beta.threads.create(
-                messages=make_subs(
-                    [
-                        {
-                            "role": "user",
-                            "content": PROMPTS["user"],
-                        }
-                    ],
-                    query,
-                    context,
-                )
-            )
-
     def __init__(self, logger: logging.Logger):
         """Initialize Mila."""
         self.description = DESCRIPTION
-        self._assistant = LLM.beta.assistants.create(
-            instructions=PROMPTS["system"],
-            name="Mila",
-            model=MODEL,
-            tools=[
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "get_horoscope",
-                        "description": "Get the horoscope for a given star sign.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "star_sign": {
-                                    "type": "string",
-                                    "description": "The star sign to get the horoscope for.",
-                                }
-                            },
-                            "required": ["star_sign"]
-                        }
-                    }
-                }
-            ]
-        )
+        self._assistant = None
         self._logger = logger
-        self._tasks = {}
-
-    async def add_task(self, query: str, context: str) -> str:
-        """Add a task to Mila."""
-        task_id = sha256((query + context).encode("utf-8")).hexdigest()
-        self._tasks[task_id] = self.MilaTask(query, context)
-        self._logger.info("Task %s created. -> %s", task_id, query)
-        return task_id
-
-    async def check(self, task_id: str) -> bool:
-        """Check whether the task is complete."""
-        try:
-            task = self._tasks[task_id]
-        except KeyError as exc:
-            self._logger.warning("Task %s not found.", task_id)
-            raise KeyError from exc
-        # TODO: Set up a run (https://platform.openai.com/docs/assistants/how-it-works/runs-and-run-steps)
-        try:
-            # Retrieve the next chunk of text.
-            chunk = await task.generator.__anext__()
-            task.response += chunk.choices[0].delta.content
-        except TypeError:
-            self._logger.info("Task %s completed.", task_id)
-            return True
-        return False
-
-    def drop_task(self, task_id: str) -> None:
-        """Drop a task."""
-        del self._tasks[task_id]
-
-    def get_response(self, task_id: str) -> str:
-        """Get the response to a task."""
-        return self._tasks[task_id].response
+        self._threads = {}

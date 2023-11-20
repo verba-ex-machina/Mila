@@ -14,15 +14,17 @@ from openai import AsyncOpenAI
 
 from lib.logging import LOGGER
 from mila.constants import DESCRIPTION
+from mila.prompts import PROMPTS
+
+CONTEXT_LIMIT = 20
+
+async def get_horoscope(star_sign: str) -> str:
+    """Get the horoscope for a given star sign."""
+    print("Function called: get_horoscope")
+    return f"Your horoscope for {star_sign} is: Memento mori."
+
 
 """
-    assistant = await llm.beta.assistants.create(
-        instructions="You are a tiny AI assistant with a big heart.",
-        name="Tiny",
-        model="gpt-3.5-turbo-16k",
-        tools=self.tools,
-        metadata={...},
-    )
     thread = await llm.beta.threads.create(
         messages=[
             {
@@ -99,6 +101,7 @@ class Mila:
     _tool_definitions = [
         {
             "name": "get_horoscope",
+            "function": get_horoscope,
             "description": "Get the horoscope for a given star sign.",
             "properties": {
                 "star_sign": {
@@ -116,9 +119,38 @@ class Mila:
         self._logger = logger
         self._assistant_id = None
         self._logger.info("Mila class initialized.")
+        self._threads = {}
+        self._runs = {}
+    
+    async def _spawn_assistant(self) -> None:
+        """Spawn a new assistant for the bot."""
+        assistant = await self._llm.beta.assistants.create(
+            instructions=PROMPTS["system"],
+            name="Mila",
+            model="gpt-3.5-turbo-16k",
+            tools=self._tools,
+            metadata={},
+        )
+        self._assistant_id = assistant.id
+    
+    async def _spawn_thread(self, author: str, name: str, content: str, context: str):
+        """Spawn a new thread for the bot."""
+        thread = await self._llm.beta.threads.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": content,
+                }
+            ],
+            metadata={
+                "author": author,
+                "name": name,
+            },
+        )
+        self._threads[author] = thread.id
 
     @property
-    def tools(self) -> list:
+    def _tools(self) -> list:
         """Return an OpenAI-formatted list of tool definitions."""
         return [
             {
@@ -135,6 +167,25 @@ class Mila:
             }
             for tool in self._tool_definitions
         ]
+
+    async def handle_message(
+            self,
+            author: str,
+            name: str,
+            content: str,
+            context: str,
+    ):
+        """Handle an incoming message."""
+        self._logger.info(
+            "Message received from %s (%s): %s",
+            author,
+            name,
+            content,
+        )
+        if not self._assistant_id:
+            await self._spawn_assistant()
+        if author not in self._threads:
+            await self._spawn_thread(author, name, content, context)
 
 
 class MilaBot(discord.Client):
@@ -155,15 +206,15 @@ class MilaBot(discord.Client):
     async def _check_responses(self) -> None:
         """Check for new responses."""
         # self._logger.info("Checking for new responses.")
-
-    async def _handle_message(self, message: discord.Message) -> None:
-        """Handle an incoming message."""
-        self._logger.info(
-            "Message received from %s (%s): %s",
-            message.author.id,
-            message.author.name,
-            message.content,
-        )
+    
+    async def _get_context(self, message: discord.Message):
+        """Pull the message history and format it for Mila."""
+        history = message.channel.history(limit=CONTEXT_LIMIT)
+        context = [
+            f"{message.author.name}: {message.content}"
+            for message in history[::-1]
+        ]
+        return "> " + "\n> ".join(context)
 
     async def on_message(self, message: discord.Message):
         """Respond to incoming messages."""
@@ -171,7 +222,12 @@ class MilaBot(discord.Client):
             self.user.mentioned_in(message)
             or message.channel.type == discord.ChannelType.private
         ):
-            await self._handle_message(message)
+            await self._mila.handle_message(
+                author=message.author.id,
+                name=message.author.name,
+                content=message.content,
+                context=await self._get_context(message),
+            )
 
     async def on_ready(self) -> None:
         """Log a message when the bot is ready."""
@@ -180,12 +236,6 @@ class MilaBot(discord.Client):
     async def setup_hook(self) -> None:
         """Set up the bot's heartbeat."""
         self.tick.start()
-
-
-async def get_horoscope(star_sign: str) -> str:
-    """Get the horoscope for a given star sign."""
-    print("Function called: get_horoscope")
-    return f"Your horoscope for {star_sign} is: Memento mori."
 
 
 def main():

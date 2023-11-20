@@ -1,4 +1,4 @@
-PATHS="milabot.py mila/*.py"
+PATHS="milabot.py betabot.py mila/*.py"
 
 isort $PATHS
 black -l 79 $PATHS
