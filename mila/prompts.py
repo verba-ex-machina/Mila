@@ -1,7 +1,5 @@
 """Provide prompts for Mila."""
 
-from langchain.chat_models.base import BaseChatModel
-from langchain.prompts import ChatPromptTemplate
 
 from mila.constants import DESCRIPTION, PROMPT_PATH
 
@@ -25,17 +23,16 @@ class Prompts:
         with open(f"{PROMPT_PATH}{name}.txt", "r", encoding="utf-8") as file:
             return self._make_subs(file.read().strip())
 
-    def __or__(self, other: BaseChatModel):
-        """Implement the OR operator."""
-        return (
-            ChatPromptTemplate.from_messages(
-                [
-                    ("system", self["system"]),
-                    ("user", self["user"]),
-                ]
-            )
-            | other
-        )
+    @property
+    def as_list(self) -> list:
+        """Return the prompts formatted as a list."""
+        return [
+            {"role": name, "content": self[name]}
+            for name in [
+                "system",
+                "user",
+            ]
+        ]
 
 
 PROMPTS = Prompts()
