@@ -91,3 +91,9 @@ MESSAGES = LLM.beta.threads.messages.list(
 for message in MESSAGES.data:
     for content in message.content:
         print(content.text.value)
+LLM.beta.assistants.delete(
+    assistant_id=ASSISTANT.id,
+)
+LLM.beta.threads.delete(
+    thread_id=THREAD.id,
+)
