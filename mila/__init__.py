@@ -55,7 +55,7 @@ class Mila:
             # Retrieve the next chunk of text.
             chunk = await task.generator.__anext__()
             task.response += chunk.choices[0].delta.content
-        except (TypeError, StopAsyncIteration):
+        except TypeError:
             self._logger.info("Task %s completed.", task_id)
             return True
         except KeyError as exc:
