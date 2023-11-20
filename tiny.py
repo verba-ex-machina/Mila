@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 
+import asyncio
+import json
+import time
+
 from openai import AsyncOpenAI
-import time, json, asyncio
+
 
 async def get_horoscope(star_sign: str) -> str:
     """Get the horoscope for a given star sign."""
     print("Function called: get_horoscope")
     return f"Your horoscope for {star_sign} is: {horoscope_for(star_sign)}"
 
+
 def horoscope_for(star_sign: str) -> str:
     """Get the horoscope for a given star sign."""
     return "You are wonderful. Do something nice for yourself today. The stars demand it."
+
 
 async def main():
     """Launch the Tiny Assistant demo."""
@@ -33,11 +39,11 @@ async def main():
                                 "description": "The star sign to get the horoscope for.",
                             }
                         },
-                        "required": ["star_sign"]
-                    }
-                }
+                        "required": ["star_sign"],
+                    },
+                },
             }
-        ]
+        ],
     )
     thread = await llm.beta.threads.create(
         messages=[
@@ -66,7 +72,9 @@ async def main():
         ]:
             raise RuntimeError(f"Run failed: {run.status}")
         elif run.status == "requires_action":
-            for tool_call in run.required_action.submit_tool_outputs.tool_calls:
+            for (
+                tool_call
+            ) in run.required_action.submit_tool_outputs.tool_calls:
                 arguments = json.loads(tool_call.function.arguments)
                 name = tool_call.function.name
                 if name == "get_horoscope":
@@ -99,6 +107,7 @@ async def main():
     await llm.beta.threads.delete(
         thread_id=thread.id,
     )
+
 
 if __name__ == "__main__":
     asyncio.run(main())
