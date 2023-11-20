@@ -2,9 +2,7 @@
 
 """Launch Mila as a Discord bot."""
 
-# import asyncio
-# import json
-# import time
+import json
 import os
 from logging import Logger
 
@@ -18,10 +16,12 @@ from mila.prompts import PROMPTS
 
 CONTEXT_LIMIT = 20
 
+
 async def get_horoscope(star_sign: str) -> str:
     """Get the horoscope for a given star sign."""
-    print("Function called: get_horoscope")
+    LOGGER.info("Function called: get_horoscope")
     return f"Your horoscope for {star_sign} is: Memento mori."
+
 
 def make_subs(prompt: str, query: str, context: str):
     """Make substitutions for the query and context."""
@@ -30,78 +30,6 @@ def make_subs(prompt: str, query: str, context: str):
         "context": context,
     }
     return prompt.format(**sub_dict)
-
-
-"""
-make_subs(
-                [
-                    {
-                        "role": "user",
-                        "content": PROMPTS["user"],
-                    }
-                ],
-                query,
-                context,
-            )
-    run = await llm.beta.threads.runs.create(
-        thread_id=thread.id,
-        assistant_id=assistant.id,
-    )
-    tool_outputs = []
-    while True:
-        run = await llm.beta.threads.runs.retrieve(
-            thread_id=thread.id,
-            run_id=run.id,
-        )
-        if run.status == "completed":
-            break
-        elif run.status in [
-            "cancelled",
-            "expired",
-            "failed",
-        ]:
-            raise RuntimeError(f"Run failed: {run.status}")
-        elif run.status == "requires_action":
-            for (
-                tool_call
-            ) in run.required_action.submit_tool_outputs.tool_calls:
-                arguments = json.loads(tool_call.function.arguments)
-                name = tool_call.function.name
-                if name == "get_horoscope":
-                    response = await get_horoscope(**arguments)
-                    id = tool_call.id
-                    tool_outputs.append(
-                        {
-                            "tool_call_id": id,
-                            "output": response,
-                        }
-                    )
-                else:
-                    raise RuntimeError(f"Unknown tool call: {name}")
-            run = await llm.beta.threads.runs.submit_tool_outputs(
-                thread_id=thread.id,
-                run_id=run.id,
-                tool_outputs=tool_outputs,
-            )
-        else:
-            time.sleep(1)
-    MESSAGES = await llm.beta.threads.messages.list(
-        thread_id=thread.id,
-    )
-    for message in MESSAGES.data:
-        for content in message.content:
-            print(content.text.value)
-    await llm.beta.assistants.delete(
-        assistant_id=assistant.id,
-    )
-    await llm.beta.threads.delete(
-        thread_id=thread.id,
-    )
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-"""
 
 
 class Mila:
@@ -115,7 +43,7 @@ class Mila:
             "properties": {
                 "star_sign": {
                     "type": "string",
-                    "description": "The star sign for which the horoscope is intended.",
+                    "description": "The user's star sign.",
                 }
             },
             "required": ["star_sign"],
@@ -127,10 +55,9 @@ class Mila:
         self._llm = AsyncOpenAI()
         self._logger = logger
         self._assistant_id = None
-        self._logger.info("Mila class initialized.")
-        self._threads = {}
+        self._thread_ids = {}
         self._runs = {}
-    
+
     async def _spawn_assistant(self) -> None:
         """Spawn a new assistant for the bot."""
         assistant = await self._llm.beta.assistants.create(
@@ -141,7 +68,7 @@ class Mila:
             metadata={},
         )
         self._assistant_id = assistant.id
-    
+
     async def _spawn_thread(self, author: str, name: str):
         """Spawn a new thread for the bot."""
         thread = await self._llm.beta.threads.create(
@@ -151,7 +78,7 @@ class Mila:
                 "name": name,
             },
         )
-        self._threads[author] = thread.id
+        self._thread_ids[author] = thread.id
 
     @property
     def _tools(self) -> list:
@@ -172,12 +99,75 @@ class Mila:
             for tool in self._tool_definitions
         ]
 
+    async def check_completion(self, run_id: str) -> bool:
+        """Check whether a query run is complete."""
+        tool_outputs = []
+        complete = False
+        run = await self._llm.beta.threads.runs.retrieve(
+            thread_id=self._runs[run_id],
+            run_id=run_id,
+        )
+        if run.status == "completed":
+            self._logger.info("Run completed.")
+            complete = True
+        elif run.status in [
+            "cancelled",
+            "expired",
+            "failed",
+        ]:
+            self._logger.warn("Run failed: %s", run.status)
+            await self._llm.beta.threads.runs.cancel(
+                thread_id=self._runs[run_id],
+                run_id=run_id,
+            )
+            complete = True
+        elif run.status == "requires_action":
+            self._logger.info("Run requires action.")
+            for (
+                tool_call
+            ) in run.required_action.submit_tool_outputs.tool_calls:
+                arguments = json.loads(tool_call.function.arguments)
+                name = tool_call.function.name
+                if name == "get_horoscope":
+                    response = await get_horoscope(**arguments)
+                    tool_call_id = tool_call.id
+                    tool_outputs.append(
+                        {
+                            "tool_call_id": tool_call_id,
+                            "output": response,
+                        }
+                    )
+                else:
+                    self._logger.warn("Unknown tool call: %s", name)
+                    complete = True
+            run = await self._llm.beta.threads.runs.submit_tool_outputs(
+                thread_id=self._runs[run_id],
+                run_id=run_id,
+                tool_outputs=tool_outputs,
+            )
+        return complete
+
+    async def get_response(self, run_id: str) -> str:
+        """Retrieve the final response from a given run."""
+        run = await self._llm.beta.threads.runs.retrieve(
+            thread_id=self._runs[run_id],
+            run_id=run_id,
+        )
+        if run.status in ["cancelled", "expired", "failed"]:
+            return f"Error: run {run.status}."
+        if run.status == "requires_action":
+            return "Error in LLM function call."
+        messages = await self._llm.beta.threads.messages.list(
+            thread_id=self._runs[run_id],
+        )
+        return messages.data[0].content[0].text.value
+
     async def handle_message(
-            self,
-            author: str,
-            name: str,
-            query: str,
-            context: str,
+        self,
+        author: str,
+        name: str,
+        query: str,
+        context: str,
     ) -> str:
         """Handle an incoming message."""
         self._logger.info(
@@ -188,19 +178,19 @@ class Mila:
         )
         if not self._assistant_id:
             await self._spawn_assistant()
-        if author not in self._threads:
+        if author not in self._thread_ids:
             await self._spawn_thread(author, name)
-        thread = self._threads[author]
+        thread_id = self._thread_ids[author]
         await self._llm.beta.threads.messages.create(
-            thread_id=thread.id,
+            thread_id=thread_id,
             role="user",
-            content=make_subs(PROMPTS["user"], query, context)
+            content=make_subs(PROMPTS["user"], query, context),
         )
-        run = self._llm.beta.threads.runs.create(
-            thread_id=thread.id,
+        run = await self._llm.beta.threads.runs.create(
+            thread_id=thread_id,
             assistant_id=self._assistant_id,
         )
-        self._runs[run.id] = thread.id
+        self._runs[run.id] = thread_id
         return run.id
 
 
@@ -212,7 +202,6 @@ class MilaBot(discord.Client):
         super().__init__(*args, **kwargs)
         self._mila = mila
         self._logger = logger
-        self._logger.info("MilaBot class initialized.")
         self._queries = {}
 
     @tasks.loop(seconds=1)
@@ -222,14 +211,18 @@ class MilaBot(discord.Client):
 
     async def _check_queries(self) -> None:
         """Check for updates."""
-    
+        for task_id in list(self._queries.keys()):
+            if await self._mila.check_completion(task_id):
+                response = await self._mila.get_response(task_id)
+                await self._queries[task_id].edit(content=response)
+                self._queries.pop(task_id)
+
     async def _get_context(self, message: discord.Message):
         """Pull the message history and format it for Mila."""
-        history = message.channel.history(limit=CONTEXT_LIMIT)
         context = [
-            f"{message.author.name}: {message.content}"
-            for message in history[::-1]
-        ]
+            f"{msg.author.name}: {msg.content}"
+            async for msg in message.channel.history(limit=CONTEXT_LIMIT)
+        ][::-1]
         return "> " + "\n> ".join(context)
 
     async def on_message(self, message: discord.Message):
@@ -257,7 +250,7 @@ class MilaBot(discord.Client):
 
 
 def main():
-    """Launch the Tiny Assistant demo."""
+    """Launch MilaBot."""
     intents = discord.Intents.default()
     intents.members = True
     intents.message_content = True
