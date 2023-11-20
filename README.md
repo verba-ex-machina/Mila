@@ -1,22 +1,81 @@
 # Mila
-Mila: The Mindful, Interactive Lifestyle Assistant
+### Mila: The Mindful, Interactive Lifestyle Assistant
 
-## Getting Started: `milabot.py`
-The `milabot.py` script is a demo Discord bot connected to the Mila AI backend. The goal for this script is to provide a PoC interface for interacting with Mila.
+## Overview
+Mila is a Discord bot designed to interactively assist with lifestyle management using OpenAI's technologies.
 
-To run the script, you'll need an [OpenAI API key](https://www.google.com/search?q=how+to+find+your+openai+api+key), and you'll need to [register a discord bot and get its token](https://www.google.com/search?q=how+to+register+a+new+discord+bot+and+get+its+token), then [add the bot to your server](https://discordjs.guide/preparations/adding-your-bot-to-servers.html#bot-invite-links). The OpenAI API key and Discord Token will need to be saved in an `.envrc` file with contents like so:
+## Initial Setup
+This guide is intended for macOS/Linux users.
 
+### Cloning the Repository
+Clone the Mila repository into a directory of your choice.
+
+```bash
+git clone https://github.com/verba-ex-machina/Mila.git
+cd Mila
 ```
-export DISCORD_TOKEN="{discord token goes here}"
-export OPENAI_API_KEY="{openai api key goes here}"
+
+### Creating a Virtual Environment
+Set up a Python virtual environment in the cloned directory.
+
+```bash
+python3 -m venv venv
 ```
-_(Omit the {brackets}, of course.)_
 
-**Be sure you never commit your** `.envrc` **file into the repo, nor share it with anyone!** It's in the `.gitignore` for a reason.
+Activate the virtual environment.
 
-The environment variables can be loaded in a couple ways:
+```bash
+source venv/bin/activate
+```
 
-* You can run the command `source .envrc` from the root directory of the repo every time you open a new shell, prior to running the bot script.
-* You can install `direnv`, and it'll do it automatically. ([Here's a link to the installation guide.](https://direnv.net/docs/installation.html))
+Verify Python path (should be within `venv` directory).
 
-With the environment variables loaded, simply run `milabot.py`.
+```bash
+which python3
+```
+
+### Installing Dependencies
+Install required dependencies for Mila.
+
+- For general use:
+  ```bash
+  pip install -r requirements.txt
+  ```
+- For development:
+  ```bash
+  pip install -r requirements.txt -r requirements-dev.txt
+  ```
+
+### Setting Up API Keys
+Obtain and securely store API keys.
+
+1. Get an [OpenAI API key](https://www.google.com/search?q=how+to+find+your+openai+api+key).
+2. [Register a Discord bot and get its token](https://www.google.com/search?q=how+to+register+a+new+discord+bot+and+get+its+token).
+3. [Add the bot to your server](https://discordjs.guide/preparations/adding-your-bot-to-servers.html#bot-invite-links).
+
+### Configuring Environment Variables
+Create an `.envrc` file in the root directory with the following content, replacing placeholders with actual API keys.
+
+```bash
+export DISCORD_TOKEN="your_discord_token"
+export OPENAI_API_KEY="your_openai_api_key"
+source venv/bin/activate
+```
+
+**Important:** Do not commit the `.envrc` file to the repository or share it.
+
+### Loading Environment Variables
+There are two ways to load the variables and virtual environment:
+
+- Manually:
+  ```bash
+  source .envrc
+  ```
+- Automatically using `direnv` ([installation guide](https://direnv.net/docs/installation.html)).
+
+## Running the Discord Bot (`milabot.py`)
+With the setup complete and environment variables loaded, run the `milabot.py` script to activate Mila on Discord.
+
+```bash
+./milabot.py
+```

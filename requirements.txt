@@ -1,3 +1,2 @@
 openai
 discord.py
-langchain
