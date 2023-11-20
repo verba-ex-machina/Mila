@@ -13,7 +13,7 @@ from discord.ext import tasks
 from openai import AsyncOpenAI
 
 from lib.logging import LOGGER
-from mila.constants import DESCRIPTION
+from mila.constants import DESCRIPTION, MODEL, NAME
 from mila.prompts import PROMPTS
 
 CONTEXT_LIMIT = 20
@@ -23,17 +23,26 @@ async def get_horoscope(star_sign: str) -> str:
     print("Function called: get_horoscope")
     return f"Your horoscope for {star_sign} is: Memento mori."
 
+def make_subs(prompt: str, query: str, context: str):
+    """Make substitutions for the query and context."""
+    sub_dict = {
+        "query": query,
+        "context": context,
+    }
+    return prompt.format(**sub_dict)
+
 
 """
-    thread = await llm.beta.threads.create(
-        messages=[
-            {
-                "role": "user",
-                "content": "What's my horoscope for today? I'm a Capricorn.",
-            }
-        ],
-        metadata={...},
-    )
+make_subs(
+                [
+                    {
+                        "role": "user",
+                        "content": PROMPTS["user"],
+                    }
+                ],
+                query,
+                context,
+            )
     run = await llm.beta.threads.runs.create(
         thread_id=thread.id,
         assistant_id=assistant.id,
@@ -126,22 +135,17 @@ class Mila:
         """Spawn a new assistant for the bot."""
         assistant = await self._llm.beta.assistants.create(
             instructions=PROMPTS["system"],
-            name="Mila",
-            model="gpt-3.5-turbo-16k",
+            name=NAME,
+            model=MODEL,
             tools=self._tools,
             metadata={},
         )
         self._assistant_id = assistant.id
     
-    async def _spawn_thread(self, author: str, name: str, content: str, context: str):
+    async def _spawn_thread(self, author: str, name: str):
         """Spawn a new thread for the bot."""
         thread = await self._llm.beta.threads.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": content,
-                }
-            ],
+            messages=[],
             metadata={
                 "author": author,
                 "name": name,
@@ -172,20 +176,32 @@ class Mila:
             self,
             author: str,
             name: str,
-            content: str,
+            query: str,
             context: str,
-    ):
+    ) -> str:
         """Handle an incoming message."""
         self._logger.info(
             "Message received from %s (%s): %s",
             author,
             name,
-            content,
+            query,
         )
         if not self._assistant_id:
             await self._spawn_assistant()
         if author not in self._threads:
-            await self._spawn_thread(author, name, content, context)
+            await self._spawn_thread(author, name)
+        thread = self._threads[author]
+        await self._llm.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content=make_subs(PROMPTS["user"], query, context)
+        )
+        run = self._llm.beta.threads.runs.create(
+            thread_id=thread.id,
+            assistant_id=self._assistant_id,
+        )
+        self._runs[run.id] = thread.id
+        return run.id
 
 
 class MilaBot(discord.Client):
@@ -197,15 +213,15 @@ class MilaBot(discord.Client):
         self._mila = mila
         self._logger = logger
         self._logger.info("MilaBot class initialized.")
+        self._queries = {}
 
     @tasks.loop(seconds=1)
     async def tick(self) -> None:
         """Update all threads."""
-        await self._check_responses()
+        await self._check_queries()
 
-    async def _check_responses(self) -> None:
-        """Check for new responses."""
-        # self._logger.info("Checking for new responses.")
+    async def _check_queries(self) -> None:
+        """Check for updates."""
     
     async def _get_context(self, message: discord.Message):
         """Pull the message history and format it for Mila."""
@@ -222,12 +238,14 @@ class MilaBot(discord.Client):
             self.user.mentioned_in(message)
             or message.channel.type == discord.ChannelType.private
         ):
-            await self._mila.handle_message(
+            task_id = await self._mila.handle_message(
                 author=message.author.id,
                 name=message.author.name,
-                content=message.content,
+                query=message.content,
                 context=await self._get_context(message),
             )
+            response = await message.reply("_Thinking..._")
+            self._queries[task_id] = response
 
     async def on_ready(self) -> None:
         """Log a message when the bot is ready."""
