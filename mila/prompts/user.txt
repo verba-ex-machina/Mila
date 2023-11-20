@@ -1,9 +1,9 @@
-Please examine the following context:
+A query was submitted with the following context:
 
 {context}
 
-The user has given the following query:
+The query is as follows:
 
 > {query}
 
-Please respond appropriately, as Mila.
+As Mila, respond to the given query.

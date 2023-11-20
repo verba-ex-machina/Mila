@@ -12,6 +12,17 @@ from mila.prompts import PROMPTS
 LLM = AsyncOpenAI()
 
 
+def make_subs(prompt_list: list, query: str, context: str) -> str:
+    """Make substitutions to the query and context."""
+    sub_dict = {
+        "query": query,
+        "context": context,
+    }
+    for prompt in prompt_list:
+        prompt["content"] = prompt["content"].format(**sub_dict)
+    return prompt_list
+
+
 class Mila:
     """Represent Mila."""
 
@@ -22,19 +33,30 @@ class Mila:
             self,
             query: str,
             context: str,
-            generator: ChatCompletion,
         ):
             """Initialize the task."""
             self.query = query
             self.context = context
-            self.generator = generator
             self.response = ""
+            self.run = None
+            self.thread = LLM.beta.threads.create(
+                messages=make_subs(
+                    [
+                        {
+                            "role": "user",
+                            "content": PROMPTS["user"],
+                        }
+                    ],
+                    query,
+                    context,
+                )
+            )
 
     def __init__(self, logger: logging.Logger):
         """Initialize Mila."""
         self.description = DESCRIPTION
         self._assistant = LLM.beta.assistants.create(
-            instructions=PROMPTS["instructions"],
+            instructions=PROMPTS["system"],
             name="Mila",
             model=MODEL,
             tools=[
@@ -60,41 +82,28 @@ class Mila:
         self._logger = logger
         self._tasks = {}
 
-    def _make_subs(self, prompt_list: list, query: str, context: str) -> str:
-        """Make substitutions to the query and context."""
-        sub_dict = {
-            "query": query,
-            "context": context,
-        }
-        for prompt in prompt_list:
-            prompt["content"] = prompt["content"].format(**sub_dict)
-        return prompt_list
-
     async def add_task(self, query: str, context: str) -> str:
         """Add a task to Mila."""
         task_id = sha256((query + context).encode("utf-8")).hexdigest()
+        self._tasks[task_id] = self.MilaTask(query, context)
         self._logger.info("Task %s created. -> %s", task_id, query)
-        generator = await LLM.chat.completions.create(
-            model=MODEL,
-            messages=self._make_subs(PROMPTS.as_list, query, context),
-            stream=True,
-        )
-        self._tasks[task_id] = self.MilaTask(query, context, generator)
         return task_id
 
     async def check(self, task_id: str) -> bool:
         """Check whether the task is complete."""
         try:
             task = self._tasks[task_id]
+        except KeyError as exc:
+            self._logger.warning("Task %s not found.", task_id)
+            raise KeyError from exc
+        # TODO: Set up a run (https://platform.openai.com/docs/assistants/how-it-works/runs-and-run-steps)
+        try:
             # Retrieve the next chunk of text.
             chunk = await task.generator.__anext__()
             task.response += chunk.choices[0].delta.content
         except TypeError:
             self._logger.info("Task %s completed.", task_id)
             return True
-        except KeyError as exc:
-            self._logger.warning("Task %s not found.", task_id)
-            raise KeyError from exc
         return False
 
     def drop_task(self, task_id: str) -> None:
