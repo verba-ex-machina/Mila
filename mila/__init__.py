@@ -36,13 +36,23 @@ class Mila:
         self._logger = logger
         self._tasks = {}
 
+    def _make_subs(self, prompt_list: list, query: str, context: str) -> str:
+        """Make substitutions to the query and context."""
+        sub_dict = {
+            "query": query,
+            "context": context,
+        }
+        prompt_list = [prompt.format(**sub_dict) for prompt in prompt_list]
+        self._logger.debug("Prompt list: %s", "\n---\n".join(prompt_list))
+        return prompt_list
+
     async def add_task(self, query: str, context: str) -> str:
         """Add a task to Mila."""
         task_id = sha256((query + context).encode("utf-8")).hexdigest()
         self._logger.info("Task %s created. -> %s", task_id, query)
         generator = await LLM.chat.completions.create(
             model=MODEL,
-            messages=PROMPTS.as_list,
+            messages=self._make_subs(PROMPTS.as_list, query, context),
             stream=True,
         )
         self._tasks[task_id] = self.MilaTask(query, context, generator)
