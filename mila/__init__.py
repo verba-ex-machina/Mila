@@ -1,13 +1,15 @@
 """Provide the Mila library."""
 
-from openai import AsyncOpenAI
 import json
+
+from openai import AsyncOpenAI
+
+from lib.logging import LOGGER, logging
 from mila.constants import DESCRIPTION, MODEL, NAME
 from mila.prompts import PROMPTS
 
-from lib.logging import logging, LOGGER
-
 LLM = AsyncOpenAI()
+
 
 async def get_horoscope(star_sign: str) -> str:
     """Get the horoscope for a given star sign."""
