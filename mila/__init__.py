@@ -33,6 +33,30 @@ class Mila:
     def __init__(self, logger: logging.Logger):
         """Initialize Mila."""
         self.description = DESCRIPTION
+        self._assistant = LLM.beta.assistants.create(
+            instructions=PROMPTS["instructions"],
+            name="Mila",
+            model=MODEL,
+            tools=[
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "get_horoscope",
+                        "description": "Get the horoscope for a given star sign.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "star_sign": {
+                                    "type": "string",
+                                    "description": "The star sign to get the horoscope for.",
+                                }
+                            },
+                            "required": ["star_sign"]
+                        }
+                    }
+                }
+            ]
+        )
         self._logger = logger
         self._tasks = {}
 
