@@ -42,8 +42,8 @@ class Mila:
             "query": query,
             "context": context,
         }
-        prompt_list = [prompt.format(**sub_dict) for prompt in prompt_list]
-        self._logger.debug("Prompt list: %s", "\n---\n".join(prompt_list))
+        for prompt in prompt_list:
+            prompt["content"] = prompt["content"].format(**sub_dict)
         return prompt_list
 
     async def add_task(self, query: str, context: str) -> str:
