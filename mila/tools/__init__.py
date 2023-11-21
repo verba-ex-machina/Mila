@@ -45,13 +45,6 @@ class Tools:
         """Get the tool definitions."""
         return [tool.definition for tool in self._tools]
 
-    def get(self, name: str) -> Tool:
-        """Get a tool by its name."""
-        for tool in self._tools:
-            if tool.name == name:
-                return tool
-        return None
-
 
 TOOLS = Tools(
     [
