@@ -2,6 +2,11 @@
 
 from mila.tools import util
 
+_TOOLKITS = [
+    # Add toolkit libraries here.
+    util,
+]
+
 
 class Tool:
     """Represent a single tool in Mila's toolset."""
@@ -37,13 +42,13 @@ class Tools:
 
     def __init__(self, toolkits: list):
         """Initialize the toolset."""
-        self._tools = []
-        for toolkit in toolkits:
-            contents = dir(toolkit)
-            for item in contents:
-                element = getattr(toolkit, item)
-                if callable(element) and hasattr(element, "properties"):
-                    self._tools.append(Tool(element))
+        self._tools = [
+            Tool(getattr(toolkit, item))
+            for toolkit in toolkits
+            for item in dir(toolkit)
+            if callable(getattr(toolkit, item))
+            and hasattr(getattr(toolkit, item), "properties")
+        ]
 
     @property
     def definitions(self) -> list:
@@ -59,7 +64,5 @@ class Tools:
 
 
 TOOLS = Tools(
-    [
-        util,
-    ]
+    _TOOLKITS,
 )
