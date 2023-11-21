@@ -51,6 +51,8 @@ class Mila:
         self._logger = logger
         self._assistant_id = None
         self._thread_ids = {}
+        # Mila is async, and can handle multiple threads concurrently,
+        # but each thread can only handle one run at a time. (Thanks, OpenAI.)
         self._thread_locks = {}
         self._runs = {}
 
