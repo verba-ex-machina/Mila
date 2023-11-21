@@ -1,6 +1,7 @@
 """Provide the Mila library."""
 
-import json, asyncio
+import asyncio
+import json
 
 from openai import AsyncOpenAI
 
