@@ -60,8 +60,7 @@ class Mila:
             "name": "suggest_feature",
             "function": suggest_feature,
             "description": (
-                "Unable to solve a user's request due to a lack of available"
-                + "tools? Suggest a feature to expand Mila's capabilities."
+                "If provided tools are insufficient, suggest a new feature."
             ),
             "properties": {
                 "feature": {
