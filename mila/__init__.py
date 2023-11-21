@@ -1,5 +1,6 @@
 """Provide the Mila library."""
 
+import asyncio
 import json
 
 from openai import AsyncOpenAI
@@ -50,6 +51,9 @@ class Mila:
         self._logger = logger
         self._assistant_id = None
         self._thread_ids = {}
+        # Mila is async, and can handle multiple threads concurrently,
+        # but each thread can only handle one run at a time. (Thanks, OpenAI.)
+        self._thread_locks = {}
         self._runs = {}
 
     async def _spawn_assistant(self) -> None:
@@ -73,6 +77,7 @@ class Mila:
             },
         )
         self._thread_ids[author] = thread.id
+        self._thread_locks[thread.id] = False
 
     @property
     def _tools(self) -> list:
@@ -139,6 +144,8 @@ class Mila:
                 run_id=run_id,
                 tool_outputs=tool_outputs,
             )
+        if complete:
+            self._thread_locks[self._runs[run_id]] = False
         return complete
 
     async def get_response(self, run_id: str) -> str:
@@ -175,6 +182,9 @@ class Mila:
         if author not in self._thread_ids:
             await self._spawn_thread(author, name)
         thread_id = self._thread_ids[author]
+        while self._thread_locks[thread_id]:
+            await asyncio.sleep(0.1)
+        self._thread_locks[thread_id] = True
         await self._llm.beta.threads.messages.create(
             thread_id=thread_id,
             role="user",

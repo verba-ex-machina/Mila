@@ -43,7 +43,19 @@ class MilaBot(discord.Client):
             f"{msg.author.name}: {msg.content}"
             async for msg in message.channel.history(limit=CONTEXT_LIMIT)
         ][::-1]
-        return "> " + "\n> ".join(context)
+        chat_context = "> " + "\n> ".join(context)
+        context = (
+            f"You are a member of the {message.guild.name} Discord server. "
+            + f"Here are the last {CONTEXT_LIMIT} messages in the chat:\n\n"
+            + chat_context
+        )
+        return await self._sub_usernames(context)
+
+    async def _sub_usernames(self, message: str) -> str:
+        """Substitute Discord usernames for user IDs."""
+        for user in self.users:
+            message = message.replace(f"<@{user.id}>", user.name)
+        return message
 
     async def on_message(self, message: discord.Message):
         """Respond to incoming messages."""
@@ -54,7 +66,7 @@ class MilaBot(discord.Client):
             task_id = await self._mila.handle_message(
                 author=message.author.id,
                 name=message.author.name,
-                query=message.content,
+                query=await self._sub_usernames(message.content),
                 context=await self._get_context(message),
             )
             response = await message.reply("_Thinking..._")
