@@ -18,6 +18,19 @@ async def get_horoscope(star_sign: str) -> str:
     return f"Your horoscope for {star_sign} is: Memento mori."
 
 
+async def suggest_feature(
+    feature: str,
+    category: str,
+    implementation: str,
+) -> str:
+    """Suggest a feature to expand Mila's capabilities."""
+    LOGGER.info("Function called: suggest_feature")
+    LOGGER.info("- Feature: %s", feature)
+    LOGGER.info("- Category: %s", category)
+    LOGGER.info("- Implementation: %s", implementation)
+    return f"Feature suggestion received: {feature} ({category})."
+
+
 def make_subs(prompt: str, query: str, context: str):
     """Make substitutions for the query and context."""
     sub_dict = {
@@ -42,7 +55,29 @@ class Mila:
                 }
             },
             "required": ["star_sign"],
-        }
+        },
+        {
+            "name": "suggest_feature",
+            "function": suggest_feature,
+            "description": (
+                "If provided tools are insufficient, suggest a new feature."
+            ),
+            "properties": {
+                "feature": {
+                    "type": "string",
+                    "description": "The suggested feature, in plain English.",
+                },
+                "category": {
+                    "type": "string",
+                    "description": "A one-word category for the feature.",
+                },
+                "implementation": {
+                    "type": "string",
+                    "description": "The proposed feature implementation.",
+                },
+            },
+            "required": ["feature", "category", "implementation"],
+        },
     ]
 
     def __init__(self, logger: logging.Logger):
@@ -115,10 +150,6 @@ class Mila:
             "failed",
         ]:
             self._logger.warn("Run failed: %s", run.status)
-            await self._llm.beta.threads.runs.cancel(
-                thread_id=self._runs[run_id],
-                run_id=run_id,
-            )
             complete = True
         elif run.status == "requires_action":
             self._logger.info("Run requires action.")
@@ -127,23 +158,35 @@ class Mila:
             ) in run.required_action.submit_tool_outputs.tool_calls:
                 arguments = json.loads(tool_call.function.arguments)
                 name = tool_call.function.name
-                if name == "get_horoscope":
-                    response = await get_horoscope(**arguments)
-                    tool_call_id = tool_call.id
-                    tool_outputs.append(
-                        {
-                            "tool_call_id": tool_call_id,
-                            "output": response,
-                        }
-                    )
-                else:
-                    self._logger.warn("Unknown tool call: %s", name)
+                found = False
+                for tool in self._tool_definitions:
+                    if tool["name"] == name:
+                        found = True
+                        if tool["function"]:
+                            response = await tool["function"](**arguments)
+                            tool_call_id = tool_call.id
+                            tool_outputs.append(
+                                {
+                                    "tool_call_id": tool_call_id,
+                                    "output": response,
+                                }
+                            )
+                        else:
+                            self._logger.warn(
+                                "Undefined function: %s",
+                                name,
+                            )
+                            complete = True
+                if not found:
+                    self._logger.warn("Undefined tool: %s", name)
                     complete = True
-            run = await self._llm.beta.threads.runs.submit_tool_outputs(
-                thread_id=self._runs[run_id],
-                run_id=run_id,
-                tool_outputs=tool_outputs,
-            )
+            if tool_outputs:
+                self._logger.info("Submitting tool outputs.")
+                run = await self._llm.beta.threads.runs.submit_tool_outputs(
+                    thread_id=self._runs[run_id],
+                    run_id=run_id,
+                    tool_outputs=tool_outputs,
+                )
         if complete:
             self._thread_locks[self._runs[run_id]] = False
         return complete
