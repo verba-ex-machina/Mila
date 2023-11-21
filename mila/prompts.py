@@ -23,6 +23,10 @@ class Prompts:
         with open(f"{PROMPT_PATH}{name}.txt", "r", encoding="utf-8") as file:
             return self._make_subs(file.read().strip())
 
+    def format(self, name: str, sub_dict: dict) -> str:
+        """Get a prompt by name and format it."""
+        return self[name].format(**sub_dict)
+
     @property
     def as_list(self) -> list:
         """Return the prompts formatted as a list."""

@@ -13,15 +13,6 @@ from mila.tools import TOOLS
 LLM = AsyncOpenAI()
 
 
-def make_subs(prompt: str, query: str, context: str):
-    """Make substitutions for the query and context."""
-    sub_dict = {
-        "query": query,
-        "context": context,
-    }
-    return prompt.format(**sub_dict)
-
-
 class Mila:
     """Represent the Mila assistant."""
 
@@ -162,7 +153,13 @@ class Mila:
         await self._llm.beta.threads.messages.create(
             thread_id=thread_id,
             role="user",
-            content=make_subs(PROMPTS["user"], query, context),
+            content=PROMPTS.format(
+                name="user",
+                sub_dict={
+                    "query": query,
+                    "context": context,
+                },
+            ),
         )
         run = await self._llm.beta.threads.runs.create(
             thread_id=thread_id,
