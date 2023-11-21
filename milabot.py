@@ -44,9 +44,12 @@ class MilaBot(discord.Client):
             async for msg in message.channel.history(limit=CONTEXT_LIMIT)
         ][::-1]
         chat_context = "> " + "\n> ".join(context)
-        context = (
-            f"You are a member of the {message.guild.name} Discord server. "
-            + f"Here are the last {CONTEXT_LIMIT} messages in the chat:\n\n"
+        if message.guild:
+            context = f"You in the {message.guild.name} Discord server. "
+        else:
+            context = "You are in a private Discord direct-message chat. "
+        context += (
+            f"Here are the last {CONTEXT_LIMIT} messages in the chat:\n\n"
             + chat_context
         )
         return await self._sub_usernames(context)
