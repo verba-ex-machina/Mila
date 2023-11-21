@@ -5,30 +5,12 @@ import json
 
 from openai import AsyncOpenAI
 
-from lib.logging import LOGGER, logging
+from lib.logging import logging
 from mila.constants import DESCRIPTION, MODEL, NAME
 from mila.prompts import PROMPTS
+from mila.tools import TOOLS
 
 LLM = AsyncOpenAI()
-
-
-async def get_horoscope(star_sign: str) -> str:
-    """Get the horoscope for a given star sign."""
-    LOGGER.info("Function called: get_horoscope")
-    return f"Your horoscope for {star_sign} is: Memento mori."
-
-
-async def suggest_feature(
-    feature: str,
-    category: str,
-    implementation: str,
-) -> str:
-    """Suggest a feature to expand Mila's capabilities."""
-    LOGGER.info("Function called: suggest_feature")
-    LOGGER.info("- Feature: %s", feature)
-    LOGGER.info("- Category: %s", category)
-    LOGGER.info("- Implementation: %s", implementation)
-    return f"Feature suggestion received: {feature} ({category})."
 
 
 def make_subs(prompt: str, query: str, context: str):
@@ -44,42 +26,7 @@ class Mila:
     """Represent the Mila assistant."""
 
     description = DESCRIPTION
-    _tool_definitions = [
-        {
-            "name": "get_horoscope",
-            "function": get_horoscope,
-            "description": "Get the horoscope for a given star sign.",
-            "properties": {
-                "star_sign": {
-                    "type": "string",
-                    "description": "The user's star sign.",
-                }
-            },
-            "required": ["star_sign"],
-        },
-        {
-            "name": "suggest_feature",
-            "function": suggest_feature,
-            "description": (
-                "If provided tools are insufficient, suggest a new feature."
-            ),
-            "properties": {
-                "feature": {
-                    "type": "string",
-                    "description": "The suggested feature, in plain English.",
-                },
-                "category": {
-                    "type": "string",
-                    "description": "A one-word category for the feature.",
-                },
-                "implementation": {
-                    "type": "string",
-                    "description": "The proposed feature implementation.",
-                },
-            },
-            "required": ["feature", "category", "implementation"],
-        },
-    ]
+    _tool_definitions = TOOLS.definitions
 
     def __init__(self, logger: logging.Logger):
         """Initialize Mila."""
@@ -131,7 +78,7 @@ class Mila:
                     },
                 },
             }
-            for tool in self._tool_definitions
+            for tool in TOOLS.definitions
         ]
 
     async def check_completion(self, run_id: str) -> bool:
@@ -160,7 +107,7 @@ class Mila:
                 arguments = json.loads(tool_call.function.arguments)
                 name = tool_call.function.name
                 found = False
-                for tool in self._tool_definitions:
+                for tool in TOOLS.definitions:
                     if tool["name"] == name:
                         found = True
                         if tool["function"]:
