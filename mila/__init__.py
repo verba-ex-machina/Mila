@@ -43,6 +43,7 @@ def make_subs(prompt: str, query: str, context: str):
 class Mila:
     """Represent the Mila assistant."""
 
+    description = DESCRIPTION
     _tool_definitions = [
         {
             "name": "get_horoscope",
