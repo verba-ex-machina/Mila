@@ -8,7 +8,7 @@ import discord
 from discord.ext import tasks
 
 from mila import Mila, config
-from mila.logging import LOGGER, logging
+from mila.logging import LOGGER
 
 CONTEXT_LIMIT = 20
 
@@ -16,11 +16,10 @@ CONTEXT_LIMIT = 20
 class MilaBot(discord.Client):
     """Implement a Discord bot for interacting with Mila."""
 
-    def __init__(self, mila: Mila, logger: logging.Logger, *args, **kwargs):
+    def __init__(self, mila: Mila, *args, **kwargs):
         """Initialize MilaBot."""
         super().__init__(*args, **kwargs)
         self._mila = mila
-        self._logger = logger
         self._threads = {}
 
     @tasks.loop(seconds=1)
@@ -73,7 +72,7 @@ class MilaBot(discord.Client):
 
     async def on_ready(self) -> None:
         """Log a message when the bot is ready."""
-        self._logger.info("Logged in as %s.", self.user)
+        LOGGER.info("Logged in as %s.", self.user)
 
     async def setup_hook(self) -> None:
         """Set up the bot's heartbeat."""
@@ -85,10 +84,9 @@ def main():
     intents = discord.Intents.default()
     intents.members = True
     intents.message_content = True
-    mila = Mila(logger=LOGGER)
+    mila = Mila()
     bot = MilaBot(
         mila=mila,
-        logger=LOGGER,
         description=config.DESCRIPTION,
         intents=intents,
     )
