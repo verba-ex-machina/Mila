@@ -25,10 +25,6 @@ class MilaBot(discord.Client):
 
     @tasks.loop(seconds=1)
     async def tick(self) -> None:
-        """Update all threads."""
-        await self._check_queries()
-
-    async def _check_queries(self) -> None:
         """Check for updates."""
         for task_id in list(self._queries.keys()):
             if await self._mila.check_completion(task_id):
