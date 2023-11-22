@@ -71,7 +71,7 @@ class Assistant:
     async def _ready(self) -> None:
         """Get the assistant for the bot."""
         if not self._assistant:
-            self._assistant = await self._spawn_assistant()
+            await self._spawn_assistant()
 
     async def id(self) -> str:
         """Get the ID of the assistant."""
