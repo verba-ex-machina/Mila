@@ -1,6 +1,6 @@
 """Provide a suite of utility tools."""
 
-from lib.logging import LOGGER
+from mila.logging import LOGGER
 
 
 async def get_horoscope(star_sign: str) -> str:

@@ -5,7 +5,7 @@ import json
 
 from openai import AsyncOpenAI
 
-from lib.logging import logging
+from mila.logging import logging
 from mila.constants import DESCRIPTION, MODEL, NAME
 from mila.prompts import PROMPTS
 from mila.tools import TOOLS

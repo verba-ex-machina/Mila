@@ -7,7 +7,7 @@ import os
 import discord
 from discord.ext import tasks
 
-from lib.logging import LOGGER, logging
+from mila.logging import LOGGER, logging
 from mila import Mila
 
 CONTEXT_LIMIT = 20
