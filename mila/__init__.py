@@ -12,13 +12,14 @@ from mila.prompts import PROMPTS
 from mila.tools import TOOLS
 
 
-def get_hash() -> str:
+def assistant_hash() -> str:
     """Get the hash of the current assistant."""
     return hashlib.sha256(
         json.dumps(
             {
                 "instructions": PROMPTS["system"],
                 "tools": TOOLS.definitions,
+                "version": config.VERSION,
             }
         ).encode("utf-8")
     ).hexdigest()
@@ -44,16 +45,12 @@ class Mila:
         for assistant in assistants.data:
             if assistant.name == config.NAME:
                 self._logger.info("Assistant found.")
-                if (
-                    assistant.metadata["version"] != config.VERSION
-                    or assistant.metadata["hash"] != get_hash()
-                ):
+                if assistant.metadata["hash"] != assistant_hash():
                     await self._assistant.update(
                         instructions=PROMPTS["system"],
                         tools=TOOLS.definitions,
                         metadata={
-                            "version": config.VERSION,
-                            "hash": get_hash(),
+                            "hash": assistant_hash(),
                         },
                     )
                     self._logger.info("Assistant updated.")
@@ -65,7 +62,7 @@ class Mila:
             model=config.MODEL,
             tools=TOOLS.definitions,
             metadata={
-                "version": config.VERSION,
+                "hash": assistant_hash(),
             },
         )
 
