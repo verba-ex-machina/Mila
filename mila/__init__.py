@@ -46,7 +46,10 @@ class Mila:
         for assistant in assistants.data:
             if assistant.name == config.NAME:
                 self._logger.info("Assistant found.")
-                if "hash" not in assistant.metadata.keys() or assistant.metadata["hash"] != assistant_hash():
+                if (
+                    "hash" not in assistant.metadata.keys()
+                    or assistant.metadata["hash"] != assistant_hash()
+                ):
                     await self._llm.beta.assistants.update(
                         assistant.id,
                         instructions=PROMPTS["system"],
