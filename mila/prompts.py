@@ -14,12 +14,17 @@ class Prompts:
 
     def __getitem__(self, name: str) -> str:
         """Get a prompt by name."""
-        with open(f"{PROMPT_PATH}{name}.txt", "r", encoding="utf-8") as file:
-            return file.read().strip().format(**self._global_subs)
+        return self._load_prompt(name).format(**self._global_subs)
 
-    def format(self, name: str, sub_dict: dict = None) -> str:
+    def _load_prompt(self, name: str) -> str:
+        """Read a prompt file."""
+        with open(f"{PROMPT_PATH}{name}.txt", "r", encoding="utf-8") as file:
+            return file.read().strip()
+
+    def format(self, name: str, sub_dict: dict) -> str:
         """Get a prompt by name and format it."""
-        return self[name] if not sub_dict else self[name].format(**sub_dict)
+        sub_dict.update(self._global_subs)
+        return self._load_prompt(name).format(**sub_dict)
 
 
 PROMPTS = Prompts()
