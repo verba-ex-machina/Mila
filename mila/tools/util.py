@@ -30,7 +30,7 @@ async def suggest_feature(
     LOGGER.info("  - Implementation: %s", implementation)
     return (
         f"Your proposal for `{feature}` has been recorded. "
-        +"We appreciate your suggestion!"
+        + "We appreciate your suggestion!"
     )
 
 
