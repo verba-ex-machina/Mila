@@ -4,6 +4,8 @@
 ## Overview
 Mila is a Discord bot designed to interactively assist with lifestyle management using OpenAI's technologies.
 
+Mila can be expanded with additional functionality by adding new tools to `mila/tools/` and registering them in `mila/tools/__init__.py`.
+
 ## Initial Setup
 This guide is intended for macOS/Linux users.
 
@@ -52,6 +54,7 @@ Obtain and securely store API keys.
 1. Get an [OpenAI API key](https://www.google.com/search?q=how+to+find+your+openai+api+key).
 2. [Register a Discord bot and get its token](https://www.google.com/search?q=how+to+register+a+new+discord+bot+and+get+its+token).
 3. [Add the bot to your server](https://discordjs.guide/preparations/adding-your-bot-to-servers.html#bot-invite-links).
+4. Get an [OpenWeatherAPI](https://openweathermap.org/) API key (free with a basic account).
 
 ### Configuring Environment Variables
 Create an `.envrc` file in the root directory with the following content, replacing placeholders with actual API keys.
@@ -59,6 +62,7 @@ Create an `.envrc` file in the root directory with the following content, replac
 ```bash
 export DISCORD_TOKEN="your_discord_token"
 export OPENAI_API_KEY="your_openai_api_key"
+export OPENWEATHERMAP_API_KEY="your_openweathermap_api_key"
 source venv/bin/activate
 ```
 
