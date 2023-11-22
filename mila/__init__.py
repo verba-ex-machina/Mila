@@ -1,12 +1,10 @@
 """Provide the Mila library."""
 
 import asyncio
-import hashlib
 import json
 
 import openai
 
-from mila import config
 from mila.assistants import Assistant
 from mila.logging import logging
 from mila.prompts import PROMPTS
