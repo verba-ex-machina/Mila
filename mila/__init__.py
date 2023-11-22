@@ -8,6 +8,7 @@ import openai
 from mila.assistants import Assistant
 from mila.logging import logging
 from mila.prompts import PROMPTS
+from mila.threads import Thread
 from mila.tools import TOOLS
 
 
@@ -19,23 +20,8 @@ class Mila:
         self._llm = openai.AsyncOpenAI()
         self._logger = logger
         self._assistant = Assistant(llm=self._llm, logger=self._logger)
-        self._thread_ids = {}
-        # Mila is async, and can handle multiple threads concurrently,
-        # but each thread can only handle one run at a time. (Thanks, OpenAI.)
-        self._thread_locks = {}
+        self._threads = {}
         self._runs = {}
-
-    async def _spawn_thread(self, author: str, name: str):
-        """Spawn a new thread for the bot."""
-        thread = await self._llm.beta.threads.create(
-            messages=[],
-            metadata={
-                "author": author,
-                "name": name,
-            },
-        )
-        self._thread_ids[author] = thread.id
-        self._thread_locks[thread.id] = False
 
     async def check_completion(self, run_id: str) -> bool:
         """Check whether a query run is complete."""
@@ -94,8 +80,6 @@ class Mila:
                     run_id=run_id,
                     tool_outputs=tool_outputs,
                 )
-        if complete:
-            self._thread_locks[self._runs[run_id]] = False
         return complete
 
     async def get_response(self, run_id: str) -> str:
@@ -127,14 +111,13 @@ class Mila:
             name,
             query,
         )
-        if author not in self._thread_ids:
-            await self._spawn_thread(author, name)
-        thread_id = self._thread_ids[author]
-        while self._thread_locks[thread_id]:
-            await asyncio.sleep(0.1)
-        self._thread_locks[thread_id] = True
+        new_thread = Thread(llm=self._llm, logger=self._logger)
+        if author not in self._threads:
+            self._threads[author] = [new_thread]
+        else:
+            self._threads[author].append(new_thread)
         await self._llm.beta.threads.messages.create(
-            thread_id=thread_id,
+            thread_id=await new_thread.id(),
             role="user",
             content=PROMPTS.format(
                 name="user",
@@ -145,8 +128,8 @@ class Mila:
             ),
         )
         run = await self._llm.beta.threads.runs.create(
-            thread_id=thread_id,
+            thread_id=await new_thread.id(),
             assistant_id=await self._assistant.id(),
         )
-        self._runs[run.id] = thread_id
+        self._runs[run.id] = await new_thread.id()
         return run.id
