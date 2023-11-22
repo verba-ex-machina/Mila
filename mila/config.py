@@ -2,6 +2,9 @@
 
 import logging
 
+# Metadata
+VERSION = "0.2.0"
+
 # Identity
 NAME = "Mila"
 DESCRIPTION = "the Mindful, Interactive Lifestyle Assistant"

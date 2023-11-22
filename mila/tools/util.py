@@ -37,7 +37,7 @@ async def suggest_feature(
 suggest_feature.properties = {
     "feature": {
         "type": "string",
-        "description": "The suggested feature, in plain English.",
+        "description": "The function name for the suggested feature.",
     },
     "category": {
         "type": "string",

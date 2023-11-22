@@ -8,7 +8,7 @@ import discord
 from discord.ext import tasks
 
 from mila import Mila, config
-from mila.logging import LOGGER, logging
+from mila.logging import LOGGER
 
 CONTEXT_LIMIT = 20
 
@@ -16,33 +16,29 @@ CONTEXT_LIMIT = 20
 class MilaBot(discord.Client):
     """Implement a Discord bot for interacting with Mila."""
 
-    def __init__(self, mila: Mila, logger: logging.Logger, *args, **kwargs):
+    def __init__(self, mila: Mila, *args, **kwargs):
         """Initialize MilaBot."""
         super().__init__(*args, **kwargs)
         self._mila = mila
-        self._logger = logger
-        self._queries = {}
+        self._threads = {}
 
     @tasks.loop(seconds=1)
     async def tick(self) -> None:
-        """Update all threads."""
-        await self._check_queries()
-
-    async def _check_queries(self) -> None:
         """Check for updates."""
-        for task_id in list(self._queries.keys()):
-            if await self._mila.check_completion(task_id):
-                response = await self._mila.get_response(task_id)
-                await self._queries[task_id].edit(content=response)
-                self._queries.pop(task_id)
+        for thread_id in list(self._threads.keys()):
+            if await self._mila.check_completion(thread_id):
+                response = await self._mila.get_response(thread_id)
+                await self._threads[thread_id].edit(content=response)
+                self._threads.pop(thread_id)
 
     async def _get_context(self, message: discord.Message):
         """Pull the message history and format it for Mila."""
-        context = [
-            f"{msg.author.name}: {msg.content}"
-            async for msg in message.channel.history(limit=CONTEXT_LIMIT)
-        ][::-1]
-        chat_context = "> " + "\n> ".join(context)
+        chat_context = "\n".join(
+            [
+                f"> {msg.author.name}: {msg.content}"
+                async for msg in message.channel.history(limit=CONTEXT_LIMIT)
+            ][::-1]
+        )
         if message.guild:
             context = f"You in the {message.guild.name} Discord server. "
         else:
@@ -65,18 +61,18 @@ class MilaBot(discord.Client):
             self.user.mentioned_in(message)
             or message.channel.type == discord.ChannelType.private
         ):
-            task_id = await self._mila.handle_message(
+            thread_id = await self._mila.handle_message(
                 author=message.author.id,
                 name=message.author.name,
                 query=await self._sub_usernames(message.content),
                 context=await self._get_context(message),
             )
             response = await message.reply("_Thinking..._")
-            self._queries[task_id] = response
+            self._threads[thread_id] = response
 
     async def on_ready(self) -> None:
         """Log a message when the bot is ready."""
-        self._logger.info("Logged in as %s.", self.user)
+        LOGGER.info("Logged in as %s.", self.user)
 
     async def setup_hook(self) -> None:
         """Set up the bot's heartbeat."""
@@ -88,10 +84,9 @@ def main():
     intents = discord.Intents.default()
     intents.members = True
     intents.message_content = True
-    mila = Mila(logger=LOGGER)
+    mila = Mila()
     bot = MilaBot(
         mila=mila,
-        logger=LOGGER,
         description=config.DESCRIPTION,
         intents=intents,
     )
