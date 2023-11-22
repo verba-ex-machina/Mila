@@ -7,23 +7,10 @@ import json
 import openai
 
 from mila import config
+from mila.assistants import Assistant
 from mila.logging import logging
 from mila.prompts import PROMPTS
 from mila.tools import TOOLS
-
-
-def assistant_hash() -> str:
-    """Get the hash of the current assistant."""
-    return hashlib.sha256(
-        json.dumps(
-            {
-                "instructions": PROMPTS["system"],
-                "tools": TOOLS.definitions,
-                "model": config.MODEL,
-                "version": config.VERSION,
-            }
-        ).encode("utf-8")
-    ).hexdigest()
 
 
 class Mila:
@@ -33,44 +20,12 @@ class Mila:
         """Initialize Mila."""
         self._llm = openai.AsyncOpenAI()
         self._logger = logger
-        self._assistant = None
+        self._assistant = Assistant(llm=self._llm, logger=self._logger)
         self._thread_ids = {}
         # Mila is async, and can handle multiple threads concurrently,
         # but each thread can only handle one run at a time. (Thanks, OpenAI.)
         self._thread_locks = {}
         self._runs = {}
-
-    async def _spawn_assistant(self) -> openai.types.beta.Assistant:
-        """Link or spawn an assistant for the bot."""
-        assistants = await self._llm.beta.assistants.list(limit=100)
-        for assistant in assistants.data:
-            if assistant.name == config.NAME:
-                self._logger.info("Assistant found.")
-                if (
-                    "hash" not in assistant.metadata.keys()
-                    or assistant.metadata["hash"] != assistant_hash()
-                ):
-                    await self._llm.beta.assistants.update(
-                        assistant.id,
-                        instructions=PROMPTS["system"],
-                        tools=TOOLS.definitions,
-                        model=config.MODEL,
-                        metadata={
-                            "hash": assistant_hash(),
-                        },
-                    )
-                    self._logger.info("Assistant updated.")
-                return assistant
-        self._logger.info("No assistants found. New assistant spawned.")
-        return await self._llm.beta.assistants.create(
-            instructions=PROMPTS["system"],
-            name=config.NAME,
-            model=config.MODEL,
-            tools=TOOLS.definitions,
-            metadata={
-                "hash": assistant_hash(),
-            },
-        )
 
     async def _spawn_thread(self, author: str, name: str):
         """Spawn a new thread for the bot."""
@@ -174,8 +129,6 @@ class Mila:
             name,
             query,
         )
-        if not self._assistant:
-            self._assistant = await self._spawn_assistant()
         if author not in self._thread_ids:
             await self._spawn_thread(author, name)
         thread_id = self._thread_ids[author]
@@ -195,7 +148,7 @@ class Mila:
         )
         run = await self._llm.beta.threads.runs.create(
             thread_id=thread_id,
-            assistant_id=self._assistant.id,
+            assistant_id=await self._assistant.id(),
         )
         self._runs[run.id] = thread_id
         return run.id
