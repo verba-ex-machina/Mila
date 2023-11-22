@@ -1,7 +1,7 @@
 """Provide prompts for Mila."""
 
 
-from mila.constants import DESCRIPTION, PROMPT_PATH
+from mila.config import DESCRIPTION, NAME, PROMPT_PATH
 
 
 class Prompts:
@@ -10,6 +10,7 @@ class Prompts:
     _subs = {
         # Replace values in prompt files on-the-fly.
         "DESCRIPTION": DESCRIPTION,
+        "NAME": NAME,
     }
 
     def _make_subs(self, content: str) -> str:

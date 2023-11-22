@@ -6,6 +6,6 @@ Here's the incoming query, related to the above context:
 
 > {query}
 
-Provide your response as {DESCRIPTION}, using the tools provided to solve the problem.
+Provide your response as {NAME}, using the tools provided to solve the problem.
 
 If the provided tools are inadequate to carry out the user's request, use the `suggest_feature` function to expand the toolset.
