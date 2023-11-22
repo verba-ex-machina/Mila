@@ -19,6 +19,7 @@ def assistant_hash() -> str:
             {
                 "instructions": PROMPTS["system"],
                 "tools": TOOLS.definitions,
+                "model": config.MODEL,
                 "version": config.VERSION,
             }
         ).encode("utf-8")
@@ -45,10 +46,12 @@ class Mila:
         for assistant in assistants.data:
             if assistant.name == config.NAME:
                 self._logger.info("Assistant found.")
-                if assistant.metadata["hash"] != assistant_hash():
-                    await self._assistant.update(
+                if "hash" not in assistant.metadata.keys() or assistant.metadata["hash"] != assistant_hash():
+                    await self._llm.beta.assistants.update(
+                        assistant.id,
                         instructions=PROMPTS["system"],
                         tools=TOOLS.definitions,
+                        model=config.MODEL,
                         metadata={
                             "hash": assistant_hash(),
                         },
@@ -105,7 +108,7 @@ class Mila:
                 name = tool_call.function.name
                 found = False
                 for tool in TOOLS.definitions:
-                    if tool["name"] == name:
+                    if tool["function"]["name"] == name:
                         found = True
                         function = TOOLS.get(name)
                         if function:
@@ -169,7 +172,7 @@ class Mila:
             query,
         )
         if not self._assistant:
-            await self._spawn_assistant()
+            self._assistant = await self._spawn_assistant()
         if author not in self._thread_ids:
             await self._spawn_thread(author, name)
         thread_id = self._thread_ids[author]
