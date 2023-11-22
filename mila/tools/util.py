@@ -45,7 +45,7 @@ suggest_feature.properties = {
     },
     "implementation": {
         "type": "string",
-        "description": "The proposed feature implementation, in plain English.",
+        "description": "The proposed feature implementation.",
     },
 }
 suggest_feature.required = ["feature", "category", "implementation"]
