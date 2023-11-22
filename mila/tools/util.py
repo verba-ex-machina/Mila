@@ -1,6 +1,6 @@
 """Provide a suite of utility tools."""
 
-from lib.logging import LOGGER
+from mila.logging import LOGGER
 
 
 async def get_horoscope(star_sign: str) -> str:
@@ -25,10 +25,13 @@ async def suggest_feature(
 ) -> str:
     """Suggest a feature to expand Mila's capabilities."""
     LOGGER.info("Function called: suggest_feature")
-    LOGGER.info("- Feature: %s", feature)
-    LOGGER.info("- Category: %s", category)
-    LOGGER.info("- Implementation: %s", implementation)
-    return f"Feature suggestion received: {feature} ({category})."
+    LOGGER.info("  - Feature: %s", feature)
+    LOGGER.info("  - Category: %s", category)
+    LOGGER.info("  - Implementation: %s", implementation)
+    return (
+        f"Your proposal for `{feature}` has been recorded. "
+        + "We appreciate your suggestion!"
+    )
 
 
 suggest_feature.properties = {

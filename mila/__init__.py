@@ -5,28 +5,16 @@ import json
 
 from openai import AsyncOpenAI
 
-from lib.logging import logging
-from mila.constants import DESCRIPTION, MODEL, NAME
+from mila import config
+from mila.logging import logging
 from mila.prompts import PROMPTS
 from mila.tools import TOOLS
 
 LLM = AsyncOpenAI()
 
 
-def make_subs(prompt: str, query: str, context: str):
-    """Make substitutions for the query and context."""
-    sub_dict = {
-        "query": query,
-        "context": context,
-    }
-    return prompt.format(**sub_dict)
-
-
 class Mila:
     """Represent the Mila assistant."""
-
-    description = DESCRIPTION
-    _tool_definitions = TOOLS.definitions
 
     def __init__(self, logger: logging.Logger):
         """Initialize Mila."""
@@ -43,9 +31,9 @@ class Mila:
         """Spawn a new assistant for the bot."""
         assistant = await self._llm.beta.assistants.create(
             instructions=PROMPTS["system"],
-            name=NAME,
-            model=MODEL,
-            tools=self._tools,
+            name=config.NAME,
+            model=config.MODEL,
+            tools=TOOLS.definitions,
             metadata={},
         )
         self._assistant_id = assistant.id
@@ -61,25 +49,6 @@ class Mila:
         )
         self._thread_ids[author] = thread.id
         self._thread_locks[thread.id] = False
-
-    @property
-    def _tools(self) -> list:
-        """Return an OpenAI-formatted list of tool definitions."""
-        return [
-            {
-                "type": "function",
-                "function": {
-                    "name": tool["name"],
-                    "description": tool["description"],
-                    "parameters": {
-                        "type": "object",
-                        "properties": tool["properties"],
-                        "required": tool["required"],
-                    },
-                },
-            }
-            for tool in TOOLS.definitions
-        ]
 
     async def check_completion(self, run_id: str) -> bool:
         """Check whether a query run is complete."""
@@ -110,8 +79,11 @@ class Mila:
                 for tool in TOOLS.definitions:
                     if tool["name"] == name:
                         found = True
-                        if tool["function"]:
-                            response = await tool["function"](**arguments)
+                        function = TOOLS.get(name)
+                        if function:
+                            response = await function(
+                                **arguments,
+                            )
                             tool_call_id = tool_call.id
                             tool_outputs.append(
                                 {
@@ -179,7 +151,13 @@ class Mila:
         await self._llm.beta.threads.messages.create(
             thread_id=thread_id,
             role="user",
-            content=make_subs(PROMPTS["user"], query, context),
+            content=PROMPTS.format(
+                name="user",
+                sub_dict={
+                    "context": context,
+                    "query": query,
+                },
+            ),
         )
         run = await self._llm.beta.threads.runs.create(
             thread_id=thread_id,

@@ -2,6 +2,11 @@
 
 from mila.tools import util
 
+_TOOLKITS = [
+    # Add toolkit libraries here.
+    util,
+]
+
 
 class Tool:
     """Represent a single tool in Mila's toolset."""
@@ -14,11 +19,16 @@ class Tool:
     def definition(self) -> dict:
         """Get the tool definition."""
         return {
-            "name": self._tool.__name__,
-            "function": self._tool,
-            "description": self._tool.__doc__,
-            "properties": self._tool.properties,
-            "required": self._tool.required,
+            "type": "function",
+            "function": {
+                "name": self._tool.__name__,
+                "description": self._tool.__doc__,
+                "parameters": {
+                    "type": "object",
+                    "properties": self._tool.properties,
+                    "required": self._tool.required,
+                },
+            },
         }
 
     @property
@@ -32,22 +42,27 @@ class Tools:
 
     def __init__(self, toolkits: list):
         """Initialize the toolset."""
-        self._tools = []
-        for toolkit in toolkits:
-            contents = dir(toolkit)
-            for item in contents:
-                element = getattr(toolkit, item)
-                if callable(element) and hasattr(element, "properties"):
-                    self._tools.append(Tool(element))
+        self._tools = [
+            Tool(getattr(toolkit, item))
+            for toolkit in toolkits
+            for item in dir(toolkit)
+            if callable(getattr(toolkit, item))
+            and hasattr(getattr(toolkit, item), "properties")
+        ]
 
     @property
     def definitions(self) -> list:
         """Get the tool definitions."""
         return [tool.definition for tool in self._tools]
 
+    def get(self, name: str) -> callable:
+        """Get a tool by name."""
+        for tool in self._tools:
+            if tool.definition["function"]["name"] == name:
+                return tool.function
+        raise ValueError(f"No tool named {name} exists.")
+
 
 TOOLS = Tools(
-    [
-        util,
-    ]
+    _TOOLKITS,
 )

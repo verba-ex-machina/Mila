@@ -7,8 +7,8 @@ import os
 import discord
 from discord.ext import tasks
 
-from lib.logging import LOGGER, logging
-from mila import Mila
+from mila import Mila, config
+from mila.logging import LOGGER, logging
 
 CONTEXT_LIMIT = 20
 
@@ -92,10 +92,14 @@ def main():
     bot = MilaBot(
         mila=mila,
         logger=LOGGER,
-        description=mila.description,
+        description=config.DESCRIPTION,
         intents=intents,
     )
-    bot.run(os.getenv("DISCORD_TOKEN"), log_handler=LOGGER.handlers[1])
+    bot.run(
+        os.getenv("DISCORD_TOKEN"),
+        log_handler=LOGGER.handlers[1],
+        log_formatter=LOGGER.handlers[1].formatter,
+    )
 
 
 if __name__ == "__main__":
