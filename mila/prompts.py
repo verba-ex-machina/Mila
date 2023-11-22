@@ -21,16 +21,5 @@ class Prompts:
         """Get a prompt by name and format it."""
         return self[name] if not sub_dict else self[name].format(**sub_dict)
 
-    @property
-    def as_list(self) -> list:
-        """Return the prompts formatted as a list."""
-        return [
-            {"role": name, "content": self[name]}
-            for name in [
-                "system",
-                "user",
-            ]
-        ]
-
 
 PROMPTS = Prompts()
