@@ -34,11 +34,12 @@ class MilaBot(discord.Client):
 
     async def _get_context(self, message: discord.Message):
         """Pull the message history and format it for Mila."""
-        context = [
-            f"{msg.author.name}: {msg.content}"
-            async for msg in message.channel.history(limit=CONTEXT_LIMIT)
-        ][::-1]
-        chat_context = "> " + "\n> ".join(context)
+        chat_context = "\n".join(
+            [
+                f"> {msg.author.name}: {msg.content}"
+                async for msg in message.channel.history(limit=CONTEXT_LIMIT)
+            ][::-1]
+        )
         if message.guild:
             context = f"You in the {message.guild.name} Discord server. "
         else:
