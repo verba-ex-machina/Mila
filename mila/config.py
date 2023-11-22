@@ -3,7 +3,7 @@
 import logging
 
 NAME = "Mila"
-DESCRIPTION = f"the Mindful, Interactive Lifestyle Assistant"
+DESCRIPTION = "the Mindful, Interactive Lifestyle Assistant"
 LOG_LEVEL = logging.DEBUG
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 MODEL = "gpt-3.5-turbo-16k"

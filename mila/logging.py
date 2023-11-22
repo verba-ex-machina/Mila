@@ -1,6 +1,7 @@
 """MilaBot logging module."""
 
 import logging
+
 from mila.config import LOG_FORMAT, LOG_LEVEL, NAME
 
 # Create a logger for the Mila bot, used by both the Discord and AI modules.

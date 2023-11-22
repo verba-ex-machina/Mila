@@ -5,8 +5,8 @@ import json
 
 from openai import AsyncOpenAI
 
+from mila import config
 from mila.logging import logging
-from mila.config import DESCRIPTION, MODEL, NAME
 from mila.prompts import PROMPTS
 from mila.tools import TOOLS
 
@@ -31,8 +31,8 @@ class Mila:
         """Spawn a new assistant for the bot."""
         assistant = await self._llm.beta.assistants.create(
             instructions=PROMPTS["system"],
-            name=NAME,
-            model=MODEL,
+            name=config.NAME,
+            model=config.MODEL,
             tools=TOOLS.definitions,
             metadata={},
         )
@@ -49,11 +49,6 @@ class Mila:
         )
         self._thread_ids[author] = thread.id
         self._thread_locks[thread.id] = False
-    
-    @property
-    def description(self) -> str:
-        """Return Mila's description."""
-        return f"{NAME}: {DESCRIPTION}"
 
     async def check_completion(self, run_id: str) -> bool:
         """Check whether a query run is complete."""
@@ -159,8 +154,8 @@ class Mila:
             content=PROMPTS.format(
                 name="user",
                 sub_dict={
-                    "query": query,
                     "context": context,
+                    "query": query,
                 },
             ),
         )
