@@ -2,16 +2,13 @@
 
 import openai
 
-from mila.logging import logging
-
 
 class Thread:
     """Provide an abstraction for the OpenAI Threads API."""
 
-    def __init__(self, llm: openai.OpenAI, logger: logging.Logger):
+    def __init__(self, llm: openai.OpenAI):
         """Initialize the Thread."""
         self._llm = llm
-        self._logger = logger
         self._thread = None
 
     async def _spawn_thread(self):
@@ -19,7 +16,6 @@ class Thread:
         self._thread = await self._llm.beta.threads.create(
             messages=[],
         )
-        self._logger.info("Spawned thread %s.", self._thread.id)
 
     async def id(self) -> str:
         """Get the ID of the thread."""

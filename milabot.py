@@ -21,16 +21,16 @@ class MilaBot(discord.Client):
         super().__init__(*args, **kwargs)
         self._mila = mila
         self._logger = logger
-        self._queries = {}
+        self._threads = {}
 
     @tasks.loop(seconds=1)
     async def tick(self) -> None:
         """Check for updates."""
-        for task_id in list(self._queries.keys()):
-            if await self._mila.check_completion(task_id):
-                response = await self._mila.get_response(task_id)
-                await self._queries[task_id].edit(content=response)
-                self._queries.pop(task_id)
+        for thread_id in list(self._threads.keys()):
+            if await self._mila.check_completion(thread_id):
+                response = await self._mila.get_response(thread_id)
+                await self._threads[thread_id].edit(content=response)
+                self._threads.pop(thread_id)
 
     async def _get_context(self, message: discord.Message):
         """Pull the message history and format it for Mila."""
@@ -62,14 +62,14 @@ class MilaBot(discord.Client):
             self.user.mentioned_in(message)
             or message.channel.type == discord.ChannelType.private
         ):
-            task_id = await self._mila.handle_message(
+            thread_id = await self._mila.handle_message(
                 author=message.author.id,
                 name=message.author.name,
                 query=await self._sub_usernames(message.content),
                 context=await self._get_context(message),
             )
             response = await message.reply("_Thinking..._")
-            self._queries[task_id] = response
+            self._threads[thread_id] = response
 
     async def on_ready(self) -> None:
         """Log a message when the bot is ready."""
