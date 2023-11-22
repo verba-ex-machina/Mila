@@ -1,16 +1,27 @@
 """Provide the Mila library."""
 
 import asyncio
+import hashlib
 import json
 
-from openai import AsyncOpenAI
+import openai
 
 from mila import config
 from mila.logging import logging
 from mila.prompts import PROMPTS
 from mila.tools import TOOLS
 
-LLM = AsyncOpenAI()
+
+def get_hash() -> str:
+    """Get the hash of the current assistant."""
+    return hashlib.sha256(
+        json.dumps(
+            {
+                "instructions": PROMPTS["system"],
+                "tools": TOOLS.definitions,
+            }
+        ).encode("utf-8")
+    ).hexdigest()
 
 
 class Mila:
@@ -18,7 +29,7 @@ class Mila:
 
     def __init__(self, logger: logging.Logger):
         """Initialize Mila."""
-        self._llm = AsyncOpenAI()
+        self._llm = openai.AsyncOpenAI()
         self._logger = logger
         self._assistant = None
         self._thread_ids = {}
@@ -27,14 +38,35 @@ class Mila:
         self._thread_locks = {}
         self._runs = {}
 
-    async def _spawn_assistant(self) -> None:
-        """Spawn a new assistant for the bot."""
-        self._assistant = await self._llm.beta.assistants.create(
+    async def _spawn_assistant(self) -> openai.types.beta.Assistant:
+        """Link or spawn an assistant for the bot."""
+        assistants = await self._llm.beta.assistants.list(limit=100)
+        for assistant in assistants.data:
+            if assistant.name == config.NAME:
+                self._logger.info("Assistant found.")
+                if (
+                    assistant.metadata["version"] != config.VERSION
+                    or assistant.metadata["hash"] != get_hash()
+                ):
+                    await self._assistant.update(
+                        instructions=PROMPTS["system"],
+                        tools=TOOLS.definitions,
+                        metadata={
+                            "version": config.VERSION,
+                            "hash": get_hash(),
+                        },
+                    )
+                    self._logger.info("Assistant updated.")
+                return assistant
+        self._logger.info("No assistants found. New assistant spawned.")
+        return await self._llm.beta.assistants.create(
             instructions=PROMPTS["system"],
             name=config.NAME,
             model=config.MODEL,
             tools=TOOLS.definitions,
-            metadata={},
+            metadata={
+                "version": config.VERSION,
+            },
         )
 
     async def _spawn_thread(self, author: str, name: str):
