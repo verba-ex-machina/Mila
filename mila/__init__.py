@@ -20,7 +20,7 @@ class Mila:
         """Initialize Mila."""
         self._llm = AsyncOpenAI()
         self._logger = logger
-        self._assistant_id = None
+        self._assistant = None
         self._thread_ids = {}
         # Mila is async, and can handle multiple threads concurrently,
         # but each thread can only handle one run at a time. (Thanks, OpenAI.)
@@ -29,14 +29,13 @@ class Mila:
 
     async def _spawn_assistant(self) -> None:
         """Spawn a new assistant for the bot."""
-        assistant = await self._llm.beta.assistants.create(
+        self._assistant = await self._llm.beta.assistants.create(
             instructions=PROMPTS["system"],
             name=config.NAME,
             model=config.MODEL,
             tools=TOOLS.definitions,
             metadata={},
         )
-        self._assistant_id = assistant.id
 
     async def _spawn_thread(self, author: str, name: str):
         """Spawn a new thread for the bot."""
@@ -140,7 +139,7 @@ class Mila:
             name,
             query,
         )
-        if not self._assistant_id:
+        if not self._assistant:
             await self._spawn_assistant()
         if author not in self._thread_ids:
             await self._spawn_thread(author, name)
@@ -161,7 +160,7 @@ class Mila:
         )
         run = await self._llm.beta.threads.runs.create(
             thread_id=thread_id,
-            assistant_id=self._assistant_id,
+            assistant_id=self._assistant.id,
         )
         self._runs[run.id] = thread_id
         return run.id
