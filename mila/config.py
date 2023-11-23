@@ -3,7 +3,7 @@
 import logging
 
 # Metadata
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 # Identity
 NAME = "Mila"
