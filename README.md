@@ -64,6 +64,8 @@ Create an `.envrc` file in the root directory with the following content, replac
 export DISCORD_TOKEN="your_discord_token"
 export OPENAI_API_KEY="your_openai_api_key"
 export OPENWEATHERMAP_API_KEY="your_openweathermap_api_key"
+export IMGFLIP_USERNAME="your_imgflip_username"
+export IMGFLIP_PASSWORD="your_imgflip_password"
 source venv/bin/activate
 ```
 
