@@ -46,7 +46,7 @@ get_meme_templates.required = []
 
 
 async def get_meme(template_id: int, text0: str, text1: str) -> str:
-    """Get a meme from a template. (Only use 2-box memes.)"""
+    """Get a meme from a template. Please make it funny."""
     # Make a POST request to the Imgflip API.
     username = os.getenv("IMGFLIP_USERNAME")
     password = os.getenv("IMGFLIP_PASSWORD")
