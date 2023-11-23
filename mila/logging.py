@@ -1,6 +1,7 @@
 """MilaBot logging module."""
 
-import logging, os
+import logging
+import os
 
 from mila.config import LOG_FORMAT, LOG_LEVEL, NAME
 
