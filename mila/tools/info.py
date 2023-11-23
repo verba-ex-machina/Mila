@@ -8,7 +8,6 @@ import requests
 from mila.logging import LOGGER
 
 
-# OpenWeatherMap API
 async def get_weather(zipcode: str) -> str:
     """Get the weather for a given location in the USA."""
     apikey = os.getenv("OPENWEATHERMAP_API_KEY")
