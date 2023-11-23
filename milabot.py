@@ -30,10 +30,10 @@ class MilaBot(discord.Client):
                 response = await self._mila.get_response(thread_id)
                 try:
                     await self._threads[thread_id].edit(content=response)
-                    self._threads.pop(thread_id)
                 except discord.errors.HTTPException as err:
                     LOGGER.error("Failed to edit message: %s", response)
                     await self._threads[thread_id].edit(content=str(err))
+                self._threads.pop(thread_id)
 
     async def _get_context(self, message: discord.Message):
         """Pull the message history and format it for Mila."""
