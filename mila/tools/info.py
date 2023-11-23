@@ -3,6 +3,8 @@
 import json
 import os
 
+from bs4 import BeautifulSoup
+
 import aiohttp
 import serpapi
 
@@ -46,7 +48,9 @@ async def scrape_url(url: str) -> str:
     LOGGER.info("Function called: scrape_url(url='%s')", url)
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=5) as response:
-            return await response.text()
+            content = await response.text()
+            soup = BeautifulSoup(content, "html.parser")
+            return soup.get_text()
 
 
 scrape_url.properties = {
