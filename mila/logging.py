@@ -1,12 +1,16 @@
 """MilaBot logging module."""
 
-import logging
+import logging, os
 
 from mila.config import LOG_FORMAT, LOG_LEVEL, NAME
 
 # Create a logger for the Mila bot, used by both the Discord and AI modules.
 LOGGER = logging.getLogger(NAME)
 LOGGER.setLevel(LOG_LEVEL)
+
+# Ensure the logs directory exists.
+if not os.path.exists("logs"):
+    os.mkdir("logs")
 
 # Create a file handler for the logger.
 fh = logging.FileHandler(f"logs/{NAME}.log")
