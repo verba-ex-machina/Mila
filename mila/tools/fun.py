@@ -1,7 +1,7 @@
 """Provide a suite of fun tools."""
 
-import json
 import os
+import random
 
 import aiohttp
 
@@ -40,10 +40,19 @@ async def get_meme_templates() -> str:
     async with aiohttp.ClientSession() as session:
         async with session.get(base_url + path, timeout=5) as response:
             data = await response.json()
-            memes = data["data"]["memes"]
-            memes = [meme for meme in memes if meme["box_count"] == 2]
-            data["data"]["memes"] = memes
-            return json.dumps(data)
+            # There are far too many meme templates; this saves tokens.
+            memes = random.sample(
+                [
+                    meme
+                    for meme in data["data"]["memes"]
+                    if meme["box_count"] == 2
+                ],
+                5,
+            )
+            return (
+                "Here are five possible templates, "
+                f"selected randomly:\n\n{memes}"
+            )
 
 
 get_meme_templates.properties = {}
@@ -74,7 +83,9 @@ async def get_meme(template_id: int, text0: str, text1: str) -> str:
         async with session.post(
             base_url + path, data=params, timeout=5
         ) as response:
-            return await response.text()
+            meme = await response.json()
+            response = f"Here's your meme: {meme['data']['url']}"
+    return response
 
 
 get_meme.properties = {
