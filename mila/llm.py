@@ -1,1 +1,5 @@
-"""Provide the LLM for Mila."""
+"""Provide access to the OpenAI LLM."""
+
+import openai
+
+LLM = openai.AsyncOpenAI()
