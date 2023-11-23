@@ -55,6 +55,7 @@ Obtain and securely store API keys.
 2. [Register a Discord bot and get its token](https://www.google.com/search?q=how+to+register+a+new+discord+bot+and+get+its+token).
 3. [Add the bot to your server](https://discordjs.guide/preparations/adding-your-bot-to-servers.html#bot-invite-links).
 4. Get an [OpenWeatherAPI](https://openweathermap.org/) API key (free with a basic account).
+5. Get an [ImgFlip](https://imgflip.com/) account for meme generation.
 
 ### Configuring Environment Variables
 Create an `.envrc` file in the root directory with the following content, replacing placeholders with actual API keys.
