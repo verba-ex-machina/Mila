@@ -28,11 +28,21 @@ class MilaBot(discord.Client):
         for thread_id in list(self._threads.keys()):
             if await self._mila.check_completion(thread_id):
                 response = await self._mila.get_response(thread_id)
-                try:
+                if len(response) > 2000:
+                    # Response is too long for Discord. Split it into chunks,
+                    # but avoid splitting in the middle of a line.
+                    message = self._threads[thread_id]
+                    chunks = response.split("\n")
+                    response = ""
+                    for chunk in chunks:
+                        if len(response) + len(chunk) > 2000:
+                            await message.edit(content=response)
+                            message = await message.reply("_Responding..._")
+                            response = "(continued)\n"
+                        response += chunk + "\n"
+                    await message.edit(content=response)
+                else:
                     await self._threads[thread_id].edit(content=response)
-                except discord.errors.HTTPException as err:
-                    LOGGER.error("Failed to edit message: %s", response)
-                    await self._threads[thread_id].edit(content=str(err))
                 self._threads.pop(thread_id)
 
     async def _get_context(self, message: discord.Message):
