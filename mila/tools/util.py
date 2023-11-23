@@ -11,9 +11,7 @@ async def suggest_feature(
     LOGGER.info("Function called: suggest_feature")
     LOGGER.info("  - Category: %s", category)
     LOGGER.info("  - Feature: %s", feature)
-    return (
-        f"Your feature proposal has been recorded. Thank you!"
-    )
+    return "Your feature proposal has been recorded. Thank you!"
 
 
 suggest_feature.properties = {
@@ -37,9 +35,7 @@ async def submit_bug(
     LOGGER.info("Function called: submit_bug")
     LOGGER.info("  - Tool name: %s", tool_name)
     LOGGER.info("  - Report: %s", report)
-    return (
-        f"Your bug report has been recorded. Thank you!"
-    )
+    return "Your bug report has been recorded. Thank you!"
 
 
 submit_bug.properties = {

@@ -3,10 +3,9 @@
 import json
 import os
 
-from bs4 import BeautifulSoup
-
 import aiohttp
 import serpapi
+from bs4 import BeautifulSoup
 
 from mila.logging import LOGGER
 
@@ -86,7 +85,7 @@ async def search_duckduckgo(query: str) -> str:
         }
     )
     results = client.get_dict()
-    top_results = results["organic_results"][:10] # top 10 results
+    top_results = results["organic_results"][:10]  # top 10 results
     formatted_results = [
         # Compress to essentials.
         {
