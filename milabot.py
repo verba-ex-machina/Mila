@@ -10,7 +10,7 @@ from discord.ext import tasks
 from mila import Mila, config
 from mila.logging import LOGGER
 
-CONTEXT_LIMIT = 20
+CONTEXT_LIMIT = 5 # How many previous Discord messages to include in context.
 
 
 class MilaBot(discord.Client):

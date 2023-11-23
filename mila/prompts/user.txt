@@ -1,14 +1,9 @@
-A new query just arrived. Here's the context:
+New request:
 
+Context:
 {context}
 
-Here's the incoming query, related to the above context:
-
+Query:
 > {query}
 
-Provide your response as {name}, using the tools provided to solve the problem.
-
-- If the provided tools are inadequate to carry out the user's request, use the `suggest_feature` function to expand the toolset.
-    - Caveat: If a tool fails, do not submit a feature suggestion; submit a bug report.
-- If the provided tools are unnecessary, simply provide your final response.
-- Do not suggest users call specific tools; it is your job to decide which tools to use, and how they should be called.
+Respond with or without using tools. If tools can make your answer better or faster, use them. If not, just provide your answer. If you need more tools, suggest them. Report any tool problems. Choose the best approach for each query. Prioritize efficiency; use the minimum tools necessary to provide a good answer.

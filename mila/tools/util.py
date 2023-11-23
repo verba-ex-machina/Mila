@@ -4,78 +4,48 @@ from mila.logging import LOGGER
 
 
 async def suggest_feature(
-    feature: str,
     category: str,
-    implementation: str,
+    feature: str,
 ) -> str:
     """Suggest a feature to expand Mila's capabilities."""
     LOGGER.info("Function called: suggest_feature")
-    LOGGER.info("  - Feature: %s", feature)
     LOGGER.info("  - Category: %s", category)
-    LOGGER.info("  - Implementation: %s", implementation)
-    return (
-        f"Your proposal for `{feature}` has been recorded. "
-        + "We appreciate your suggestion!"
-    )
+    LOGGER.info("  - Feature: %s", feature)
+    return "Your feature proposal has been recorded. Thank you!"
 
 
 suggest_feature.properties = {
-    "feature": {
-        "type": "string",
-        "description": "The function name for the suggested feature.",
-    },
     "category": {
         "type": "string",
         "description": "A one-word category for the feature.",
     },
-    "implementation": {
+    "feature": {
         "type": "string",
-        "description": "The proposed feature implementation.",
+        "description": "The function name for the suggested feature.",
     },
 }
 suggest_feature.required = ["feature", "category", "implementation"]
 
 
 async def submit_bug(
-    bug: str,
-    category: str,
-    steps: str,
-    expected: str,
-    actual: str,
+    tool_name: str,
+    report: str,
 ) -> str:
     """Submit a bug report to improve Mila's performance."""
     LOGGER.info("Function called: submit_bug")
-    LOGGER.info("  - Bug: %s", bug)
-    LOGGER.info("  - Category: %s", category)
-    LOGGER.info("  - Steps: %s", steps)
-    LOGGER.info("  - Expected: %s", expected)
-    LOGGER.info("  - Actual: %s", actual)
-    return (
-        f"Your report for `{bug}` has been recorded. "
-        + "We appreciate your feedback!"
-    )
+    LOGGER.info("  - Tool name: %s", tool_name)
+    LOGGER.info("  - Report: %s", report)
+    return "Your bug report has been recorded. Thank you!"
 
 
 submit_bug.properties = {
-    "bug": {
+    "tool_name": {
         "type": "string",
-        "description": "The function name for the reported bug.",
+        "description": "The tool that caused the bug.",
     },
-    "category": {
+    "report": {
         "type": "string",
-        "description": "A one-word category for the bug.",
-    },
-    "steps": {
-        "type": "string",
-        "description": "The steps to reproduce the bug.",
-    },
-    "expected": {
-        "type": "string",
-        "description": "The expected behavior.",
-    },
-    "actual": {
-        "type": "string",
-        "description": "The actual behavior.",
+        "description": "A description of the bug.",
     },
 }
-submit_bug.required = ["bug", "category", "steps", "expected", "actual"]
+submit_bug.required = ["tool_name", "report"]

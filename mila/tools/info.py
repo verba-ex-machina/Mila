@@ -5,6 +5,7 @@ import os
 
 import aiohttp
 import serpapi
+from bs4 import BeautifulSoup
 
 from mila.logging import LOGGER
 
@@ -46,7 +47,9 @@ async def scrape_url(url: str) -> str:
     LOGGER.info("Function called: scrape_url(url='%s')", url)
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=5) as response:
-            return await response.text()
+            content = await response.text()
+            soup = BeautifulSoup(content, "html.parser")
+            return soup.get_text()
 
 
 scrape_url.properties = {
@@ -59,7 +62,7 @@ scrape_url.required = ["url"]
 
 
 async def search_duckduckgo(query: str) -> str:
-    """Search DuckDuckGo for sites related to a given query."""
+    """Retrieve the top-10 DuckDuckGo results for a given query."""
     api_key = os.getenv("SERPAPI_API_KEY")
     if not api_key:
         err = (
@@ -81,7 +84,18 @@ async def search_duckduckgo(query: str) -> str:
             "api_key": api_key,
         }
     )
-    return json.dumps(client.get_dict())
+    results = client.get_dict()
+    top_results = results["organic_results"][:10]  # top 10 results
+    formatted_results = [
+        # Compress to essentials.
+        {
+            "title": result["title"],
+            "link": result["link"],
+            "snippet": result["snippet"],
+        }
+        for result in top_results
+    ]
+    return json.dumps(formatted_results)
 
 
 search_duckduckgo.properties = {
