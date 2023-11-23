@@ -56,16 +56,18 @@ Obtain and securely store API keys.
 3. [Add the bot to your server](https://discordjs.guide/preparations/adding-your-bot-to-servers.html#bot-invite-links).
 4. Get an [OpenWeatherAPI](https://openweathermap.org/) API key (free with a basic account).
 5. Get an [ImgFlip](https://imgflip.com/) account for meme generation.
+6. Get a [SerpApi](https://serpapi.com/) API key for search engine results.
 
 ### Configuring Environment Variables
 Create an `.envrc` file in the root directory with the following content, replacing placeholders with actual API keys.
 
 ```bash
 export DISCORD_TOKEN="your_discord_token"
-export OPENAI_API_KEY="your_openai_api_key"
-export OPENWEATHERMAP_API_KEY="your_openweathermap_api_key"
 export IMGFLIP_USERNAME="your_imgflip_username"
 export IMGFLIP_PASSWORD="your_imgflip_password"
+export OPENAI_API_KEY="your_openai_api_key"
+export OPENWEATHERMAP_API_KEY="your_openweathermap_api_key"
+export SERPAPI_API_KEY="your_serpapi_api_key"
 source venv/bin/activate
 ```
 
