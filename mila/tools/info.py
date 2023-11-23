@@ -3,7 +3,7 @@
 import json
 import os
 
-import requests
+import aiohttp
 
 from mila.logging import LOGGER
 
@@ -24,8 +24,10 @@ async def get_weather(zipcode: str) -> str:
     base_url = "https://api.openweathermap.org/data/2.5/forecast"
     base_url += f"?zip={zipcode},us&appid={apikey}&units=imperial"
     LOGGER.info("Function called: get_weather(zipcode='%s')", zipcode)
-    response = requests.get(base_url, timeout=5)
-    return json.dumps(response.json())
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(base_url, timeout=5) as response:
+            return await response.text()
 
 
 get_weather.properties = {
