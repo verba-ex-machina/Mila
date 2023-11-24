@@ -4,7 +4,20 @@
 ## Overview
 Mila is a Discord bot designed to interactively assist with lifestyle management using OpenAI's technologies.
 
+"Lifestyle Management" is a broad term that encompasses a variety of activities. What's your lifestyle? Customize Mila to fit your needs.
+
+At the moment, Mila can:
+
+- Search the 'net with DuckDuckGo.
+- Retrieve and parse websites.
+- Get live weather forecasts via OpenWeatherMap.
+- Generate memes via ImgFlip.
+- Check your horoscope.
+- And more!
+
 Mila can be expanded with additional functionality by adding new tools to `mila/tools/` and registering them in `mila/tools/__init__.py`.
+
+**REMEMBER:** Mila is an experiment. A fun pet project. It is not intended for production use. It connects to your OpenAI key, which is connected to your wallet. Use at your own risk.
 
 ## Initial Setup
 This guide is intended for macOS/Linux users.
