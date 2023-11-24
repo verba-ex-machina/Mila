@@ -10,7 +10,7 @@ NAME = "Mila"
 DESCRIPTION = "the Mindful, Interactive Lifestyle Assistant"
 
 # LLM Settings
-MODEL = "gpt-3.5-turbo-16k"
+MODEL = "gpt-3.5-turbo-1106"  # If unavailable, use "gpt-3.5-turbo-16k".
 PROMPT_PATH = "mila/prompts/"
 
 # Logging

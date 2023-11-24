@@ -11,6 +11,7 @@ from mila import Mila, config
 from mila.logging import LOGGER
 
 CONTEXT_LIMIT = 5  # How many previous Discord messages to include in context.
+TICK_TIME = 0.1  # How often to check for updates, in seconds.
 
 
 class MilaBot(discord.Client):
@@ -22,7 +23,7 @@ class MilaBot(discord.Client):
         self._mila = mila
         self._threads = {}
 
-    @tasks.loop(seconds=1)
+    @tasks.loop(seconds=TICK_TIME)
     async def tick(self) -> None:
         """Check for updates."""
         for thread_id in list(self._threads.keys()):
