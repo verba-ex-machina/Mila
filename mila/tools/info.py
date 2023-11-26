@@ -43,13 +43,21 @@ get_weather.required = ["zipcode"]
 
 
 async def scrape_url(url: str) -> str:
-    """Scrape a given URL for its content. Scrapes raw HTML."""
+    """Scrape a given URL for its text content."""
     LOGGER.info("Function called: scrape_url(url='%s')", url)
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, timeout=5) as response:
-            content = await response.text()
-            soup = BeautifulSoup(content, "html.parser")
-            return soup.get_text()
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=5) as response:
+                content = await response.text()
+                soup = BeautifulSoup(content, "html.parser")
+                return soup.get_text()
+    except aiohttp.ClientError as err:
+        LOGGER.error(err)
+        return json.dumps(
+            {
+                "error": err,
+            }
+        )
 
 
 scrape_url.properties = {
@@ -85,7 +93,17 @@ async def search_duckduckgo(query: str) -> str:
         }
     )
     results = client.get_dict()
-    top_results = results["organic_results"][:10]  # top 10 results
+    try:
+        top_results = results["organic_results"][:10]  # top 10 results
+    except KeyError:
+        err = "Trouble retrieving results from DuckDuckGo."
+        LOGGER.error("%s - %s", err, results)
+        return json.dumps(
+            {
+                "error": err,
+                "return_value": results,
+            }
+        )
     formatted_results = [
         # Compress to essentials.
         {

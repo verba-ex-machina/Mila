@@ -1,9 +1,9 @@
-New request:
+You have received a new request with the following context:
 
-Context:
 {context}
 
-Query:
+Here is the request:
+
 > {query}
 
-Respond with or without using tools. If tools can make your answer better or faster, use them. If not, just provide your answer. If you need more tools, suggest them. Report any tool problems. Choose the best approach for each query. Prioritize efficiency; use the minimum tools necessary to provide a good answer.
+Respond to the user's request. Use whatever tools are necessary to achieve this goal. If no tools are necessary, just provide your answer. If you need more tools, suggest them. If you encounter a bug with a tool, report it, and inform the user of the problem in your final response.
