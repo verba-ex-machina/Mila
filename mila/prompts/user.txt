@@ -6,4 +6,4 @@ Here is the request:
 
 > {query}
 
-Respond to the user's request. Use tools as necessary to achieve this goal. If no tools are necessary, just provide your answer. If you need more tools, suggest them. If you encounter a bug with a tool, report it.
+Respond to the user's request. Use whatever tools are necessary to achieve this goal. If no tools are necessary, just provide your answer. If you need more tools, suggest them. If you encounter a bug with a tool, report it, and inform the user of the problem in your final response.

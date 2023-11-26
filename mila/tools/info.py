@@ -43,13 +43,21 @@ get_weather.required = ["zipcode"]
 
 
 async def scrape_url(url: str) -> str:
-    """Scrape a given URL for its content. Scrapes raw HTML."""
+    """Scrape a given URL for its text content."""
     LOGGER.info("Function called: scrape_url(url='%s')", url)
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, timeout=5) as response:
-            content = await response.text()
-            soup = BeautifulSoup(content, "html.parser")
-            return soup.get_text()
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=5) as response:
+                content = await response.text()
+                soup = BeautifulSoup(content, "html.parser")
+                return soup.get_text()
+    except aiohttp.ClientError as err:
+        LOGGER.error(err)
+        return json.dumps(
+            {
+                "error": err,
+            }
+        )
 
 
 scrape_url.properties = {
