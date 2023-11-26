@@ -85,7 +85,17 @@ async def search_duckduckgo(query: str) -> str:
         }
     )
     results = client.get_dict()
-    top_results = results["organic_results"][:10]  # top 10 results
+    try:
+        top_results = results["organic_results"][:10]  # top 10 results
+    except KeyError:
+        err = "Trouble retrieving results from DuckDuckGo."
+        LOGGER.error("%s - %s", err, results)
+        return json.dumps(
+            {
+                "error": err,
+                "return_value": results,
+            }
+        )
     formatted_results = [
         # Compress to essentials.
         {
