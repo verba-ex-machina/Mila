@@ -81,7 +81,7 @@ export IMGFLIP_PASSWORD="your_imgflip_password"
 export OPENAI_API_KEY="your_openai_api_key"
 export OPENWEATHERMAP_API_KEY="your_openweathermap_api_key"
 export SERPAPI_API_KEY="your_serpapi_api_key"
-source venv/bin/activate
+layout python3
 ```
 
 **Important:** Do not commit the `.envrc` file to the repository or share it.
