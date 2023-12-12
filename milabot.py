@@ -6,7 +6,10 @@
 import os
 
 import discord
+import datetime
 from discord.ext import tasks
+import queue
+from mila import Mila
 
 TICK_TIME = 0.1  # How often to check for updates, in seconds.
 
@@ -17,28 +20,52 @@ class MilaBot(discord.Client):
     def __init__(self, *args, **kwargs):
         """Initialize MilaBot."""
         super().__init__(*args, **kwargs)
+        self._input_queue = queue.SimpleQueue()
+        self._tasks = {}
 
     @tasks.loop(seconds=TICK_TIME)
     async def tick(self) -> None:
         """Check for updates."""
-        # Ask Mila for any completed tasks.
-        # Collect the data from these tasks, including metadata.
-        # From the metadata, determine where to send the response.
-        # Send the response.
+        new_message = None
+        try:
+            new_message = self._input_queue.get_nowait()
+        except queue.Empty:
+            pass
+        if new_message:
+            response = await new_message.reply("_Thinking..._")
+            task_id = "abc123" # TODO: Get the task ID from Mila.
+            self._tasks[task_id] = response
+        for id, response in self._tasks.items():
+            pass
+        # If there are completed tasks:
+        #     For each completed task:
+        #         Get the response from Mila.
+        #         If the response is too long for Discord:
+        #             Split the response into chunks.
+        #             For each chunk:
+        #                 If the chunk is the first:
+        #                     Edit the placeholder message.
+        #                 Else:
+        #                     Send a new message in response to the previous chunk.
+        #         Else:
+        #             Edit the placeholder message.
+        #         Remove the task ID from the list.
 
     async def on_message(self, message: discord.Message) -> None:
         """Handle a message seen by the bot."""
-        # If the message is from MilaBot, ignore it.
-        # Otherwise, gather the appropriate context,
-        # append the metadata, and send it to Mila.
+        if message.author != self.user and (
+            self.user.mentioned_in(message)
+            or message.channel.type == discord.ChannelType.private
+        ):
+            self._input_queue.put(message)
 
     async def on_ready(self) -> None:
         """Handle the bot being ready to use."""
-        # Start the tick loop.
-        # Print a message to the console.
-        # Set the bot's status.
-        # Set the bot's activity.
-        # Print a message to the console.
+        self.status = discord.Status.online
+        year = datetime.datetime.now().year
+        activity = discord.Game(name=f"Personal Assistant Simulator {year}")
+        await self.change_presence(activity=activity)
+        print(f"Logged in as {self.user.name} (ID: {self.user.id})")
 
     async def setup_hook(self) -> None:
         """Set up the bot."""

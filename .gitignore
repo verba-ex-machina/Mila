@@ -2,6 +2,9 @@
 .envrc
 logs/
 
+# Environment files
+.direnv/
+
 # OS-specific files
 .DS_Store
 
