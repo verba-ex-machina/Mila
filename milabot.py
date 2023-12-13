@@ -39,6 +39,10 @@ class MilaBot(discord.Client):
             context = "You are in a private Discord direct-message chat. "
         context += f"Here are the last {CONTEXT_LIMIT} messages:\n\n"
         return context + chat_context
+    
+    def _log(self, message: str) -> None:
+        """Log a message."""
+        self._mila.get_logger().info(message)
 
     @tasks.loop(seconds=TICK_TIME)
     async def tick(self) -> None:
@@ -51,7 +55,13 @@ class MilaBot(discord.Client):
         if new_message:
             response = await new_message.reply("_Thinking..._")
             context = await self.__get_context(new_message)
-            task_id = await self._mila.new_task(new_message.content, context)
+            query = (
+                f"There's a new query from {new_message.author.name}. "
+                + f"Here's the context: {context}\n\n"
+                + f"The query from {new_message.author.name} is as follows:\n"
+                + f"{new_message.content}"
+            )
+            task_id = await self._mila.new_task(query)
             self._tasks[task_id] = response
         completed_tasks = []
         for id, response in self._tasks.items():
@@ -83,6 +93,10 @@ class MilaBot(discord.Client):
             or message.channel.type == discord.ChannelType.private
         ):
             self._input_queue.put(message)
+            self._log(
+                f"Received message from {message.author.name}: "
+                + f"{message.content}"
+            )
 
     async def on_ready(self) -> None:
         """Handle the bot being ready to use."""
@@ -90,10 +104,11 @@ class MilaBot(discord.Client):
         year = datetime.datetime.now().year
         activity = discord.Game(name=f"Personal Assistant Simulator {year}")
         await self.change_presence(activity=activity)
-        print(f"Logged in as {self.user.name} (ID: {self.user.id})")
+        self._log(f"Logged in as {self.user.name}. (ID: {self.user.id})")
 
     async def setup_hook(self) -> None:
         """Set up the bot."""
+        self._log("Starting MilaBot.")
         self.tick.start()
 
 
@@ -102,8 +117,14 @@ def main():
     intents = discord.Intents.default()
     intents.members = True
     intents.message_content = True
-    bot = MilaBot(intents=intents, mila=Mila())
-    bot.run(os.getenv("DISCORD_TOKEN"))
+    mila = Mila()
+    logger = mila.get_logger()
+    bot = MilaBot(intents=intents, mila=mila)
+    bot.run(
+        os.getenv("DISCORD_TOKEN"),
+        log_handler=logger.handlers[1],
+        log_formatter=logger.handlers[1].formatter,
+    )
 
 
 if __name__ == "__main__":

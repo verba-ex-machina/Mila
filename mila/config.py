@@ -3,15 +3,15 @@
 import logging
 
 # Metadata
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 
 # Identity
 NAME = "Mila"
-DESCRIPTION = "the Mindful, Interactive Lifestyle Assistant"
+# DESCRIPTION = "the Mindful, Interactive Lifestyle Assistant"
 
 # LLM Settings
-MODEL = "gpt-3.5-turbo-1106"  # If unavailable, use "gpt-3.5-turbo-16k".
-PROMPT_PATH = "mila/prompts/"
+# MODEL = "gpt-3.5-turbo-1106"  # If unavailable, use "gpt-3.5-turbo-16k".
+# PROMPT_PATH = "mila/prompts/"
 
 # Logging
 LOG_LEVEL = logging.DEBUG
