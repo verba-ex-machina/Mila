@@ -11,17 +11,34 @@ from discord.ext import tasks
 import queue
 from mila import Mila
 
+CONTEXT_LIMIT = 5  # How many previous Discord messages to include in context.
 TICK_TIME = 0.1  # How often to check for updates, in seconds.
 
 
 class MilaBot(discord.Client):
     """Implement a Discord bot for interacting with Mila."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, mila: Mila, *args, **kwargs):
         """Initialize MilaBot."""
         super().__init__(*args, **kwargs)
         self._input_queue = queue.SimpleQueue()
+        self._mila = mila
         self._tasks = {}
+    
+    async def __get_context(self, message: discord.Message):
+        """Pull the message history and format it for Mila."""
+        chat_context = "\n".join(
+            [
+                f"> {msg.author.name}: {msg.content}"
+                async for msg in message.channel.history(limit=CONTEXT_LIMIT)
+            ][::-1]
+        )
+        if message.guild:
+            context = f"You in the {message.guild.name} Discord server. "
+        else:
+            context = "You are in a private Discord direct-message chat. "
+        context += f"Here are the last {CONTEXT_LIMIT} messages:\n\n"
+        return context + chat_context
 
     @tasks.loop(seconds=TICK_TIME)
     async def tick(self) -> None:
@@ -33,23 +50,31 @@ class MilaBot(discord.Client):
             pass
         if new_message:
             response = await new_message.reply("_Thinking..._")
-            task_id = "abc123" # TODO: Get the task ID from Mila.
+            context = await self.__get_context(new_message)
+            task_id = await self._mila.new_task(new_message.content, context)
             self._tasks[task_id] = response
+        completed_tasks = []
         for id, response in self._tasks.items():
-            pass
-        # If there are completed tasks:
-        #     For each completed task:
-        #         Get the response from Mila.
-        #         If the response is too long for Discord:
-        #             Split the response into chunks.
-        #             For each chunk:
-        #                 If the chunk is the first:
-        #                     Edit the placeholder message.
-        #                 Else:
-        #                     Send a new message in response to the previous chunk.
-        #         Else:
-        #             Edit the placeholder message.
-        #         Remove the task ID from the list.
+            if await self._mila.task_complete(id):
+                response = await self._mila.get_response(id)
+                if len(response) > 2000:
+                    # Response is too long for Discord. Split it into chunks,
+                    # but avoid splitting in the middle of a line.
+                    message = self._tasks[id]
+                    chunks = response.split("\n")
+                    response = ""
+                    for chunk in chunks:
+                        if len(response) + len(chunk) > 2000:
+                            await message.edit(content=response)
+                            message = await message.reply("_Responding..._")
+                            response = "(continued)\n"
+                        response += chunk + "\n"
+                    await message.edit(content=response)
+                else:
+                    await self._tasks[id].edit(content=response)
+                completed_tasks.append(id)
+        for id in completed_tasks:
+            self._tasks.pop(id)
 
     async def on_message(self, message: discord.Message) -> None:
         """Handle a message seen by the bot."""
@@ -77,7 +102,7 @@ def main():
     intents = discord.Intents.default()
     intents.members = True
     intents.message_content = True
-    bot = MilaBot(intents=intents)
+    bot = MilaBot(intents=intents, mila=Mila())
     bot.run(os.getenv("DISCORD_TOKEN"))
 
 
