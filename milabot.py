@@ -38,14 +38,20 @@ class MilaBot(discord.Client):
         else:
             context = "You are in a private Discord direct-message chat. "
         context += f"Here are the last {CONTEXT_LIMIT} messages:\n\n"
-        return context + chat_context
+        return self._sub_usernames(context + chat_context)
     
     def _log(self, message: str) -> None:
         """Log a message."""
         self._mila.get_logger().info(message)
 
+    async def _sub_usernames(self, message: str) -> str:
+        """Substitute Discord usernames for user IDs."""
+        for user in self.users:
+            message = message.replace(f"<@{user.id}>", user.name)
+        return message
+
     @tasks.loop(seconds=TICK_TIME)
-    async def tick(self) -> None:
+    async def _tick(self) -> None:
         """Check for updates."""
         new_message = None
         try:
@@ -59,7 +65,7 @@ class MilaBot(discord.Client):
                 f"There's a new query from {new_message.author.name}. "
                 + f"Here's the context: {context}\n\n"
                 + f"The query from {new_message.author.name} is as follows:\n"
-                + f"{new_message.content}"
+                + f"{await self._sub_usernames(new_message.content)}"
             )
             task_id = await self._mila.new_task(query)
             self._tasks[task_id] = response
@@ -95,7 +101,7 @@ class MilaBot(discord.Client):
             self._input_queue.put(message)
             self._log(
                 f"Received message from {message.author.name}: "
-                + f"{message.content}"
+                + f"{await self._sub_usernames(message.content)}"
             )
 
     async def on_ready(self) -> None:
@@ -109,7 +115,7 @@ class MilaBot(discord.Client):
     async def setup_hook(self) -> None:
         """Set up the bot."""
         self._log("Starting MilaBot.")
-        self.tick.start()
+        self._tick.start()
 
 
 def main():
