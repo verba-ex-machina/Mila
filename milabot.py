@@ -3,12 +3,13 @@
 
 """MilaBot: A Discord bot for Mila."""
 
+import datetime
 import os
+import queue
 
 import discord
-import datetime
 from discord.ext import tasks
-import queue
+
 from mila import Mila
 
 CONTEXT_LIMIT = 5  # How many previous Discord messages to include in context.
@@ -24,7 +25,8 @@ class MilaBot(discord.Client):
         self._input_queue = queue.SimpleQueue()
         self._mila = mila
         self._tasks = {}
-    
+        self.status = discord.Status.offline
+
     async def __get_context(self, message: discord.Message):
         """Pull the message history and format it for Mila."""
         chat_context = "\n".join(
@@ -39,7 +41,7 @@ class MilaBot(discord.Client):
             context = "You are in a private Discord direct-message chat. "
         context += f"Here are the last {CONTEXT_LIMIT} messages:\n\n"
         return await self._sub_usernames(context + chat_context)
-    
+
     def _log(self, message: str) -> None:
         """Log a message."""
         self._mila.get_logger().info(message)
@@ -59,7 +61,7 @@ class MilaBot(discord.Client):
         except queue.Empty:
             pass
         if new_message:
-            response = await new_message.reply("_Thinking..._")
+            reply_message = await new_message.reply("_Thinking..._")
             context = await self.__get_context(new_message)
             query = (
                 f"There's a new query from {new_message.author.name}. "
@@ -68,29 +70,30 @@ class MilaBot(discord.Client):
                 + f"{await self._sub_usernames(new_message.content)}"
             )
             task_id = await self._mila.new_task(query)
-            self._tasks[task_id] = response
+            self._tasks[task_id] = reply_message
         completed_tasks = []
-        for id, response in self._tasks.items():
-            if await self._mila.task_complete(id):
-                response = await self._mila.get_response(id)
+        for task_id, reply_message in self._tasks.items():
+            if await self._mila.task_complete(task_id):
+                response = await self._mila.get_response(task_id)
                 if len(response) > 2000:
                     # Response is too long for Discord. Split it into chunks,
                     # but avoid splitting in the middle of a line.
-                    message = self._tasks[id]
                     chunks = response.split("\n")
                     response = ""
                     for chunk in chunks:
                         if len(response) + len(chunk) > 2000:
-                            await message.edit(content=response)
-                            message = await message.reply("_Responding..._")
+                            await reply_message.edit(content=response)
+                            reply_message = await reply_message.reply(
+                                "_Responding..._"
+                            )
                             response = "(continued)\n"
                         response += chunk + "\n"
-                    await message.edit(content=response)
+                    await reply_message.edit(content=response)
                 else:
-                    await self._tasks[id].edit(content=response)
-                completed_tasks.append(id)
-        for id in completed_tasks:
-            self._tasks.pop(id)
+                    await reply_message.edit(content=response)
+                completed_tasks.append(task_id)
+        for task_id in completed_tasks:
+            self._tasks.pop(task_id)
 
     async def on_message(self, message: discord.Message) -> None:
         """Handle a message seen by the bot."""
