@@ -38,7 +38,7 @@ class MilaBot(discord.Client):
         else:
             context = "You are in a private Discord direct-message chat. "
         context += f"Here are the last {CONTEXT_LIMIT} messages:\n\n"
-        return self._sub_usernames(context + chat_context)
+        return await self._sub_usernames(context + chat_context)
     
     def _log(self, message: str) -> None:
         """Log a message."""
