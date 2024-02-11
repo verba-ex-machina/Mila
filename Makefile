@@ -11,6 +11,7 @@ help:
 	@echo "  lint         to run the linter"
 	@echo "  test         to run the tests"
 	@echo "  clean        to clean the project"
+	@echo "  all          to run lint, test and clean"
 	@echo "  help         to display this help message"
 
 lint:
@@ -27,3 +28,6 @@ clean:
 	rm -rf .pytest_cache
 	rm -rf mila/__pycache__
 	rm -rf tests/__pycache__
+
+# Set one command to run lint, test and clean.
+all: lint test clean
