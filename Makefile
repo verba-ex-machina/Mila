@@ -2,8 +2,6 @@
 PYTHON = python3
 PATHS = mila tests
 
-.PHONY: help test clean
-
 .DEFAULT_GOAL = help
 
 help:
