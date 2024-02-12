@@ -1,4 +1,4 @@
-"""Test the FakeIO class."""
+"""Test the fake module."""
 
 import pytest
 

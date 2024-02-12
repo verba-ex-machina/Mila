@@ -1,4 +1,4 @@
-"""Test mila.types."""
+"""Test Mila types."""
 
 import json
 from dataclasses import asdict
