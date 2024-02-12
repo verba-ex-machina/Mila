@@ -1,33 +1,33 @@
 """Test mila.types."""
 
-import pytest
+import json
 
 from mila.types import MilaTask
 
 
 def test_mila_task():
     """Test the MilaTask class."""
-    task1 = MilaTask(
-        context="test", prompt="test", meta={"test": "test"}, id="test"
+    task = MilaTask(
+        context="context",
+        prompt="prompt",
+        response="response",
+        meta={"meta": "data"},
     )
+    task_as_dict = {
+        "context": "context",
+        "prompt": "prompt",
+        "response": "response",
+        "meta": {"meta": "data"},
+    }
+    assert repr(task) == json.dumps(task_as_dict)
+    assert bytes(task) == repr(task).encode()
+    assert hash(task) == hash(str(task))
     task2 = MilaTask(
-        context="test", prompt="test", meta={"test": "test"}, id="test"
+        context="context",
+        prompt="prompt",
+        response="response",
+        meta={"meta": "data"},
     )
-    assert task1 == task2
-    assert task1.timestamp != task2.timestamp
-    task3 = MilaTask(
-        context="test",
-        prompt="test",
-        meta={"test": "test"},
-        timestamp="2021-01-01T00:00:00.000000Z",
-    )
-    task3.validate()
-    assert task1 != task3
-    task5 = MilaTask(context="test", prompt="test")
-    assert len(sorted([task1, task3, task2, task5])) == 4
-    assert task5.id is not None
-    assert task5.timestamp is not None
-    assert task5.meta is not None
-    task6 = MilaTask(context="test", prompt="test", timestamp="badtimestamp")
-    with pytest.raises(ValueError):
-        task6.validate()
+    assert task == task2
+    task2.meta["meta"] = "data2"
+    assert task != task2
