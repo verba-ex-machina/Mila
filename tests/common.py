@@ -1,6 +1,6 @@
 """Provide common functions across tests."""
 
-from mila.types import MilaTask
+from mila.base.types import MilaTask
 
 
 def make_task() -> MilaTask:

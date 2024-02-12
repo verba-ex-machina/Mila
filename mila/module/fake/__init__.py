@@ -3,7 +3,7 @@
 import hashlib
 from typing import Dict, List, Union
 
-from mila.types import MilaTask
+from mila.base.types import MilaTask
 
 
 class FakeIO:
