@@ -21,7 +21,7 @@ class TaskStorage(ABC):
     """Define the interface for a standard Mila storage channel."""
 
     @abstractmethod
-    async def create(self, task: MilaTask) -> None:
+    async def create(self, task: MilaTask) -> str:
         """Create a task in the storage channel."""
 
     @abstractmethod
@@ -29,7 +29,7 @@ class TaskStorage(ABC):
         """Read a task from the storage channel."""
 
     @abstractmethod
-    async def update(self, task: MilaTask) -> None:
+    async def update(self, task_id: str, task: MilaTask) -> None:
         """Update a task in the storage channel."""
 
     @abstractmethod

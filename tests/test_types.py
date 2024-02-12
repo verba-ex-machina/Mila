@@ -1,33 +1,18 @@
 """Test mila.types."""
 
 import json
+from dataclasses import asdict
 
-from mila.types import MilaTask
+from .common import make_task
 
 
 def test_mila_task():
     """Test the MilaTask class."""
-    task = MilaTask(
-        context="context",
-        prompt="prompt",
-        response="response",
-        meta={"meta": "data"},
-    )
-    task_as_dict = {
-        "context": "context",
-        "prompt": "prompt",
-        "response": "response",
-        "meta": {"meta": "data"},
-    }
-    assert repr(task) == json.dumps(task_as_dict)
+    task = make_task()
+    assert repr(task) == json.dumps(asdict(task))
     assert bytes(task) == repr(task).encode()
     assert hash(task) == hash(str(task))
-    task2 = MilaTask(
-        context="context",
-        prompt="prompt",
-        response="response",
-        meta={"meta": "data"},
-    )
+    task2 = make_task()
     assert task == task2
     task2.meta["meta"] = "data2"
     assert task != task2
