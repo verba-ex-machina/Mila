@@ -3,10 +3,11 @@
 import hashlib
 from typing import Dict, List, Union
 
+from mila.base.interfaces import TaskIO, TaskStorage
 from mila.base.types import MilaTask
 
 
-class FakeIO:
+class FakeIO(TaskIO):
     """Implement a fake TaskIO adapter."""
 
     tasks: List[MilaTask] = []
@@ -23,7 +24,7 @@ class FakeIO:
             self.tasks.append(task)
 
 
-class FakeStorage:
+class FakeStorage(TaskStorage):
     """Implement a fake TaskStorage adapter."""
 
     tasks: Dict[str, MilaTask] = {}
