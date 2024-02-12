@@ -24,8 +24,9 @@ test:
 
 clean:
 	rm -rf .pytest_cache
-	rm -rf mila/__pycache__
-	rm -rf tests/__pycache__
+	rm -rf */__pycache__
+	rm -rf */*/__pycache__
+	rm -fr */*/*/__pycache__
 
 # Set one command to run lint, test and clean.
 all: lint test clean
