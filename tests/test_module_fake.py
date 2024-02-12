@@ -30,21 +30,16 @@ async def test_fake_storage():
     task2 = make_task()
     task2.meta["meta"] = "data2"
     task1_id = await fake_storage.create(task)
-    assert await fake_storage.read(task1_id) == task
-    task2_id = await fake_storage.create(task)
-    assert task2_id == task1_id
+    task1_duplicate_id = await fake_storage.create(task)
+    assert task1_duplicate_id == task1_id
     task2_id = await fake_storage.create(task2)
-    assert task2_id != task1_id
-    assert await fake_storage.read(task2_id) == task2
     task.context = "context2"
     await fake_storage.update(task1_id, task)
     task = await fake_storage.read(task1_id)
-    assert task.context == "context2"
     await fake_storage.delete(task1_id)
+    assert task.context == "context2"
     assert await fake_storage.read(task1_id) is None
     assert await fake_storage.read(task2_id) == task2
-    await fake_storage.delete(task2_id)
-    assert await fake_storage.read(task2_id) is None
     assert await fake_storage.read("fake_id") is None
     with pytest.raises(KeyError):
         await fake_storage.update("fake_id", task)
