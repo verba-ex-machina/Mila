@@ -2,7 +2,7 @@
 
 import pytest
 
-from mila.modules.fakes import FakeIO, FakeStorage
+from mila.module.fake import FakeIO, FakeStorage
 
 from .common import make_task
 
