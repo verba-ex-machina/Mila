@@ -58,6 +58,7 @@ class DiscordClient(discord.Client):
             "author": message.author.name,
             "author_id": message.author.id,
             "author_nick": message.author.display_name,
+            "message_id": message.id,
             "channel_id": message.channel.id,
             "guild": message.guild.name if message.guild else None,
             "guild_id": message.guild.id if message.guild else None,
