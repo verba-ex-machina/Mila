@@ -28,12 +28,6 @@ class DiscordClient(discord.Client):
             "send": send_queue,
         }
 
-    async def _sub_usernames(self, text: str) -> str:
-        """Substitute user mentions with usernames in the text."""
-        for user in self.users:
-            text = text.replace(f"<@{user.id}>", user.name)
-        return text
-
     async def _get_context(self, message: discord.Message) -> str:
         """Pull the message history and format it for Mila."""
         chat_context = "\n".join(
@@ -52,26 +46,8 @@ class DiscordClient(discord.Client):
         )
         return await self._sub_usernames(context)
 
-    async def _make_task(self, message: discord.Message) -> MilaTask:
-        """Create a MilaTask from a Discord message."""
-        msg_data = {
-            "author": message.author.name,
-            "author_id": message.author.id,
-            "author_nick": message.author.display_name,
-            "message_id": message.id,
-            "channel_id": message.channel.id,
-            "guild": message.guild.name if message.guild else None,
-            "guild_id": message.guild.id if message.guild else None,
-        }
-        task = MilaTask(
-            context=await self._get_context(message),
-            prompt=message.content,
-            meta=msg_data,
-        )
-        return task
-
     @tasks.loop(seconds=0.1)
-    async def handle_received_tasks(self) -> None:
+    async def _handle_received_tasks(self) -> None:
         """Handle tasks received from Mila."""
         try:
             task = self._queue["send"].get_nowait()
@@ -97,6 +73,30 @@ class DiscordClient(discord.Client):
             else:
                 await reply.edit(content=task.response)
 
+    async def _make_task(self, message: discord.Message) -> MilaTask:
+        """Create a MilaTask from a Discord message."""
+        msg_data = {
+            "author": message.author.name,
+            "author_id": message.author.id,
+            "author_nick": message.author.display_name,
+            "message_id": message.id,
+            "channel_id": message.channel.id,
+            "guild": message.guild.name if message.guild else None,
+            "guild_id": message.guild.id if message.guild else None,
+        }
+        task = MilaTask(
+            context=await self._get_context(message),
+            prompt=message.content,
+            meta=msg_data,
+        )
+        return task
+
+    async def _sub_usernames(self, text: str) -> str:
+        """Substitute user mentions with usernames in the text."""
+        for user in self.users:
+            text = text.replace(f"<@{user.id}>", user.name)
+        return text
+
     async def on_message(self, message: discord.Message) -> None:
         """Handle incoming messages."""
         if message.author != self.user and (
@@ -116,7 +116,7 @@ class DiscordClient(discord.Client):
     async def setup_hook(self) -> None:
         """Set up the Discord client."""
         # pylint: disable=E1101
-        self.handle_received_tasks.start()
+        self._handle_received_tasks.start()
 
 
 class DiscordIO(TaskIO):
