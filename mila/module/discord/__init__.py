@@ -3,6 +3,7 @@
 import os
 import queue
 from multiprocessing import Process, Queue
+from time import sleep
 from typing import Union
 
 import discord
@@ -54,24 +55,32 @@ class DiscordClient(discord.Client):
         except queue.Empty:
             pass
         else:
-            channel = await self.fetch_channel(task.meta["channel_id"])
-            message = await channel.fetch_message(task.meta["message_id"])
-            reply = await message.reply("_Responding..._")
-            if len(task.content) > 2000:
-                # Response is too long for Discord. Split it into chunks,
-                # but avoid splitting in the middle of a line.
-                chunks = task.content.split("\n")
-                response = ""
-                for chunk in chunks:
-                    if len(response) + len(chunk) > 2000:
-                        await reply.edit(content=response)
-                        reply = await reply.reply("_Responding..._")
-                        response = "(continued)\n"
-                    response += chunk + "\n"
-                if response.strip():
-                    await reply.edit(content=response.strip())
+            if task.content == "COMMAND":
+                if task.context == "EXIT":
+                    await self.teardown_hook()
             else:
-                await reply.edit(content=task.content)
+                await self._send_message(task)
+
+    async def _send_message(self, task: MilaTask) -> None:
+        """Send a message."""
+        channel = await self.fetch_channel(task.meta["channel_id"])
+        message = await channel.fetch_message(task.meta["message_id"])
+        reply = await message.reply("_Responding..._")
+        if len(task.content) > 2000:
+            # Response is too long for Discord. Split it into chunks,
+            # but avoid splitting in the middle of a line.
+            chunks = task.content.split("\n")
+            response = ""
+            for chunk in chunks:
+                if len(response) + len(chunk) > 2000:
+                    await reply.edit(content=response)
+                    reply = await reply.reply("_Responding..._")
+                    response = "(continued)\n"
+                response += chunk + "\n"
+            if response.strip():
+                await reply.edit(content=response.strip())
+        else:
+            await reply.edit(content=task.content)
 
     async def _make_task(self, message: discord.Message) -> MilaTask:
         """Create a MilaTask from a Discord message."""
@@ -118,6 +127,16 @@ class DiscordClient(discord.Client):
         # pylint: disable=E1101
         self._handle_received_tasks.start()
 
+    async def teardown_hook(self) -> None:
+        """Tear down the Discord client."""
+        # pylint: disable=E1101
+        self._handle_received_tasks.stop()
+        self.status = discord.Status.offline
+        self.activity = discord.Game(name="Electric Sheep")
+        await self.change_presence(status=self.status, activity=self.activity)
+        await self.http.close()
+        await self.close()
+
 
 class DiscordIO(TaskIO):
     """Implement a Discord TaskIO adapter."""
@@ -158,3 +177,24 @@ class DiscordIO(TaskIO):
         """Start the Discord Client."""
         self._process = Process(target=self._launch)
         self._process.start()
+
+    def teardown(self) -> None:
+        """Stop the Discord Client."""
+        kill_msg = MilaTask(content="COMMAND", context="EXIT")
+        self._send_queue.put(kill_msg)
+        self._process.join()
+
+
+async def demo():
+    """Run an echo-server demo of the Discord module."""
+    running = True
+    with DiscordIO() as io:
+        while running:
+            task = await io.recv()
+            if task:
+                if task.content == "exit":
+                    running = False
+                    break
+                print(task.content)
+                await io.send(task)
+            sleep(0.1)
