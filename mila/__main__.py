@@ -2,25 +2,24 @@
 
 import asyncio
 
-from . import MilaIO
 from .module.discord import DiscordIO
+from .module.fake import FakeIO
 
 
 async def main() -> None:
     """Execute the Mila framework."""
     with DiscordIO() as discord:
-        with MilaIO() as mila:
+        with FakeIO() as echo:
+            # For now we're running an echo server.
             running = True
             while running:
-                # Collect inputs from users to Mila.
                 tasks = await discord.recv()
                 for task in tasks:
                     if task.content == "exit":
                         running = False
                     else:
-                        await mila.send(task)
-                # Collect outputs from Mila to users.
-                tasks = await mila.recv()
+                        await echo.send(task)
+                tasks = await echo.recv()
                 for task in tasks:
                     await discord.send(task)
                 await asyncio.sleep(0.1)
