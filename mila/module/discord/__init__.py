@@ -3,7 +3,6 @@
 import os
 import queue
 from multiprocessing import Process, Queue
-from time import sleep
 from typing import Union
 
 import discord
@@ -183,18 +182,3 @@ class DiscordIO(TaskIO):
         kill_msg = MilaTask(content="COMMAND", context="EXIT")
         self._send_queue.put(kill_msg)
         self._process.join()
-
-
-async def demo():
-    """Run an echo-server demo of the Discord module."""
-    running = True
-    with DiscordIO() as io:
-        while running:
-            task = await io.recv()
-            if task:
-                if task.content == "exit":
-                    running = False
-                    break
-                print(task.content)
-                await io.send(task)
-            sleep(0.1)
