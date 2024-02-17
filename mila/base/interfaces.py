@@ -9,6 +9,18 @@ from .types import MilaTask
 class TaskIO(ABC):
     """Define the interface for a standard Mila comms channel."""
 
+    def __init__(self) -> None:
+        """Initialize the comms channel."""
+
+    def __enter__(self) -> "TaskIO":
+        """Enter the comms channel."""
+        self.setup()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the comms channel."""
+        self.teardown()
+
     @abstractmethod
     async def recv(self) -> Union[MilaTask, None]:
         """Receive a task from the comms channel."""
@@ -16,6 +28,12 @@ class TaskIO(ABC):
     @abstractmethod
     async def send(self, task: MilaTask) -> None:
         """Send a task to the comms channel."""
+
+    def setup(self) -> None:
+        """Prepare the comms channel."""
+
+    def teardown(self) -> None:
+        """Teardown the comms channel."""
 
 
 class TaskStorage(ABC):

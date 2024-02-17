@@ -124,6 +124,7 @@ class DiscordIO(TaskIO):
 
     def __init__(self) -> None:
         """Initialize the DiscordIO."""
+        super().__init__()
         self._client = None
         self._process = None
         self._recv_queue = Queue()
@@ -153,7 +154,7 @@ class DiscordIO(TaskIO):
         """Send a task to Discord."""
         self._send_queue.put(task)
 
-    def start(self) -> None:
+    def setup(self) -> None:
         """Start the Discord Client."""
         self._process = Process(target=self._launch)
         self._process.start()
