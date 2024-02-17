@@ -23,7 +23,7 @@ class FakeIO(TaskIO):
         if task not in self.tasks:
             self.tasks.append(task)
 
-    def setup(self) -> None:
+    async def setup(self) -> None:
         """Prepare the FakeIO channel."""
         self.tasks.clear()
 

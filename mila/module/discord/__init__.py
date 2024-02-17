@@ -175,12 +175,12 @@ class DiscordIO(TaskIO):
         """Send a task to Discord."""
         self._send_queue.put(task)
 
-    def setup(self) -> None:
+    async def setup(self) -> None:
         """Start the Discord Client."""
         self._process = Process(target=self._launch)
         self._process.start()
 
-    def teardown(self) -> None:
+    async def teardown(self) -> None:
         """Stop the Discord Client."""
         kill_msg = MilaTask(content="EXIT", context="COMMAND")
         self._send_queue.put(kill_msg)

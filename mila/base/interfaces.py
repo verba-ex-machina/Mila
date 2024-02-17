@@ -11,12 +11,12 @@ class TaskIO(ABC):
 
     async def __aenter__(self) -> "TaskIO":
         """Enter the comms channel."""
-        self.setup()
+        await self.setup()
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         """Exit the comms channel."""
-        self.teardown()
+        await self.teardown()
 
     @abstractmethod
     async def recv(self) -> List[MilaTask]:
@@ -26,10 +26,10 @@ class TaskIO(ABC):
     async def send(self, task: MilaTask) -> None:
         """Send a task to the comms channel."""
 
-    def setup(self) -> None:  # Optional hook.
+    async def setup(self) -> None:  # Optional hook.
         """Prepare the comms channel."""
 
-    def teardown(self) -> None:  # Optional hook.
+    async def teardown(self) -> None:  # Optional hook.
         """Teardown the comms channel."""
 
 
