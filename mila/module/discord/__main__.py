@@ -10,13 +10,13 @@ async def demo():
     running = True
     with DiscordIO() as io:
         while running:
-            task = await io.recv()
-            if task:
+            tasks = await io.recv()
+            for task in tasks:
                 if task.content == "exit":
                     running = False
-                    break
-                print(task.content)
-                await io.send(task)
+                else:
+                    print(task.content)
+                    await io.send(task)
             await asyncio.sleep(0.1)
 
 

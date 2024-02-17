@@ -11,8 +11,8 @@ async def main() -> None:
     discord.setup()
     running = True
     while running:
-        task = await discord.recv()
-        if task:
+        tasks = await discord.recv()
+        for task in tasks:
             if task.content == "exit":
                 running = False
             else:

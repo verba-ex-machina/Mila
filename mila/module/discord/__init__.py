@@ -3,7 +3,7 @@
 import os
 import queue
 from multiprocessing import Process, Queue
-from typing import Union
+from typing import List
 
 import discord
 from discord.ext import tasks
@@ -160,13 +160,16 @@ class DiscordIO(TaskIO):
         )
         self._client.run(os.getenv("DISCORD_TOKEN"))
 
-    async def recv(self) -> Union[MilaTask, None]:
-        """Receive a task from Discord."""
-        try:
-            task = self._recv_queue.get_nowait()
-        except queue.Empty:
-            return None
-        return task
+    async def recv(self) -> List[MilaTask]:
+        """Receive all queued tasks from Discord."""
+        task_list = []
+        while True:
+            try:
+                task = self._recv_queue.get_nowait()
+            except queue.Empty:
+                break
+            task_list.append(task)
+        return task_list
 
     async def send(self, task: MilaTask) -> None:
         """Send a task to Discord."""

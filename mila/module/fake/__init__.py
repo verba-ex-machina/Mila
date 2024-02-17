@@ -12,11 +12,13 @@ class FakeIO(TaskIO):
 
     tasks: List[MilaTask]
 
-    async def recv(self) -> Union[MilaTask, None]:
-        """Receive a task from FakeIO."""
+    async def recv(self) -> List[MilaTask]:
+        """Receive all queued tasks from FakeIO."""
         if self.tasks:
-            return self.tasks.pop(0)
-        return None
+            tasks = list(self.tasks)
+            self.tasks = []
+            return tasks
+        return []
 
     async def send(self, task: MilaTask) -> None:
         """Send a task to FakeIO."""

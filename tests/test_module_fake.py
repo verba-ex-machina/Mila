@@ -12,14 +12,17 @@ async def test_fake_io():
     """Test the FakeIO class."""
     with FakeIO() as fake_io:
         task = make_task()
-        assert await fake_io.recv() is None
+        assert await fake_io.recv() == []
         await fake_io.send(task)
-        assert await fake_io.recv() == task
-        assert await fake_io.recv() is None
+        assert await fake_io.recv() == [task]
+        assert await fake_io.recv() == []
         await fake_io.send(task)
+        task2 = make_task()
+        task2.meta["meta"] = "data2"
         await fake_io.send(task)
-        assert await fake_io.recv() == task
-        assert await fake_io.recv() is None
+        await fake_io.send(task2)
+        assert await fake_io.recv() == [task, task2]
+        assert await fake_io.recv() == []
 
 
 @pytest.mark.asyncio

@@ -1,7 +1,7 @@
 """Provide Mila interfaces."""
 
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import List, Union
 
 from .types import MilaTask
 
@@ -22,8 +22,8 @@ class TaskIO(ABC):
         self.teardown()
 
     @abstractmethod
-    async def recv(self) -> Union[MilaTask, None]:
-        """Receive a task from the comms channel."""
+    async def recv(self) -> List[MilaTask]:
+        """Receive a list of tasks from the comms channel."""
 
     @abstractmethod
     async def send(self, task: MilaTask) -> None:
