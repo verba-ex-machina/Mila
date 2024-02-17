@@ -9,9 +9,6 @@ from .types import MilaTask
 class TaskIO(ABC):
     """Define the interface for a standard Mila comms channel."""
 
-    def __init__(self) -> None:
-        """Initialize the comms channel."""
-
     def __enter__(self) -> "TaskIO":
         """Enter the comms channel."""
         self.setup()
