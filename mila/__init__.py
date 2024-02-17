@@ -1,7 +1,5 @@
 """Provide the Mila framework."""
 
-from typing import List
-
 from .module.fake import FakeIO
 
 
