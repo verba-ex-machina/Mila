@@ -10,7 +10,7 @@ from .common import make_task
 @pytest.mark.asyncio
 async def test_fake_io():
     """Test the FakeIO class."""
-    with FakeIO() as fake_io:
+    async with FakeIO() as fake_io:
         task = make_task()
         assert await fake_io.recv() == []
         await fake_io.send(task)

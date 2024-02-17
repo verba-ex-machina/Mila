@@ -9,12 +9,12 @@ from .types import MilaTask
 class TaskIO(ABC):
     """Define the interface for a standard Mila comms channel."""
 
-    def __enter__(self) -> "TaskIO":
+    async def __aenter__(self) -> "TaskIO":
         """Enter the comms channel."""
         self.setup()
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         """Exit the comms channel."""
         self.teardown()
 

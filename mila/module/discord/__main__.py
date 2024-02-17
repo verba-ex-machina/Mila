@@ -8,7 +8,7 @@ from . import DiscordIO
 async def demo():
     """Run an echo-server demo of the Discord module."""
     running = True
-    with DiscordIO() as io:
+    async with DiscordIO() as io:
         while running:
             tasks = await io.recv()
             for task in tasks:

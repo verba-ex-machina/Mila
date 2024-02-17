@@ -8,8 +8,8 @@ from .module.fake import FakeIO
 
 async def main() -> None:
     """Execute the Mila framework."""
-    with DiscordIO() as discord:
-        with FakeIO() as echo:
+    async with DiscordIO() as discord:
+        async with FakeIO() as echo:
             # For now we're running an echo server.
             running = True
             while running:
