@@ -29,22 +29,29 @@ async def test_fake_io():
 async def test_fake_storage():
     """Test the FakeStorage class."""
     fake_storage = FakeStorage()
-    task = make_task()
-    task2 = make_task()
-    task2.meta["meta"] = "data2"
-    task1_id = await fake_storage.create(task)
-    task1_duplicate_id = await fake_storage.create(task)
-    assert task1_duplicate_id == task1_id
-    task2_id = await fake_storage.create(task2)
-    task.context = "context2"
-    await fake_storage.update(task1_id, task)
-    task = await fake_storage.read(task1_id)
-    await fake_storage.delete(task1_id)
-    assert task.context == "context2"
-    assert await fake_storage.read(task1_id) is None
-    assert await fake_storage.read(task2_id) == task2
-    assert await fake_storage.read("fake_id") is None
+    task = make_task("task1")
+    # Create
+    task_id = await fake_storage.create(task)
+    with pytest.raises(KeyError):
+        await fake_storage.create(task)
+    # Read
+    assert await fake_storage.read(task_id) == task
+    with pytest.raises(KeyError):
+        await fake_storage.read("fake_id")
+    # Update
+    task.context = "new_context"
+    await fake_storage.update(task_id, task)
+    task = await fake_storage.read(task_id)
+    assert task.context == "new_context"
     with pytest.raises(KeyError):
         await fake_storage.update("fake_id", task)
+    # Delete
+    await fake_storage.delete(task_id)
+    with pytest.raises(KeyError):
+        await fake_storage.read(task_id)
+    with pytest.raises(KeyError):
+        await fake_storage.update(task_id, task)
+    with pytest.raises(KeyError):
+        await fake_storage.delete(task_id)
     with pytest.raises(KeyError):
         await fake_storage.delete("fake_id")

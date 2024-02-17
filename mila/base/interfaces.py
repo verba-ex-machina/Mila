@@ -1,7 +1,7 @@
 """Provide Mila interfaces."""
 
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List
 
 from .types import MilaTask
 
@@ -41,7 +41,7 @@ class TaskStorage(ABC):
         """Create a task in the storage channel."""
 
     @abstractmethod
-    async def read(self, task_id: str) -> Union[MilaTask, None]:
+    async def read(self, task_id: str) -> MilaTask:
         """Read a task from the storage channel."""
 
     @abstractmethod
