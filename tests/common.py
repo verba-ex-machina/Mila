@@ -7,7 +7,6 @@ def make_task() -> MilaTask:
     """Make a MilaTask."""
     return MilaTask(
         context="context",
-        prompt="prompt",
-        response="response",
+        content="prompt",
         meta={"meta": "data"},
     )

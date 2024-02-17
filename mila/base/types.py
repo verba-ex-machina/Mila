@@ -10,8 +10,7 @@ class MilaTask:
     """Define a Mila task."""
 
     context: str
-    prompt: str
-    response: Optional[str] = None
+    content: str
     meta: Optional[dict] = None
 
     def __bytes__(self) -> bytes:

@@ -50,17 +50,17 @@ class DiscordClient(discord.Client):
     async def _handle_received_tasks(self) -> None:
         """Handle tasks received from Mila."""
         try:
-            task = self._queue["send"].get_nowait()
+            task: MilaTask = self._queue["send"].get_nowait()
         except queue.Empty:
             pass
         else:
             channel = await self.fetch_channel(task.meta["channel_id"])
             message = await channel.fetch_message(task.meta["message_id"])
             reply = await message.reply("_Responding..._")
-            if len(task.response) > 2000:
+            if len(task.content) > 2000:
                 # Response is too long for Discord. Split it into chunks,
                 # but avoid splitting in the middle of a line.
-                chunks = task.response.split("\n")
+                chunks = task.content.split("\n")
                 response = ""
                 for chunk in chunks:
                     if len(response) + len(chunk) > 2000:
@@ -71,7 +71,7 @@ class DiscordClient(discord.Client):
                 if response.strip():
                     await reply.edit(content=response.strip())
             else:
-                await reply.edit(content=task.response)
+                await reply.edit(content=task.content)
 
     async def _make_task(self, message: discord.Message) -> MilaTask:
         """Create a MilaTask from a Discord message."""
@@ -86,7 +86,7 @@ class DiscordClient(discord.Client):
         }
         task = MilaTask(
             context=await self._get_context(message),
-            prompt=message.content,
+            content=message.content,
             meta=msg_data,
         )
         return task
