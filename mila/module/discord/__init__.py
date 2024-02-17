@@ -54,8 +54,8 @@ class DiscordClient(discord.Client):
         except queue.Empty:
             pass
         else:
-            if task.content == "COMMAND":
-                if task.context == "EXIT":
+            if task.context == "COMMAND":
+                if task.content == "EXIT":
                     await self.teardown_hook()
             else:
                 await self._send_message(task)
@@ -179,6 +179,6 @@ class DiscordIO(TaskIO):
 
     def teardown(self) -> None:
         """Stop the Discord Client."""
-        kill_msg = MilaTask(content="COMMAND", context="EXIT")
+        kill_msg = MilaTask(content="EXIT", context="COMMAND")
         self._send_queue.put(kill_msg)
         self._process.join()

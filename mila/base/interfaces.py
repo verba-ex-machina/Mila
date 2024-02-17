@@ -29,10 +29,10 @@ class TaskIO(ABC):
     async def send(self, task: MilaTask) -> None:
         """Send a task to the comms channel."""
 
-    def setup(self) -> None: # Optional hook.
+    def setup(self) -> None:  # Optional hook.
         """Prepare the comms channel."""
 
-    def teardown(self) -> None: # Optional hook.
+    def teardown(self) -> None:  # Optional hook.
         """Teardown the comms channel."""
 
 
