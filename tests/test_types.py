@@ -12,7 +12,7 @@ def test_mila_task():
     assert repr(task) == json.dumps(asdict(task))
     assert bytes(task) == repr(task).encode()
     assert hash(task) == hash(str(task))
-    task2 = make_task()
+    task2 = task.copy()
     assert task == task2
     task2.meta["meta"] = "data2"
     assert task != task2

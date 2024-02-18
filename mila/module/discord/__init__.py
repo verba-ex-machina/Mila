@@ -62,8 +62,12 @@ class DiscordClient(discord.Client):
 
     async def _send_message(self, task: MilaTask) -> None:
         """Send a message."""
-        channel = await self.fetch_channel(task.meta["channel_id"])
-        message = await channel.fetch_message(task.meta["message_id"])
+        channel = await self.fetch_channel(
+            task.meta["destination"]["channel_id"]
+        )
+        message = await channel.fetch_message(
+            task.meta["destination"]["message_id"]
+        )
         reply = await message.reply("_Responding..._")
         if len(task.content) > 2000:
             # Response is too long for Discord. Split it into chunks,
@@ -83,19 +87,30 @@ class DiscordClient(discord.Client):
 
     async def _make_task(self, message: discord.Message) -> MilaTask:
         """Create a MilaTask from a Discord message."""
-        msg_data = {
-            "author": message.author.name,
-            "author_id": message.author.id,
-            "author_nick": message.author.display_name,
-            "message_id": message.id,
-            "channel_id": message.channel.id,
-            "guild": message.guild.name if message.guild else None,
-            "guild_id": message.guild.id if message.guild else None,
+        metadata = {
+            "source": {
+                "module": DiscordIO.NAME,
+                "author": {
+                    "id": message.author.id,
+                    "name": message.author.name,
+                    "nick": message.author.display_name,
+                },
+                "channel_id": message.channel.id,
+                "message_id": message.id,
+                "guild": (
+                    {}
+                    if not message.guild
+                    else {
+                        "id": message.guild.id,
+                        "name": message.guild.name,
+                    }
+                ),
+            }
         }
         task = MilaTask(
             context=await self._get_context(message),
             content=message.content,
-            meta=msg_data,
+            meta=metadata,
         )
         return task
 
@@ -119,7 +134,6 @@ class DiscordClient(discord.Client):
         self.status = discord.Status.online
         self.activity = discord.Game(name="The Sims IRL")
         await self.change_presence(status=self.status, activity=self.activity)
-        print(f"Logged in as {self.user}")
 
     async def setup_hook(self) -> None:
         """Set up the Discord client."""
@@ -139,6 +153,8 @@ class DiscordClient(discord.Client):
 
 class DiscordIO(TaskIO):
     """Implement a Discord TaskIO adapter."""
+
+    NAME: str = "DiscordIO"
 
     def __init__(self) -> None:
         """Initialize the DiscordIO."""

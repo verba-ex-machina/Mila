@@ -2,7 +2,6 @@
 
 import dataclasses
 import json
-from typing import Optional
 
 
 @dataclasses.dataclass
@@ -11,7 +10,7 @@ class MilaTask:
 
     context: str
     content: str
-    meta: Optional[dict] = None
+    meta: dict = dataclasses.field(default_factory=dict)
 
     def __bytes__(self) -> bytes:
         """Return the bytes representation of the task."""
@@ -28,3 +27,11 @@ class MilaTask:
     def __str__(self) -> str:
         """Return the string representation of the task."""
         return self.__repr__()
+
+    def copy(self) -> "MilaTask":
+        """Return a copy of the task."""
+        return MilaTask(
+            context=self.context,
+            content=self.content,
+            meta=self.meta.copy() if self.meta else {},
+        )

@@ -2,6 +2,7 @@
 
 import pytest
 
+from mila.base.types import MilaTask
 from mila.module.fake import FakeIO, FakeStorage
 
 from .common import make_task
@@ -11,17 +12,29 @@ from .common import make_task
 async def test_fake_io():
     """Test the FakeIO class."""
     async with FakeIO() as fake_io:
+
+        def copy_src_to_dest(task: MilaTask) -> MilaTask:
+            """Move source to destination."""
+            task = task.copy()
+            task.meta["destination"] = task.meta["source"].copy()
+            return task
+
+        # Phase 1
+        assert await fake_io.recv() == []
         task = make_task()
+        await fake_io.send(task)
+        assert await fake_io.recv() == [copy_src_to_dest(task)]
         assert await fake_io.recv() == []
-        await fake_io.send(task)
-        assert await fake_io.recv() == [task]
-        assert await fake_io.recv() == []
-        await fake_io.send(task)
-        task2 = make_task()
-        task2.meta["meta"] = "data2"
-        await fake_io.send(task)
+        # Phase 2
+        task1 = make_task("task1")
+        task2 = make_task("task2")
+        await fake_io.send(task1)
+        await fake_io.send(task1)
         await fake_io.send(task2)
-        assert await fake_io.recv() == [task, task2]
+        assert await fake_io.recv() == [
+            copy_src_to_dest(task1),
+            copy_src_to_dest(task2),
+        ]
         assert await fake_io.recv() == []
 
 

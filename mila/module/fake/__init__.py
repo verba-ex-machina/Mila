@@ -10,18 +10,21 @@ from mila.base.types import MilaTask
 class FakeIO(TaskIO):
     """Implement a fake TaskIO adapter."""
 
+    NAME: str = "FakeIO"
     tasks: List[MilaTask] = []
 
     async def recv(self) -> List[MilaTask]:
         """Receive all queued tasks from FakeIO."""
-        tasks = self.tasks.copy()
+        tasks = [task.copy() for task in self.tasks]
         self.tasks.clear()
+        for task in tasks:
+            task.meta["destination"] = task.meta["source"].copy()
         return tasks
 
     async def send(self, task: MilaTask) -> None:
         """Send a task to FakeIO."""
         if task not in self.tasks:
-            self.tasks.append(task)
+            self.tasks.append(task.copy())
 
     async def setup(self) -> None:
         """Prepare the FakeIO channel."""
