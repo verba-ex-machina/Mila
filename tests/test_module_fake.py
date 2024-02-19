@@ -23,15 +23,14 @@ async def test_fake_io():
         # Phase 1
         assert await fake_io.recv() == []
         task = make_task()
-        await fake_io.send(task)
+        await fake_io.send([task])
         assert await fake_io.recv() == [copy_src_to_dest(task)]
         assert await fake_io.recv() == []
         # Phase 2
         task1 = make_task("task1")
         task2 = make_task("task2")
-        await fake_io.send(task1)
-        await fake_io.send(task1)
-        await fake_io.send(task2)
+        await fake_io.send([task1])
+        await fake_io.send([task1, task2])
         assert await fake_io.recv() == [
             copy_src_to_dest(task1),
             copy_src_to_dest(task2),

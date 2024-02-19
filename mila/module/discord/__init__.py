@@ -185,9 +185,10 @@ class DiscordIO(TaskIO):
             task_list.append(task)
         return task_list
 
-    async def send(self, task: MilaTask) -> None:
-        """Send a task to Discord."""
-        self._send_queue.put(task)
+    async def send(self, task_list: List[MilaTask]) -> None:
+        """Send a list of tasks to Discord."""
+        for task in task_list:
+            self._send_queue.put(task)
 
     async def setup(self) -> None:
         """Start the Discord Client."""

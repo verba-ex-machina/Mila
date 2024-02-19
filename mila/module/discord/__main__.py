@@ -13,13 +13,12 @@ async def demo():
     async with DiscordIO() as discord:
         async with FakeIO() as fakeio:
             while running:
-                for task in await discord.recv():
-                    if task.content == "exit":
-                        running = False
-                    else:
-                        await fakeio.send(task)
-                for task in await fakeio.recv():
-                    await discord.send(task)
+                tasks = await discord.recv()
+                if any(task.content == "exit" for task in tasks):
+                    running = False
+                else:
+                    await fakeio.send(tasks)
+                await discord.send(await fakeio.recv())
                 await asyncio.sleep(0.1)
 
 

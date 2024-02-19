@@ -22,10 +22,11 @@ class FakeIO(TaskIO):
             task.meta.source["handler"] = self.NAME
         return tasks
 
-    async def send(self, task: MilaTask) -> None:
-        """Send a task to FakeIO."""
-        if task not in self.tasks:
-            self.tasks.append(task.copy())
+    async def send(self, task_list: List[MilaTask]) -> None:
+        """Send a list of tasks to FakeIO."""
+        for task in task_list:
+            if task not in self.tasks:
+                self.tasks.append(task.copy())
 
     async def setup(self) -> None:
         """Prepare the FakeIO channel."""

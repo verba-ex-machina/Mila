@@ -25,8 +25,8 @@ class TaskIO(ABC):
         """Receive a list of tasks from the comms channel."""
 
     @abstractmethod
-    async def send(self, task: MilaTask) -> None:
-        """Send a task to the comms channel."""
+    async def send(self, task_list: List[MilaTask]) -> None:
+        """Send a list of tasks to the comms channel."""
 
     async def setup(self) -> None:  # Optional hook.
         """Prepare the comms channel."""
