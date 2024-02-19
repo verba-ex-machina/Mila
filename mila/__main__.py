@@ -6,8 +6,9 @@ from typing import List
 from . import Mila
 from .base.interfaces import TaskIO
 from .module.discord import DiscordIO
+from .module.fake import FakeIO
 
-TASK_IO_HANDLERS: List[TaskIO] = [DiscordIO]
+TASK_IO_HANDLERS: List[TaskIO] = [DiscordIO, FakeIO]
 
 
 async def main():
