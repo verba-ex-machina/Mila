@@ -9,7 +9,7 @@ import discord
 from discord.ext import tasks
 
 from mila.base.interfaces import TaskIO
-from mila.base.types import MilaTask
+from mila.base.types import MilaTask, MilaTaskMeta
 
 
 class DiscordClient(discord.Client):
@@ -62,11 +62,9 @@ class DiscordClient(discord.Client):
 
     async def _send_message(self, task: MilaTask) -> None:
         """Send a message."""
-        channel = await self.fetch_channel(
-            task.meta["destination"]["channel_id"]
-        )
+        channel = await self.fetch_channel(task.meta.destination["channel_id"])
         message = await channel.fetch_message(
-            task.meta["destination"]["message_id"]
+            task.meta.destination["message_id"]
         )
         reply = await message.reply("_Responding..._")
         if len(task.content) > 2000:
@@ -87,30 +85,29 @@ class DiscordClient(discord.Client):
 
     async def _make_task(self, message: discord.Message) -> MilaTask:
         """Create a MilaTask from a Discord message."""
-        metadata = {
-            "source": {
-                "module": DiscordIO.NAME,
-                "author": {
-                    "id": message.author.id,
-                    "name": message.author.name,
-                    "nick": message.author.display_name,
-                },
-                "channel_id": message.channel.id,
-                "message_id": message.id,
-                "guild": (
-                    {}
-                    if not message.guild
-                    else {
-                        "id": message.guild.id,
-                        "name": message.guild.name,
-                    }
-                ),
-            }
-        }
         task = MilaTask(
             context=await self._get_context(message),
             content=message.content,
-            meta=metadata,
+            meta=MilaTaskMeta(
+                source={
+                    "author": {
+                        "id": message.author.id,
+                        "name": message.author.name,
+                        "nick": message.author.display_name,
+                    },
+                    "channel_id": message.channel.id,
+                    "message_id": message.id,
+                    "guild": (
+                        {}
+                        if not message.guild
+                        else {
+                            "id": message.guild.id,
+                            "name": message.guild.name,
+                        }
+                    ),
+                },
+                destination={},
+            ),
         )
         return task
 

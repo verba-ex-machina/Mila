@@ -5,12 +5,27 @@ import json
 
 
 @dataclasses.dataclass
+class MilaTaskMeta:
+    """Define metadata for a Mila task."""
+
+    source: dict = dataclasses.field(default_factory=dict)
+    destination: dict = dataclasses.field(default_factory=dict)
+
+    def copy(self) -> "MilaTaskMeta":
+        """Return a copy of the metadata."""
+        return MilaTaskMeta(
+            source=self.source.copy(),
+            destination=self.destination.copy(),
+        )
+
+
+@dataclasses.dataclass
 class MilaTask:
     """Define a Mila task."""
 
     context: str
     content: str
-    meta: dict = dataclasses.field(default_factory=dict)
+    meta: MilaTaskMeta = dataclasses.field(default_factory=MilaTaskMeta)
 
     def __bytes__(self) -> bytes:
         """Return the bytes representation of the task."""
@@ -33,5 +48,5 @@ class MilaTask:
         return MilaTask(
             context=self.context,
             content=self.content,
-            meta=self.meta.copy() if self.meta else {},
+            meta=self.meta.copy(),
         )
