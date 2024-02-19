@@ -32,35 +32,53 @@ class Mila:
         for handler in self.task_io_handlers:
             await handler.teardown()
 
+    async def _collect_inbound_tasks(self) -> List[MilaTask]:
+        """Collect all inbound tasks from all handlers."""
+        inbound_tasks = []
+        for handler in self.task_io_handlers:
+            inbound_tasks.extend(await handler.recv())
+        return inbound_tasks
+
+    def _handle_unprocessed_tasks(self, unhandled_tasks):
+        for task in unhandled_tasks:
+            # Process tasks without a valid destination.
+            print(f"Unroutable task: {task}")
+
+    def _process_tasks(self, inbound_tasks: List[MilaTask]) -> List[MilaTask]:
+        """Process inbound tasks."""
+        outbound_tasks = []
+        for task in inbound_tasks:
+            if task.content == "exit":
+                self.running = False
+                break
+            if not task.meta.destination:
+                task.meta.destination = task.meta.source.copy()
+            outbound_tasks.append(task)
+        return outbound_tasks
+
+    async def _send_outbound_tasks(self, outbound_tasks):
+        """Send outbound tasks to their respective handlers."""
+        for handler in self.task_io_handlers:
+            tasks = [
+                task
+                for task in outbound_tasks
+                if task.meta.destination["handler"] == handler.NAME
+            ]
+            outbound_tasks = [
+                task
+                for task in outbound_tasks
+                if task.meta.destination["handler"] != handler.NAME
+            ]
+            for task in tasks:
+                await handler.send(task)
+        return outbound_tasks
+
     async def run(self) -> None:
         """Launch the Mila framework."""
         self.running = True
         while self.running:
-            inbound_tasks: List[MilaTask] = []
-            for handler in self.task_io_handlers:
-                inbound_tasks.extend(await handler.recv())
-            outbound_tasks: List[MilaTask] = []
-            for task in inbound_tasks:
-                if task.content == "exit":
-                    self.running = False
-                    break
-                if not task.meta.destination:
-                    task.meta.destination = task.meta.source.copy()
-                outbound_tasks.append(task)
-            for handler in self.task_io_handlers:
-                tasks = [
-                    task
-                    for task in outbound_tasks
-                    if task.meta.destination["handler"] == handler.NAME
-                ]
-                outbound_tasks = [
-                    task
-                    for task in outbound_tasks
-                    if task.meta.destination["handler"] != handler.NAME
-                ]
-                for task in tasks:
-                    await handler.send(task)
-            for task in outbound_tasks:
-                # Process tasks without a valid destination.
-                print(f"Unroutable task: {task}")
+            inbound_tasks = await self._collect_inbound_tasks()
+            outbound_tasks = self._process_tasks(inbound_tasks)
+            unhandled_tasks = await self._send_outbound_tasks(outbound_tasks)
+            self._handle_unprocessed_tasks(unhandled_tasks)
             await asyncio.sleep(0.1)
