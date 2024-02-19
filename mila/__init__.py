@@ -81,8 +81,9 @@ class Mila:
         """Launch the Mila framework."""
         self.running = True
         while self.running:
-            inbound_tasks = await self._collect_inbound_tasks()
-            outbound_tasks = self._process_tasks(inbound_tasks)
-            unhandled_tasks = await self._route_outbound_tasks(outbound_tasks)
-            self._handle_unprocessed_tasks(unhandled_tasks)
+            self._handle_unprocessed_tasks(
+                await self._route_outbound_tasks(
+                    self._process_tasks(await self._collect_inbound_tasks())
+                )
+            )
             await asyncio.sleep(0.1)
