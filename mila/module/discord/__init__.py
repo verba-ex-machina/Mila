@@ -178,9 +178,10 @@ class DiscordIO(TaskIO):
         task_list = []
         while True:
             try:
-                task = self._recv_queue.get_nowait()
+                task: MilaTask = self._recv_queue.get_nowait()
             except queue.Empty:
                 break
+            task.meta.source["handler"] = self.NAME
             task_list.append(task)
         return task_list
 

@@ -9,7 +9,7 @@ def make_task(data: str = "None") -> MilaTask:
         context="context",
         content="prompt",
         meta=MilaTaskMeta(
-            source={"handler": "data"},
-            destination={"handler": data},
+            source={"handler": data},
+            destination={},
         ),
     )
