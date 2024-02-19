@@ -12,7 +12,7 @@ TASK_IO_HANDLERS: List[TaskIO] = [DiscordIO]
 
 async def main():
     """Launch the Mila framework."""
-    async with Mila(task_io_handlers=[DiscordIO]) as mila:
+    async with Mila(task_io_handlers=TASK_IO_HANDLERS) as mila:
         await mila.run()
 
 
