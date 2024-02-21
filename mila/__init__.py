@@ -5,6 +5,33 @@ from typing import List
 
 from .base.interfaces import TaskIO
 from .base.types import MilaTask
+from .module.fake import FakeIO
+
+
+class MilaIO(TaskIO):
+    """Mila framework I/O handler class."""
+
+    NAME: str = "MilaIO"
+    task_list: List[MilaTask] = []
+
+    async def setup(self) -> None:
+        """Set up the I/O handler."""
+
+    async def teardown(self) -> None:
+        """Tear down the I/O handler."""
+
+    async def recv(self) -> List[MilaTask]:
+        """Receive tasks from the I/O handler."""
+        outbound_tasks = self.task_list.copy()
+        self.task_list.clear()
+        return outbound_tasks
+
+    async def send(self, task_list: List[MilaTask]) -> None:
+        """Send tasks to the I/O handler."""
+        for task in task_list:
+            # Route to the FakeIO handler.
+            task.meta.destination["handler"] = FakeIO.NAME
+        self.task_list.extend(task_list)
 
 
 class MilaProc:
@@ -19,6 +46,7 @@ class MilaProc:
             handler()
             for handler in task_io_handlers
         ]
+        self.task_io_handlers.append(MilaIO())  # Add the MilaIO handler.
         self.running = False
 
     async def __aenter__(self) -> "MilaProc":
@@ -57,8 +85,8 @@ class MilaProc:
             self.running = False
             task.meta.state = "complete"
         if not task.meta.destination:
-            # Default to the FakeIO handler, an echo server.
-            task.meta.destination["handler"] = "FakeIO"
+            # Default to the MilaIO handler.
+            task.meta.destination["handler"] = MilaIO.NAME
         return task
 
     async def _process_tasks(
