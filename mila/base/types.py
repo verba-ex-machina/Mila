@@ -1,16 +1,26 @@
 """Define essential data types for Mila."""
 
-import dataclasses
 import json
+from dataclasses import asdict, dataclass, field
 
 
-@dataclasses.dataclass
+@dataclass
+class MilaTaskStates:
+    """Define a set of statuses for a Mila task."""
+
+    # pylint: disable=C0103
+
+    NEW: str = "new"
+    COMPLETE: str = "complete"
+
+
+@dataclass
 class MilaTaskMeta:
     """Define metadata for a Mila task."""
 
-    source: dict = dataclasses.field(default_factory=dict)
-    destination: dict = dataclasses.field(default_factory=dict)
-    state: str = "new"
+    source: dict = field(default_factory=dict)
+    destination: dict = field(default_factory=dict)
+    state: str = MilaTaskStates.NEW
 
     def copy(self) -> "MilaTaskMeta":
         """Return a copy of the metadata."""
@@ -21,13 +31,15 @@ class MilaTaskMeta:
         )
 
 
-@dataclasses.dataclass
+@dataclass
 class MilaTask:
     """Define a Mila task."""
 
     context: str
     content: str
-    meta: MilaTaskMeta = dataclasses.field(default_factory=MilaTaskMeta)
+    meta: MilaTaskMeta = field(default_factory=MilaTaskMeta)
+    # Provide a standard set of states.
+    states: MilaTaskStates = field(default_factory=MilaTaskStates)
 
     def __bytes__(self) -> bytes:
         """Return the bytes representation of the task."""
@@ -39,7 +51,7 @@ class MilaTask:
 
     def __repr__(self) -> str:
         """Return the string representation of the task."""
-        return json.dumps(dataclasses.asdict(self))
+        return json.dumps(asdict(self))
 
     def __str__(self) -> str:
         """Return the string representation of the task."""

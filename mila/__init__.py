@@ -82,14 +82,14 @@ class MilaProc:
         for task in unhandled_tasks:
             # Process tasks without a valid destination.
             print(f"Unroutable task: {task}")
-            task.meta.state = "complete"
+            task.meta.state = task.states.COMPLETE
         return unhandled_tasks
 
     async def _process_task(self, task: MilaTask) -> MilaTask:
         """Process a single task."""
         if task.content == "exit":
             self.running = False
-            task.meta.state = "complete"
+            task.meta.state = task.states.COMPLETE
         if not task.meta.destination:
             # Default to the MilaIO handler.
             task.meta.destination["handler"] = MilaIO.NAME
@@ -105,7 +105,7 @@ class MilaProc:
                 *[self._process_task(task) for task in inbound_tasks]
             )
             # Filter out tasks that are deemed complete.
-            if task.meta.state != "complete"
+            if task.meta.state != task.states.COMPLETE
         ]
 
     async def _route_outbound_tasks(
