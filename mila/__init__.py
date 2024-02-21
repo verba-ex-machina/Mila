@@ -31,14 +31,16 @@ class MilaProc:
 
     async def __aenter__(self) -> "MilaProc":
         """Set up the Mila framework."""
-        for handler in self.task_io_handlers:
-            await handler.setup()
+        await asyncio.gather(
+            *[handler.setup() for handler in self.task_io_handlers]
+        )
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         """Tear down the Mila framework."""
-        for handler in self.task_io_handlers:
-            await handler.teardown()
+        await asyncio.gather(
+            *[handler.teardown() for handler in self.task_io_handlers]
+        )
 
     async def _collect_inbound_tasks(
         self, inbound_tasks: List[MilaTask]
