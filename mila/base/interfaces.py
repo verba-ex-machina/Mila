@@ -9,8 +9,6 @@ from .types import MilaTask
 class TaskIO(ABC):
     """Define the interface for a standard Mila comms channel."""
 
-    NAME: str = "TaskIO"
-
     async def __aenter__(self) -> "TaskIO":
         """Enter the comms channel."""
         await self.setup()

@@ -149,8 +149,6 @@ class DiscordClient(discord.Client):
 class DiscordIO(TaskIO):
     """Implement a Discord TaskIO adapter."""
 
-    NAME: str = "DiscordIO"
-
     def __init__(self) -> None:
         """Initialize the DiscordIO."""
         super().__init__()
@@ -179,7 +177,7 @@ class DiscordIO(TaskIO):
                 task: MilaTask = self._recv_queue.get_nowait()
             except queue.Empty:
                 break
-            task.source["handler"] = self.NAME
+            task.source["handler"] = self.__class__.__name__
             task_list.append(task)
         return task_list
 

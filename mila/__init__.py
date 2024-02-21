@@ -12,7 +12,6 @@ from .module.fake import FakeIO
 class MilaIO(TaskIO):
     """Mila framework I/O handler class."""
 
-    NAME: str = "MilaIO"
     task_list: List[MilaTask] = []
 
     async def setup(self) -> None:
@@ -31,7 +30,7 @@ class MilaIO(TaskIO):
         """Send tasks to the I/O handler."""
         for task in task_list:
             # Route to the FakeIO handler.
-            task.destination["handler"] = FakeIO.NAME
+            task.destination["handler"] = FakeIO.__name__
         self.task_list.extend(task_list)
 
 
@@ -43,15 +42,15 @@ class MilaProc:
     def __init__(self, task_io_handlers: List[TaskIO]) -> None:
         """Initialize the Mila framework."""
         self.task_io_handlers: List[TaskIO] = [
-            # Instantiate each handler.
-            handler()
-            for handler in task_io_handlers
+            # Default handlers, always included.
+            FakeIO(),
+            MilaIO(),
         ]
         self.task_io_handlers.extend(
             [
-                # Default handlers, always included.
-                FakeIO(),
-                MilaIO(),
+                # Custom handlers, if provided.
+                handler()
+                for handler in task_io_handlers
             ]
         )
         self.running = False
@@ -93,7 +92,7 @@ class MilaProc:
             task.state = STATES.COMPLETE
         if not task.destination:
             # Default to the MilaIO handler.
-            task.destination["handler"] = MilaIO.NAME
+            task.destination["handler"] = MilaIO.__name__
         return task
 
     async def _process_tasks(
@@ -119,7 +118,8 @@ class MilaProc:
                     [
                         task
                         for task in outbound_tasks
-                        if task.destination["handler"] == handler.NAME
+                        if task.destination["handler"]
+                        == handler.__class__.__name__
                     ]
                 )
                 for handler in self.task_io_handlers
@@ -130,7 +130,9 @@ class MilaProc:
             task
             for task in outbound_tasks
             if task.destination["handler"]
-            not in [handler.NAME for handler in self.task_io_handlers]
+            not in [
+                handler.__class__.__name__ for handler in self.task_io_handlers
+            ]
         ]
 
     async def run(self) -> None:
