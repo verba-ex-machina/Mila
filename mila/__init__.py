@@ -55,10 +55,10 @@ class Mila:
         """Process a single task."""
         if task.content == "exit":
             self.running = False
-        # Echo server: send the task back to the source.
-        task.meta.destination = (
-            task.meta.destination or task.meta.source.copy()
-        )
+            task.meta.state = "complete"
+        if not task.meta.destination:
+            # Default to the FakeIO handler, an echo server.
+            task.meta.destination["handler"] = "FakeIO"
         return task
 
     async def _process_tasks(
