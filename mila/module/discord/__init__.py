@@ -9,7 +9,7 @@ import discord
 from discord.ext import tasks
 
 from mila.base.interfaces import TaskIO
-from mila.base.types import MilaTask, MilaTaskMeta
+from mila.base.types import MilaTask
 
 
 class DiscordClient(discord.Client):
@@ -63,10 +63,8 @@ class DiscordClient(discord.Client):
     async def _send_message(self, task: MilaTask) -> None:
         """Send a message."""
         # This currently assumes every message is a reply to another message.
-        channel = await self.fetch_channel(task.meta.destination["channel_id"])
-        message = await channel.fetch_message(
-            task.meta.destination["message_id"]
-        )
+        channel = await self.fetch_channel(task.destination["channel_id"])
+        message = await channel.fetch_message(task.destination["message_id"])
         reply = await message.reply("_Responding..._")
         if len(task.content) > 2000:
             # Response is too long for Discord. Split it into chunks,
@@ -89,26 +87,24 @@ class DiscordClient(discord.Client):
         task = MilaTask(
             context=await self._get_context(message),
             content=message.content,
-            meta=MilaTaskMeta(
-                source={
-                    # This data is necessary for a response.
-                    "author": {
-                        "id": message.author.id,
-                        "name": message.author.name,
-                        "nick": message.author.display_name,
-                    },
-                    "channel_id": message.channel.id,
-                    "message_id": message.id,
-                    "guild": (
-                        {}
-                        if not message.guild
-                        else {
-                            "id": message.guild.id,
-                            "name": message.guild.name,
-                        }
-                    ),
+            source={
+                # This data is necessary for a response.
+                "author": {
+                    "id": message.author.id,
+                    "name": message.author.name,
+                    "nick": message.author.display_name,
                 },
-            ),
+                "channel_id": message.channel.id,
+                "message_id": message.id,
+                "guild": (
+                    {}
+                    if not message.guild
+                    else {
+                        "id": message.guild.id,
+                        "name": message.guild.name,
+                    }
+                ),
+            },
         )
         return task
 
@@ -182,7 +178,7 @@ class DiscordIO(TaskIO):
                 task: MilaTask = self._recv_queue.get_nowait()
             except queue.Empty:
                 break
-            task.meta.source["handler"] = self.NAME
+            task.source["handler"] = self.NAME
             task_list.append(task)
         return task_list
 

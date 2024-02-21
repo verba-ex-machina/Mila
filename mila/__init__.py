@@ -30,7 +30,7 @@ class MilaIO(TaskIO):
         """Send tasks to the I/O handler."""
         for task in task_list:
             # Route to the FakeIO handler.
-            task.meta.destination["handler"] = FakeIO.NAME
+            task.destination["handler"] = FakeIO.NAME
         self.task_list.extend(task_list)
 
 
@@ -82,17 +82,17 @@ class MilaProc:
         for task in unhandled_tasks:
             # Process tasks without a valid destination.
             print(f"Unroutable task: {task}")
-            task.meta.state = task.states.COMPLETE
+            task.state = task.states.COMPLETE
         return unhandled_tasks
 
     async def _process_task(self, task: MilaTask) -> MilaTask:
         """Process a single task."""
         if task.content == "exit":
             self.running = False
-            task.meta.state = task.states.COMPLETE
-        if not task.meta.destination:
+            task.state = task.states.COMPLETE
+        if not task.destination:
             # Default to the MilaIO handler.
-            task.meta.destination["handler"] = MilaIO.NAME
+            task.destination["handler"] = MilaIO.NAME
         return task
 
     async def _process_tasks(
@@ -105,7 +105,7 @@ class MilaProc:
                 *[self._process_task(task) for task in inbound_tasks]
             )
             # Filter out tasks that are deemed complete.
-            if task.meta.state != task.states.COMPLETE
+            if task.state != task.states.COMPLETE
         ]
 
     async def _route_outbound_tasks(
@@ -118,7 +118,7 @@ class MilaProc:
                     [
                         task
                         for task in outbound_tasks
-                        if task.meta.destination["handler"] == handler.NAME
+                        if task.destination["handler"] == handler.NAME
                     ]
                 )
                 for handler in self.task_io_handlers
@@ -128,7 +128,7 @@ class MilaProc:
             # Unhandled tasks.
             task
             for task in outbound_tasks
-            if task.meta.destination["handler"]
+            if task.destination["handler"]
             not in [handler.NAME for handler in self.task_io_handlers]
         ]
 

@@ -15,29 +15,14 @@ class MilaTaskStates:
 
 
 @dataclass
-class MilaTaskMeta:
-    """Define metadata for a Mila task."""
-
-    source: dict = field(default_factory=dict)
-    destination: dict = field(default_factory=dict)
-    state: str = MilaTaskStates.NEW
-
-    def copy(self) -> "MilaTaskMeta":
-        """Return a copy of the metadata."""
-        return MilaTaskMeta(
-            source=self.source.copy(),
-            destination=self.destination.copy(),
-            state=str(self.state),
-        )
-
-
-@dataclass
 class MilaTask:
     """Define a Mila task."""
 
     context: str
     content: str
-    meta: MilaTaskMeta = field(default_factory=MilaTaskMeta)
+    source: dict = field(default_factory=dict)
+    destination: dict = field(default_factory=dict)
+    state: str = MilaTaskStates.NEW
     # Provide a standard set of states.
     states: MilaTaskStates = field(default_factory=MilaTaskStates)
 
@@ -62,5 +47,7 @@ class MilaTask:
         return MilaTask(
             context=self.context,
             content=self.content,
-            meta=self.meta.copy(),
+            source=self.source.copy(),
+            destination=self.destination.copy(),
+            state=self.state,
         )

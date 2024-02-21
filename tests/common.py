@@ -1,6 +1,6 @@
 """Provide common functions across tests."""
 
-from mila.base.types import MilaTask, MilaTaskMeta, MilaTaskStates
+from mila.base.types import MilaTask, MilaTaskStates
 
 
 def make_task(data: str = "None") -> MilaTask:
@@ -8,9 +8,7 @@ def make_task(data: str = "None") -> MilaTask:
     return MilaTask(
         context="context",
         content="prompt",
-        meta=MilaTaskMeta(
-            source={"handler": data},
-            destination={},
-            state=MilaTaskStates.NEW,
-        ),
+        source={"handler": data},
+        destination={},
+        state=MilaTaskStates.NEW,
     )

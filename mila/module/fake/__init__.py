@@ -18,8 +18,8 @@ class FakeIO(TaskIO):
         tasks = [task.copy() for task in self.tasks]
         self.tasks.clear()
         for task in tasks:
-            task.meta.destination = task.meta.source.copy()
-            task.meta.source["handler"] = self.NAME
+            task.destination = task.source.copy()
+            task.source["handler"] = self.NAME
         return tasks
 
     async def send(self, task_list: List[MilaTask]) -> None:
