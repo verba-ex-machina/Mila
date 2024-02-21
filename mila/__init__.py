@@ -3,7 +3,7 @@
 import asyncio
 from typing import List
 
-from .base.constants import TICK
+from .base.constants import STATES, TICK
 from .base.interfaces import TaskIO
 from .base.types import MilaTask
 from .module.fake import FakeIO
@@ -83,14 +83,14 @@ class MilaProc:
         for task in unhandled_tasks:
             # Process tasks without a valid destination.
             print(f"Unroutable task: {task}")
-            task.state = task.states.COMPLETE
+            task.state = STATES.COMPLETE
         return unhandled_tasks
 
     async def _process_task(self, task: MilaTask) -> MilaTask:
         """Process a single task."""
         if task.content == "exit":
             self.running = False
-            task.state = task.states.COMPLETE
+            task.state = STATES.COMPLETE
         if not task.destination:
             # Default to the MilaIO handler.
             task.destination["handler"] = MilaIO.NAME
@@ -106,7 +106,7 @@ class MilaProc:
                 *[self._process_task(task) for task in inbound_tasks]
             )
             # Filter out tasks that are deemed complete.
-            if task.state != task.states.COMPLETE
+            if task.state != STATES.COMPLETE
         ]
 
     async def _route_outbound_tasks(

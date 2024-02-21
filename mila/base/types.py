@@ -3,15 +3,7 @@
 import json
 from dataclasses import asdict, dataclass, field
 
-
-@dataclass
-class MilaTaskStates:
-    """Define a set of statuses for a Mila task."""
-
-    # pylint: disable=C0103
-
-    NEW: str = "new"
-    COMPLETE: str = "complete"
+from mila.base.constants import STATES
 
 
 @dataclass
@@ -22,9 +14,7 @@ class MilaTask:
     content: str
     source: dict = field(default_factory=dict)
     destination: dict = field(default_factory=dict)
-    state: str = MilaTaskStates.NEW
-    # Provide a standard set of states.
-    states: MilaTaskStates = field(default_factory=MilaTaskStates)
+    state: str = STATES.NEW
 
     def __bytes__(self) -> bytes:
         """Return the bytes representation of the task."""
