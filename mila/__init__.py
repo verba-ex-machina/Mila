@@ -46,17 +46,18 @@ class Mila:
             # Process tasks without a valid destination.
             print(f"Unroutable task: {task}")
 
-    def _process_tasks(self, task_list: List[MilaTask]) -> List[MilaTask]:
+    def _process_tasks(self, inbound_tasks: List[MilaTask]) -> List[MilaTask]:
         """Process inbound tasks."""
-        if any(task.content == "exit" for task in task_list):
+        if any(task.content == "exit" for task in inbound_tasks):
             self.running = False
             return []
-        for task in task_list:
+        for task in inbound_tasks:
             # Echo server: send the task back to the source.
             task.meta.destination = (
                 task.meta.destination or task.meta.source.copy()
             )
-        return task_list
+        outbound_tasks = inbound_tasks.copy()
+        return outbound_tasks
 
     async def _route_outbound_tasks(
         self, outbound_tasks: List[MilaTask]
