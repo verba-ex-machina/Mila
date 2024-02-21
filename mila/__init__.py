@@ -46,7 +46,13 @@ class MilaProc:
             handler()
             for handler in task_io_handlers
         ]
-        self.task_io_handlers.append(MilaIO())  # Add the MilaIO handler.
+        self.task_io_handlers.extend(
+            [
+                # Default handlers, always included.
+                FakeIO(),
+                MilaIO(),
+            ]
+        )
         self.running = False
 
     async def __aenter__(self) -> "MilaProc":
