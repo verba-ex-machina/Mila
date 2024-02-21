@@ -32,9 +32,10 @@ class Mila:
         for handler in self.task_io_handlers:
             await handler.teardown()
 
-    async def _collect_inbound_tasks(self) -> List[MilaTask]:
+    async def _collect_inbound_tasks(
+        self, inbound_tasks: List[MilaTask]
+    ) -> List[MilaTask]:
         """Collect all inbound tasks from all handlers."""
-        inbound_tasks = []
         for task_list in await asyncio.gather(
             *[handler.recv() for handler in self.task_io_handlers]
         ):
@@ -43,10 +44,12 @@ class Mila:
 
     async def _handle_unprocessed_tasks(
         self, unhandled_tasks: List[MilaTask]
-    ) -> None:
+    ) -> List[MilaTask]:
         for task in unhandled_tasks:
             # Process tasks without a valid destination.
             print(f"Unroutable task: {task}")
+            task.meta.state = "complete"
+        return unhandled_tasks
 
     async def _process_task(self, task: MilaTask) -> MilaTask:
         """Process a single task."""
@@ -98,11 +101,14 @@ class Mila:
     async def run(self) -> None:
         """Launch the Mila framework."""
         self.running = True
+        pipeline = [
+            self._collect_inbound_tasks,
+            self._process_tasks,
+            self._route_outbound_tasks,
+            self._handle_unprocessed_tasks,
+        ]
+        task_list = []
         while self.running:
-            inbound_tasks = await self._collect_inbound_tasks()
-            outbound_tasks = await self._process_tasks(inbound_tasks)
-            unprocessed_tasks = await self._route_outbound_tasks(
-                outbound_tasks
-            )
-            await self._handle_unprocessed_tasks(unprocessed_tasks)
+            for step in pipeline:
+                task_list = await step(task_list)
             await asyncio.sleep(0.1)
