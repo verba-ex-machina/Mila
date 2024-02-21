@@ -17,15 +17,10 @@ class MilaProc:
     def __init__(self, task_io_handlers: List[TaskIO]) -> None:
         """Initialize the Mila framework."""
         self.task_io_handlers: List[TaskIO] = [
-            # Default handlers, always included.
             MilaIO(),
         ]
         self.task_io_handlers.extend(
-            [
-                # Custom handlers, if provided.
-                handler()
-                for handler in task_io_handlers
-            ]
+            [handler() for handler in task_io_handlers]
         )
         self.running = False
 
@@ -66,7 +61,6 @@ class MilaProc:
             self.running = False
             task.state = STATES.COMPLETE
         if not task.destination:
-            # Default to the MilaIO handler.
             task.destination["handler"] = MilaIO.__name__
         return task
 
@@ -77,7 +71,6 @@ class MilaProc:
             for task in await asyncio.gather(
                 *[self._process_task(task) for task in tasks]
             )
-            # Filter out tasks that are deemed complete.
             if task.state != STATES.COMPLETE
         ]
 
@@ -99,7 +92,6 @@ class MilaProc:
             ]
         )
         return [
-            # Unhandled tasks.
             task
             for task in tasks
             if task.destination["handler"]

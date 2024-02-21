@@ -68,8 +68,6 @@ class DiscordClient(discord.Client):
         message = await channel.fetch_message(task.destination["message_id"])
         reply = await message.reply("_Responding..._")
         if len(task.content) > 2000:
-            # Response is too long for Discord. Split it into chunks,
-            # but avoid splitting in the middle of a line.
             chunks = task.content.split("\n")
             response = ""
             for chunk in chunks:
@@ -89,7 +87,6 @@ class DiscordClient(discord.Client):
             context=await self._get_context(message),
             content=message.content,
             source={
-                # This data is necessary for a response.
                 "author": {
                     "id": message.author.id,
                     "name": message.author.name,
