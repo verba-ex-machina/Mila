@@ -6,7 +6,6 @@ from typing import List
 from .base.constants import STATES, TICK
 from .base.interfaces import TaskIO
 from .base.types import MilaTask
-from .module.fake import FakeIO
 
 
 class MilaIO(TaskIO):
@@ -29,8 +28,8 @@ class MilaIO(TaskIO):
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send tasks to the I/O handler."""
         for task in task_list:
-            # Route to the FakeIO handler.
-            task.destination["handler"] = FakeIO.__name__
+            # Route back to the source handler.
+            task.destination = task.source.copy()
         self.task_list.extend(task_list)
 
 
@@ -43,7 +42,6 @@ class MilaProc:
         """Initialize the Mila framework."""
         self.task_io_handlers: List[TaskIO] = [
             # Default handlers, always included.
-            FakeIO(),
             MilaIO(),
         ]
         self.task_io_handlers.extend(
