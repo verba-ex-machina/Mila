@@ -10,12 +10,14 @@ class MilaTaskMeta:
 
     source: dict = dataclasses.field(default_factory=dict)
     destination: dict = dataclasses.field(default_factory=dict)
+    state: str = "new"
 
     def copy(self) -> "MilaTaskMeta":
         """Return a copy of the metadata."""
         return MilaTaskMeta(
             source=self.source.copy(),
             destination=self.destination.copy(),
+            state=str(self.state),
         )
 
 
