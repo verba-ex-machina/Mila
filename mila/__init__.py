@@ -48,39 +48,52 @@ class Mila:
             # Process tasks without a valid destination.
             print(f"Unroutable task: {task}")
 
+    async def _process_task(self, task: MilaTask) -> MilaTask:
+        """Process a single task."""
+        if task.content == "exit":
+            self.running = False
+        # Echo server: send the task back to the source.
+        task.meta.destination = (
+            task.meta.destination or task.meta.source.copy()
+        )
+        return task
+
     async def _process_tasks(
         self, inbound_tasks: List[MilaTask]
     ) -> List[MilaTask]:
-        """Process inbound tasks."""
-        if any(task.content == "exit" for task in inbound_tasks):
-            self.running = False
-            return []
-        for task in inbound_tasks:
-            # Echo server: send the task back to the source.
-            task.meta.destination = (
-                task.meta.destination or task.meta.source.copy()
+        """Process inbound tasks. Return outbound tasks."""
+        return [
+            task
+            for task in await asyncio.gather(
+                *[self._process_task(task) for task in inbound_tasks]
             )
-        outbound_tasks = inbound_tasks.copy()
-        return outbound_tasks
+            # Filter out tasks that are deemed complete.
+            if task.meta.state != "complete"
+        ]
 
     async def _route_outbound_tasks(
         self, outbound_tasks: List[MilaTask]
     ) -> List[MilaTask]:
         """Send outbound tasks to their respective handlers."""
-        for handler in self.task_io_handlers:
-            await handler.send(
-                [
-                    task
-                    for task in outbound_tasks
-                    if task.meta.destination["handler"] == handler.NAME
-                ]
-            )
-            outbound_tasks = [
-                task
-                for task in outbound_tasks
-                if task.meta.destination["handler"] != handler.NAME
+        await asyncio.gather(
+            *[
+                handler.send(
+                    [
+                        task
+                        for task in outbound_tasks
+                        if task.meta.destination["handler"] == handler.NAME
+                    ]
+                )
+                for handler in self.task_io_handlers
             ]
-        return outbound_tasks
+        )
+        return [
+            # Unhandled tasks.
+            task
+            for task in outbound_tasks
+            if task.meta.destination["handler"]
+            not in [handler.NAME for handler in self.task_io_handlers]
+        ]
 
     async def run(self) -> None:
         """Launch the Mila framework."""
