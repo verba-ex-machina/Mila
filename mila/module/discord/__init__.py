@@ -62,6 +62,7 @@ class DiscordClient(discord.Client):
 
     async def _send_message(self, task: MilaTask) -> None:
         """Send a message."""
+        # This currently assumes every message is a reply to another message.
         channel = await self.fetch_channel(task.meta.destination["channel_id"])
         message = await channel.fetch_message(
             task.meta.destination["message_id"]
@@ -90,6 +91,7 @@ class DiscordClient(discord.Client):
             content=message.content,
             meta=MilaTaskMeta(
                 source={
+                    # This data is necessary for a response.
                     "author": {
                         "id": message.author.id,
                         "name": message.author.name,
@@ -106,7 +108,6 @@ class DiscordClient(discord.Client):
                         }
                     ),
                 },
-                destination={},
             ),
         )
         return task
