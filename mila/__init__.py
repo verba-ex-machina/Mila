@@ -7,8 +7,8 @@ from .base.interfaces import TaskIO
 from .base.types import MilaTask
 
 
-class Mila:
-    """Mila framework class."""
+class MilaProc:
+    """Mila framework process class."""
 
     # pylint: disable=too-few-public-methods
 
@@ -21,7 +21,7 @@ class Mila:
         ]
         self.running = False
 
-    async def __aenter__(self) -> "Mila":
+    async def __aenter__(self) -> "MilaProc":
         """Set up the Mila framework."""
         for handler in self.task_io_handlers:
             await handler.setup()

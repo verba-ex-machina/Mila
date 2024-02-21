@@ -3,7 +3,7 @@
 import asyncio
 from typing import List
 
-from . import Mila
+from . import MilaProc
 from .base.interfaces import TaskIO
 from .module.discord import DiscordIO
 from .module.fake import FakeIO
@@ -13,7 +13,7 @@ TASK_IO_HANDLERS: List[TaskIO] = [DiscordIO, FakeIO]
 
 async def main():
     """Launch the Mila framework."""
-    async with Mila(task_io_handlers=TASK_IO_HANDLERS) as mila:
+    async with MilaProc(task_io_handlers=TASK_IO_HANDLERS) as mila:
         await mila.run()
 
 
