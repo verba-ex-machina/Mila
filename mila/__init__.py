@@ -43,23 +43,22 @@ class MilaProc:
         )
 
     async def _collect_inbound_tasks(
-        self, inbound_tasks: List[MilaTask]
+        self, tasks: List[MilaTask]
     ) -> List[MilaTask]:
         """Collect all inbound tasks from all handlers."""
         for task_list in await asyncio.gather(
             *[handler.recv() for handler in self.task_io_handlers]
         ):
-            inbound_tasks.extend(task_list)
-        return inbound_tasks
+            tasks.extend(task_list)
+        return tasks
 
     async def _handle_unprocessed_tasks(
-        self, unhandled_tasks: List[MilaTask]
+        self, tasks: List[MilaTask]
     ) -> List[MilaTask]:
-        for task in unhandled_tasks:
-            # Process tasks without a valid destination.
+        for task in tasks:
             print(f"Unroutable task: {task}")
             task.state = STATES.COMPLETE
-        return unhandled_tasks
+        return tasks
 
     async def _process_task(self, task: MilaTask) -> MilaTask:
         """Process a single task."""
@@ -71,21 +70,19 @@ class MilaProc:
             task.destination["handler"] = MilaIO.__name__
         return task
 
-    async def _process_tasks(
-        self, inbound_tasks: List[MilaTask]
-    ) -> List[MilaTask]:
+    async def _process_tasks(self, tasks: List[MilaTask]) -> List[MilaTask]:
         """Process inbound tasks. Return outbound tasks."""
         return [
             task
             for task in await asyncio.gather(
-                *[self._process_task(task) for task in inbound_tasks]
+                *[self._process_task(task) for task in tasks]
             )
             # Filter out tasks that are deemed complete.
             if task.state != STATES.COMPLETE
         ]
 
     async def _route_outbound_tasks(
-        self, outbound_tasks: List[MilaTask]
+        self, tasks: List[MilaTask]
     ) -> List[MilaTask]:
         """Send outbound tasks to their respective handlers."""
         await asyncio.gather(
@@ -93,7 +90,7 @@ class MilaProc:
                 handler.send(
                     [
                         task
-                        for task in outbound_tasks
+                        for task in tasks
                         if task.destination["handler"]
                         == handler.__class__.__name__
                     ]
@@ -104,7 +101,7 @@ class MilaProc:
         return [
             # Unhandled tasks.
             task
-            for task in outbound_tasks
+            for task in tasks
             if task.destination["handler"]
             not in [
                 handler.__class__.__name__ for handler in self.task_io_handlers
