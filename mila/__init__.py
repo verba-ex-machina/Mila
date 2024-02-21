@@ -39,14 +39,14 @@ class Mila:
             inbound_tasks.extend(await handler.recv())
         return inbound_tasks
 
-    def _handle_unprocessed_tasks(
+    async def _handle_unprocessed_tasks(
         self, unhandled_tasks: List[MilaTask]
     ) -> None:
         for task in unhandled_tasks:
             # Process tasks without a valid destination.
             print(f"Unroutable task: {task}")
 
-    def _process_tasks(self, inbound_tasks: List[MilaTask]) -> List[MilaTask]:
+    async def _process_tasks(self, inbound_tasks: List[MilaTask]) -> List[MilaTask]:
         """Process inbound tasks."""
         if any(task.content == "exit" for task in inbound_tasks):
             self.running = False
@@ -82,9 +82,8 @@ class Mila:
         """Launch the Mila framework."""
         self.running = True
         while self.running:
-            self._handle_unprocessed_tasks(
-                await self._route_outbound_tasks(
-                    self._process_tasks(await self._collect_inbound_tasks())
-                )
-            )
+            inbound_tasks = await self._collect_inbound_tasks()
+            outbound_tasks = await self._process_tasks(inbound_tasks)
+            unprocessed_tasks = await self._route_outbound_tasks(outbound_tasks)
+            await self._handle_unprocessed_tasks(unprocessed_tasks)
             await asyncio.sleep(0.1)
