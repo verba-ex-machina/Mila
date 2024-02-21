@@ -11,5 +11,6 @@ def make_task(data: str = "None") -> MilaTask:
         meta=MilaTaskMeta(
             source={"handler": data},
             destination={},
+            state="new",
         ),
     )
