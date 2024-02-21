@@ -3,6 +3,7 @@
 import asyncio
 from typing import List
 
+from .base.constants import TICK
 from .base.interfaces import TaskIO
 from .base.types import MilaTask
 from .module.fake import FakeIO
@@ -145,4 +146,4 @@ class MilaProc:
         while self.running:
             for step in pipeline:
                 task_list = await step(task_list)
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(TICK)

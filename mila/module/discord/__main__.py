@@ -2,6 +2,7 @@
 
 import asyncio
 
+from mila.base.constants import TICK
 from mila.module.fake import FakeIO
 
 from . import DiscordIO
@@ -19,7 +20,7 @@ async def demo():
                     break
                 await fakeio.send(tasks)
                 await discord.send(await fakeio.recv())
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(TICK)
 
 
 if __name__ == "__main__":

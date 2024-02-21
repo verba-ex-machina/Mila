@@ -8,6 +8,7 @@ from typing import List
 import discord
 from discord.ext import tasks
 
+from mila.base.constants import TICK
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
 
@@ -46,7 +47,7 @@ class DiscordClient(discord.Client):
         )
         return await self._sub_usernames(context)
 
-    @tasks.loop(seconds=0.1)
+    @tasks.loop(seconds=TICK)
     async def _handle_received_tasks(self) -> None:
         """Handle tasks received from Mila."""
         try:
