@@ -16,8 +16,7 @@ async def demo():
                 tasks = await discord.recv()
                 if any(task.content == "exit" for task in tasks):
                     running = False
-                else:
-                    await fakeio.send(tasks)
+                await fakeio.send(tasks)
                 await discord.send(await fakeio.recv())
                 await asyncio.sleep(0.1)
 
