@@ -7,8 +7,8 @@ import os
 import discord
 from discord.ext import tasks
 
-from mila import MilaProc, config
-from mila.logging import LOGGER
+from .mila import Mila, config
+from .mila.logging import LOGGER
 
 CONTEXT_LIMIT = 5  # How many previous Discord messages to include in context.
 TICK_TIME = 0.1  # How often to check for updates, in seconds.
@@ -17,7 +17,7 @@ TICK_TIME = 0.1  # How often to check for updates, in seconds.
 class MilaBot(discord.Client):
     """Implement a Discord bot for interacting with Mila."""
 
-    def __init__(self, mila: MilaProc, *args, **kwargs):
+    def __init__(self, mila: Mila, *args, **kwargs):
         """Initialize MilaBot."""
         super().__init__(*args, **kwargs)
         self._mila = mila
@@ -99,7 +99,7 @@ def main():
     intents = discord.Intents.default()
     intents.members = True
     intents.message_content = True
-    mila = MilaProc()
+    mila = Mila()
     bot = MilaBot(
         mila=mila,
         description=config.DESCRIPTION,
