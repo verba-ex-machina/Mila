@@ -1,8 +1,8 @@
 """Provide the Mila library."""
 
-from mila.assistants import Assistant
-from mila.logging import LOGGER
-from mila.threads import Thread
+from .assistants import Assistant
+from .logging import LOGGER
+from .threads import Thread
 
 
 class Mila:

@@ -1,8 +1,8 @@
 """Provide access to the OpenAI Threads feature."""
 
-from mila.llm import LLM
-from mila.prompts import PROMPTS
-from mila.runs import Run
+from .llm import LLM
+from .prompts import PROMPTS
+from .runs import Run
 
 
 class Thread:

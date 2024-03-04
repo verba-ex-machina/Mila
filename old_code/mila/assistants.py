@@ -4,11 +4,11 @@
 import hashlib
 import json
 
-from mila import config
-from mila.llm import LLM
-from mila.logging import LOGGER
-from mila.prompts import PROMPTS
-from mila.tools import TOOLS
+from . import config
+from .llm import LLM
+from .logging import LOGGER
+from .prompts import PROMPTS
+from .tools import TOOLS
 
 
 def assistant_hash() -> str:

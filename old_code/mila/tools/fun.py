@@ -5,7 +5,7 @@ import random
 
 import aiohttp
 
-from mila.logging import LOGGER
+from ..logging import LOGGER
 
 
 async def get_horoscope(star_sign: str) -> str:

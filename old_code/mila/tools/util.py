@@ -1,6 +1,6 @@
 """Provide a suite of utility tools."""
 
-from mila.logging import LOGGER
+from ..logging import LOGGER
 
 
 async def suggest_feature(

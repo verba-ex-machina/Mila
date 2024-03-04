@@ -1,6 +1,6 @@
 """Provide a suite of tools for the toolkit."""
 
-from mila.tools import fun, info, util
+from . import fun, info, util
 
 _TOOLKITS = [
     # Add toolkit libraries here.

@@ -1,7 +1,7 @@
 """Provide prompts for Mila."""
 
 
-from mila.config import DESCRIPTION, NAME, PROMPT_PATH
+from .config import DESCRIPTION, NAME, PROMPT_PATH
 
 
 class Prompts:

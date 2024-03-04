@@ -2,9 +2,9 @@
 
 import json
 
-from mila.llm import LLM
-from mila.logging import LOGGER
-from mila.tools import TOOLS
+from .llm import LLM
+from .logging import LOGGER
+from .tools import TOOLS
 
 
 class Run:

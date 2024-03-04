@@ -7,7 +7,7 @@ import aiohttp
 import serpapi
 from bs4 import BeautifulSoup
 
-from mila.logging import LOGGER
+from ..logging import LOGGER
 
 
 async def get_weather(zipcode: str) -> str:
