@@ -6,7 +6,6 @@ from mila.base.types import MilaAssistant, MilaTool
 OVERMIND_TOOLS = [
     MilaTool(
         name="get_assistants",
-        description=get_assistants.__doc__,
         function=get_assistants,
         properties={},
         required=[],

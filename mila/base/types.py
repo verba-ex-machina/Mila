@@ -4,9 +4,35 @@ import json
 from dataclasses import asdict, dataclass, field
 from typing import Iterable
 
-from openai.types.beta.assistant import Assistant, Tool
+from openai.types.beta.assistant import Assistant
 
 from mila.base.constants import LLM, STATES
+
+
+@dataclass
+class MilaTool:
+    """Define a single tool in an Assistant's toolkit."""
+
+    name: str
+    function: callable
+    properties: dict = field(default_factory=dict)
+    required: list = field(default_factory=list)
+
+    @property
+    def definition(self) -> dict:
+        """Get the tool definition."""
+        return {
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": self.function.__doc__,
+                "parameters": {
+                    "type": "object",
+                    "properties": self.properties,
+                    "required": self.required,
+                },
+            },
+        }
 
 
 @dataclass
@@ -16,7 +42,7 @@ class MilaAssistant:
     name: str
     description: str
     instructions: str
-    tools: Iterable[Tool]
+    tools: Iterable[MilaTool]
     model: str
     metadata: dict = field(default_factory=dict)
 
@@ -53,38 +79,19 @@ class MilaAssistant:
 
     def __repr__(self) -> str:
         """Return the string representation of the assistant."""
-        return json.dumps(asdict(self))
+        as_dict = {
+            "name": self.name,
+            "description": self.description,
+            "instructions": self.instructions,
+            "tools": [tool.definition for tool in self.tools],
+            "model": self.model,
+            "metadata": self.metadata,
+        }
+        return json.dumps(as_dict)
 
     def __str__(self) -> str:
         """Return the string representation of the assistant."""
         return self.__repr__()
-
-
-@dataclass
-class MilaTool:
-    """Define a single tool in an Assistant's toolkit."""
-
-    name: str
-    description: str
-    function: callable
-    properties: dict = field(default_factory=dict)
-    required: list = field(default_factory=list)
-
-    @property
-    def definition(self) -> dict:
-        """Get the tool definition."""
-        return {
-            "type": "function",
-            "function": {
-                "name": self.name,
-                "description": self.description,
-                "parameters": {
-                    "type": "object",
-                    "properties": self.properties,
-                    "required": self.required,
-                },
-            },
-        }
 
 
 @dataclass
