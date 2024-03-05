@@ -14,6 +14,7 @@ class MilaAssistant:
     """Define a Mila assistant."""
 
     name: str
+    description: str
     instructions: str
     tools: Iterable[Tool]
     model: str
