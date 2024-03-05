@@ -4,9 +4,9 @@ import json
 from dataclasses import asdict, dataclass, field
 from typing import Iterable
 
-from openai.types.beta.assistant import Tool
+from openai.types.beta.assistant import Tool, Assistant
 
-from mila.base.constants import STATES
+from mila.base.constants import STATES, LLM
 
 
 @dataclass
@@ -19,6 +19,33 @@ class MilaAssistant:
     tools: Iterable[Tool]
     model: str
     metadata: dict = field(default_factory=dict)
+
+    async def spawn(self) -> Assistant:
+        """Retrieve an OpenAI Assistant based on this MilaAssistant."""
+        assistants = await LLM.beta.assistants.list(limit=100)
+        if not self.metadata.get("hash"):
+            self.metadata["hash"] = self.__hash__()
+        for assistant in assistants.data:
+            if assistant.name == self.name:
+                if (
+                    "hash" not in assistant.metadata.keys()
+                    or assistant.metadata["hash"] != self.metadata["hash"]
+                ):
+                    await LLM.beta.assistants.update(
+                        assistant.id,
+                        instructions=self.instructions,
+                        tools=self.tools,
+                        model=self.model,
+                        metadata=self.metadata,
+                    )
+                return assistant
+        return await LLM.beta.assistants.create(
+            instructions=self.instructions,
+            name=self.name,
+            model=self.model,
+            tools=self.tools,
+            metadata=self.metadata,
+        )
 
     def __hash__(self) -> int:
         """Return the hash of the assistant."""

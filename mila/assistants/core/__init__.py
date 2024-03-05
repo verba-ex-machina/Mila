@@ -8,7 +8,7 @@ ASSISTANTS: List[MilaAssistant] = []
 
 
 def get_assistants() -> dict:
-    """Retrieve the list of available assistants."""
+    """Retrieve a list of available assistants."""
     return {assistant.name: assistant.description for assistant in ASSISTANTS}
 
 
