@@ -68,7 +68,11 @@ async def test_milaproc():
     """Test the MilaProc class."""
     async with MilaProc(task_io_handlers=[DemoIO, FakeIO]) as mila:
         await mila.run()
-    assert RESULTS.initialized  # DemoIO setup().
-    assert RESULTS.received  # DemoIO recv().
-    assert RESULTS.sent  # DemoIO send().
-    assert RESULTS.torn_down  # DemoIO teardown().
+    # Ensure the DemoIO handler was setup and torn down.
+    # This tests the MilaProc task IO handler lifecycle.
+    assert RESULTS.initialized
+    assert RESULTS.torn_down
+    # Ensure the DemoIO handler received and sent a message.
+    # This tests the MilaProc task routing logic.
+    assert RESULTS.received
+    assert RESULTS.sent
