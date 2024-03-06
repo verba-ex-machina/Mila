@@ -1,5 +1,6 @@
 """Provide Discord modules for Mila."""
 
+import asyncio
 import os
 import queue
 from multiprocessing import Process, Queue
@@ -11,6 +12,7 @@ from discord.ext import tasks
 from mila.base.constants import TICK
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
+from mila.module.fake import FakeIO
 
 
 class DiscordClient(discord.Client):
@@ -193,3 +195,22 @@ class DiscordIO(TaskIO):
         kill_msg = MilaTask(content="EXIT", context="COMMAND")
         self._send_queue.put(kill_msg)
         self._process.join()
+
+
+async def demo():
+    """Run an echo-server demo of the Discord module."""
+    running = True
+    async with DiscordIO() as discord_io:
+        async with FakeIO() as fakeio:
+            while running:
+                task_list = await discord_io.recv()
+                if any(task.content == "exit" for task in task_list):
+                    running = False
+                    break
+                await fakeio.send(task_list)
+                await discord_io.send(await fakeio.recv())
+                await asyncio.sleep(TICK)
+
+
+if __name__ == "__main__":
+    asyncio.run(demo())

@@ -2,7 +2,6 @@
 
 from typing import List
 
-from mila.assistants import ASSISTANTS
 from mila.base.constants import STATES
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
