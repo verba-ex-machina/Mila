@@ -3,25 +3,22 @@
 from typing import List
 
 from mila.assistants import ASSISTANTS
+from mila.base.constants import STATES
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
+from mila.module.fake import FakeStorage
 
 
 class MilaIO(TaskIO):
     """Mila framework I/O handler class."""
 
-    task_list: List[MilaTask] = []
+    task_storage = FakeStorage()  # Replace with real storage.
 
     async def recv(self) -> List[MilaTask]:
         """Receive tasks from the I/O handler."""
-        # This is just an echo server for now.
-        outbound_tasks = self.task_list.copy()
-        self.task_list.clear()
-        return outbound_tasks
+        return await self.task_storage.by_state(STATES.OUTBOUND)
 
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send tasks to the I/O handler."""
         for task in task_list:
-            # Yet another echo server implementation (for now).
-            task.destination = task.source.copy()
-        self.task_list.extend(task_list)
+            await self.task_storage.create(task)
