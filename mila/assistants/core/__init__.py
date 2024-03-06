@@ -1,17 +1,19 @@
 """Define core Assistants for the Mila framework."""
 
-from typing import List
+from typing import Dict
 
 from mila.base.types import MilaAssistant
 
-ASSISTANTS: List[MilaAssistant] = []
+ASSISTANTS: Dict[str, MilaAssistant] = {}
 
 
 def get_assistants() -> dict:
     """Retrieve a list of available assistants."""
-    return {assistant.name: assistant.description for assistant in ASSISTANTS}
+    return {
+        name: assistant.description for name, assistant in ASSISTANTS.items()
+    }
 
 
 def register_assistant(assistant: MilaAssistant) -> None:
     """Register an assistant with the Mila framework."""
-    ASSISTANTS.append(assistant)
+    ASSISTANTS[assistant.name] = assistant
