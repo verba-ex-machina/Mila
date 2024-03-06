@@ -1,4 +1,4 @@
-"""Define essential data types for Mila."""
+"""Define essential Mila Framework data types."""
 
 import json
 from dataclasses import asdict, dataclass, field

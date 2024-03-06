@@ -1,4 +1,4 @@
-"""Provide fake modules for testing purposes."""
+"""Provide interface fakes for testing purposes."""
 
 import hashlib
 from typing import Dict, List

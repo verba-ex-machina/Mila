@@ -1,1 +1,1 @@
-"""Test the Mila framework."""
+"""Test the Mila Framework."""

@@ -1,4 +1,4 @@
-"""Define global constant values."""
+"""Define global constants and objects."""
 
 from collections import namedtuple
 

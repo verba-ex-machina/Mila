@@ -1,1 +1,1 @@
-"""Provide base classes for the Mila package."""
+"""Provide the foundation for the Mila Framework."""

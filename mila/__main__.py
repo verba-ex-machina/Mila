@@ -1,4 +1,4 @@
-"""Execute the Mila framework as an all-in-one module."""
+"""Execute the Mila Framework as an all-in-one module."""
 
 import asyncio
 from typing import List
@@ -11,7 +11,7 @@ TASK_IO_HANDLERS: List[TaskIO] = [DiscordIO]
 
 
 async def main():
-    """Launch the Mila framework."""
+    """Launch the Mila Framework."""
     async with MilaProc(task_io_handlers=TASK_IO_HANDLERS) as mila:
         await mila.run()
 

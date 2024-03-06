@@ -1,4 +1,4 @@
-"""Provide Discord modules for Mila."""
+"""Provide Discord connectivity for Mila."""
 
 import asyncio
 import os

@@ -1,4 +1,4 @@
-"""Define core Assistants for the Mila framework."""
+"""Define core functionality for Mila Framework assistants."""
 
 from typing import Dict
 
@@ -15,5 +15,5 @@ def get_assistants() -> dict:
 
 
 def register_assistant(assistant: MilaAssistant) -> None:
-    """Register an assistant with the Mila framework."""
+    """Register an assistant with the framework."""
     ASSISTANTS[assistant.name] = assistant

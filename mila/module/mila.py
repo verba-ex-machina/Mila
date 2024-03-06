@@ -1,4 +1,4 @@
-"""Provide Mila framework modules."""
+"""Provide Mila Framework modules."""
 
 from typing import List
 
@@ -9,7 +9,7 @@ from mila.module.fake import FakeStorage
 
 
 class MilaIO(TaskIO):
-    """Mila framework I/O handler class."""
+    """Mila Framework I/O handler class."""
 
     task_storage = FakeStorage()  # Replace with real storage.
 

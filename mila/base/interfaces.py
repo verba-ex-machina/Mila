@@ -1,4 +1,4 @@
-"""Provide Mila interfaces."""
+"""Provide interfaces for Mila Framework objects."""
 
 from abc import ABC, abstractmethod
 from typing import List

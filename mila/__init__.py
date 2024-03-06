@@ -1,4 +1,4 @@
-"""Provide the Mila framework."""
+"""Provide the Mila Framework."""
 
 import asyncio
 from typing import List
@@ -10,12 +10,12 @@ from .module.mila import MilaIO
 
 
 class MilaProc:
-    """Mila framework process class."""
+    """Mila Framework process class."""
 
     # pylint: disable=too-few-public-methods
 
     def __init__(self, task_io_handlers: List[TaskIO]) -> None:
-        """Initialize the Mila framework."""
+        """Initialize the Mila Framework."""
         self.task_io_handlers: List[TaskIO] = [
             MilaIO(),
         ]
@@ -25,14 +25,14 @@ class MilaProc:
         self.running = False
 
     async def __aenter__(self) -> "MilaProc":
-        """Set up the Mila framework."""
+        """Set up the Mila Framework."""
         await asyncio.gather(
             *[handler.setup() for handler in self.task_io_handlers]
         )
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
-        """Tear down the Mila framework."""
+        """Tear down the Mila Framework."""
         await asyncio.gather(
             *[handler.teardown() for handler in self.task_io_handlers]
         )
@@ -101,7 +101,7 @@ class MilaProc:
         ]
 
     async def run(self) -> None:
-        """Launch the Mila framework."""
+        """Launch the Mila Framework."""
         self.running = True
         pipeline = [
             self._collect_inbound_tasks,
