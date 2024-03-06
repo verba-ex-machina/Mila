@@ -69,6 +69,6 @@ class FakeStorage(TaskStorage):
                 f"Failed to delete: Task with id {task_id} not found"
             )
 
-    async def by_status(self, status: str) -> List[MilaTask]:
-        """Retrieve tasks by status from FakeStorage."""
-        return [task for task in self.tasks.values() if task.status == status]
+    async def by_state(self, state: str) -> List[MilaTask]:
+        """Retrieve tasks by state from FakeStorage."""
+        return [task for task in self.tasks.values() if task.state == state]

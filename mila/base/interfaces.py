@@ -53,5 +53,5 @@ class TaskStorage(ABC):
         """Delete a task from the storage channel."""
 
     @abstractmethod
-    async def by_status(self, status: str) -> List[MilaTask]:
-        """Retrieve tasks by status from the storage channel."""
+    async def by_state(self, state: str) -> List[MilaTask]:
+        """Retrieve tasks by state from the storage channel."""
