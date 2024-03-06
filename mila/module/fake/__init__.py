@@ -68,3 +68,7 @@ class FakeStorage(TaskStorage):
             raise KeyError(
                 f"Failed to delete: Task with id {task_id} not found"
             )
+
+    async def by_status(self, status: str) -> List[MilaTask]:
+        """Retrieve tasks by status from FakeStorage."""
+        return [task for task in self.tasks.values() if task.status == status]

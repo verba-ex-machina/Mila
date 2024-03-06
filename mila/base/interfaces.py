@@ -51,3 +51,7 @@ class TaskStorage(ABC):
     @abstractmethod
     async def delete(self, task_id: str) -> None:
         """Delete a task from the storage channel."""
+
+    @abstractmethod
+    async def by_status(self, status: str) -> List[MilaTask]:
+        """Retrieve tasks by status from the storage channel."""
