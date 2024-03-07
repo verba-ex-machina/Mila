@@ -1,12 +1,13 @@
 """Provide Mila Framework modules."""
 
+import asyncio
 from typing import List
 
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from mila.assistants import ASSISTANTS
 from mila.base.constants import LLM, STATES
-from mila.base.interfaces import TaskIO, TaskStorage
+from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
 
 MSG_FORMAT = """
@@ -28,11 +29,12 @@ in your response.
 """
 
 
-class MilaStorage(TaskStorage):
-    """Mila Framework storage class."""
+class MilaIO(TaskIO):
+    """Mila Framework I/O handler class."""
 
-    initialized: bool = False
+    tasks: List[MilaTask] = []
     engine: AsyncEngine
+    initialized: bool = False
 
     async def _setup(self) -> None:
         """Initialize the storage channel."""
@@ -40,30 +42,6 @@ class MilaStorage(TaskStorage):
             "sqlite+aiosqlite:///:memory:", echo=True
         )
         self.initialized = True
-
-    async def _spawn_run(self, assistant_id, thread):
-        """Spawn a new run for the given assistant and thread."""
-        run = await LLM.beta.threads.runs.create(
-            thread_id=thread.id,
-            assistant_id=assistant_id,
-        )
-        return run
-
-    async def _spawn_thread(self, task):
-        """Spawn a new thread for the given task."""
-        thread = await LLM.beta.threads.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": (
-                        " ".join(MSG_FORMAT.strip().split("\n")).format(
-                            context=task.context, query=task.content
-                        )
-                    ),
-                }
-            ],
-        )
-        return thread
 
     @staticmethod
     def db_required(function: callable):
@@ -80,57 +58,48 @@ class MilaStorage(TaskStorage):
         return wrapper
 
     @db_required
-    async def create(self, task: MilaTask) -> str:
-        """Create a task in the storage channel."""
+    async def recv(self) -> List[MilaTask]:
+        """Receive tasks from the I/O handler."""
+        outbound = [
+            task for task in self.tasks if task.state == STATES.OUTBOUND
+        ]
+        self.tasks = [
+            task for task in self.tasks if task.state != STATES.OUTBOUND
+        ]
+        return outbound
+
+    @db_required
+    async def send(self, task_list: List[MilaTask]) -> None:
+        """Send tasks to the I/O handler."""
+        processes = [self._process_task(task) for task in task_list]
+        await asyncio.gather(*processes)
+
+    async def _process_task(self, task):
         try:
             assistant = ASSISTANTS[task.assignee].spawn()
         except KeyError as exc:
             raise ValueError(
-                f"Failed to create task: Unknown assistant {task.assignee}"
+                f"Failed to send task: Unknown assistant {task.assignee}"
             ) from exc
         assistant_id = await assistant.id()
-        thread = await self._spawn_thread(task)
-        run = await self._spawn_run(assistant_id, thread)
+        thread = await LLM.beta.threads.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": (
+                        " ".join(MSG_FORMAT.strip().split("\n")).format(
+                            context=task.context, query=task.content
+                        )
+                    ),
+                }
+            ],
+        )
+        run = await LLM.beta.threads.runs.create(
+            thread_id=thread.id,
+            assistant_id=assistant_id,
+        )
         task.state = STATES.PROCESSING
         task.meta["assistant_id"] = assistant_id
         task.meta["thread_id"] = thread.id
         task.meta["run_id"] = run.id
-        # pylint: disable=fixme
-        # TODO: Store the task in the database.
-        return hash(task)
-
-    @db_required
-    async def read(self, task_id: str) -> MilaTask:
-        """Read a task from the storage channel."""
-
-    @db_required
-    async def update(self, task_id: str, task: MilaTask) -> None:
-        """Update a task in the storage channel."""
-
-    @db_required
-    async def delete(self, task_id: str) -> None:
-        """Delete a task from the storage channel."""
-
-    @db_required
-    async def by_state(self, state: str) -> List[MilaTask]:
-        """Retrieve tasks by state from the storage channel."""
-        return []
-
-
-class MilaIO(TaskIO):
-    """Mila Framework I/O handler class."""
-
-    task_storage: TaskStorage
-
-    async def recv(self) -> List[MilaTask]:
-        """Receive tasks from the I/O handler."""
-        return await self.task_storage.by_state(state=STATES.OUTBOUND)
-
-    async def send(self, task_list: List[MilaTask]) -> None:
-        """Send tasks to the I/O handler."""
-        for task in task_list:
-            await self.task_storage.create(task)
-
-    async def setup(self) -> None:
-        """Prepare the I/O handler."""
-        self.task_storage = MilaStorage()
+        self.tasks.append(task)
