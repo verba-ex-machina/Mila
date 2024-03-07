@@ -1,3 +1,4 @@
 discord.py
 openai
-sqlalchemy
+aiosqlite
+sqlalchemy[asyncio]

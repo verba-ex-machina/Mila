@@ -2,7 +2,7 @@
 
 import json
 from dataclasses import asdict, dataclass, field
-from typing import Iterable
+from typing import Iterable, Optional
 
 from openai.types.beta.assistant import Assistant
 
@@ -103,6 +103,8 @@ class MilaTask:
     source: dict = field(default_factory=dict)
     destination: dict = field(default_factory=dict)
     state: str = STATES.NEW
+    meta: dict = field(default_factory=dict)
+    assignee: Optional[str] = "Overmind"  # Unassigned? Overmind.
 
     def __bytes__(self) -> bytes:
         """Return the bytes representation of the task."""
@@ -128,4 +130,6 @@ class MilaTask:
             source=self.source.copy(),
             destination=self.destination.copy(),
             state=self.state,
+            meta=self.meta.copy(),
+            assignee=self.assignee,
         )

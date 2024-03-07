@@ -7,7 +7,7 @@ from mila.base.types import MilaAssistant
 ASSISTANTS: Dict[str, MilaAssistant] = {}
 
 
-def get_assistants() -> dict:
+async def get_assistants() -> dict:
     """Retrieve a list of available assistants."""
     return {
         name: assistant.description for name, assistant in ASSISTANTS.items()
