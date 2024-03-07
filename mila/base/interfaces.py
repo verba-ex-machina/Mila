@@ -31,27 +31,3 @@ class TaskIO(ABC):
 
     async def teardown(self) -> None:
         """Teardown the comms channel."""
-
-
-class TaskStorage(ABC):
-    """Define the interface for a standard Mila storage channel."""
-
-    @abstractmethod
-    async def create(self, task: MilaTask) -> str:
-        """Create a task in the storage channel."""
-
-    @abstractmethod
-    async def read(self, task_id: str) -> MilaTask:
-        """Read a task from the storage channel."""
-
-    @abstractmethod
-    async def update(self, task_id: str, task: MilaTask) -> None:
-        """Update a task in the storage channel."""
-
-    @abstractmethod
-    async def delete(self, task_id: str) -> None:
-        """Delete a task from the storage channel."""
-
-    @abstractmethod
-    async def by_state(self, state: str) -> List[MilaTask]:
-        """Retrieve tasks by state from the storage channel."""
