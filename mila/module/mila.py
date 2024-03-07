@@ -34,12 +34,6 @@ class MilaStorage(TaskStorage):
     initialized: bool = False
     engine: AsyncEngine
 
-    async def _add_to_db(self, task: MilaTask) -> str:
-        """Add a task to the database."""
-        # pylint: disable=fixme
-        # TODO: Implement this method.
-        return hash(task)
-
     async def _setup(self) -> None:
         """Initialize the storage channel."""
         self.engine = create_async_engine(
@@ -101,7 +95,9 @@ class MilaStorage(TaskStorage):
         task.meta["assistant_id"] = assistant_id
         task.meta["thread_id"] = thread.id
         task.meta["run_id"] = run.id
-        return await self._add_to_db(task)
+        # pylint: disable=fixme
+        # TODO: Store the task in the database.
+        return hash(task)
 
     @db_required
     async def read(self, task_id: str) -> MilaTask:
