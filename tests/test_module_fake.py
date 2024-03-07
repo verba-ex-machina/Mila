@@ -75,5 +75,5 @@ async def test_fake_storage():
     task1.state = STATES.COMPLETE
     await fake_storage.create(task1)
     await fake_storage.create(task2)
-    assert await fake_storage.by_state(STATES.NEW) == [task2]
-    assert await fake_storage.by_state(STATES.COMPLETE) == [task1]
+    assert await fake_storage.by_state(state=STATES.NEW) == [task2]
+    assert await fake_storage.by_state(state=STATES.COMPLETE) == [task1]
