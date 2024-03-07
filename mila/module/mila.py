@@ -42,7 +42,6 @@ class MilaStorage(TaskStorage):
 
     async def _setup(self) -> None:
         """Initialize the storage channel."""
-        print("INIT")
         self.engine = create_async_engine(
             "sqlite+aiosqlite:///:memory:", echo=True
         )
