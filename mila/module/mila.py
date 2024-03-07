@@ -30,7 +30,7 @@ class MilaStorage(TaskStorage):
 class MilaIO(TaskIO):
     """Mila Framework I/O handler class."""
 
-    task_storage: MilaStorage
+    task_storage: TaskStorage
 
     async def recv(self) -> List[MilaTask]:
         """Receive tasks from the I/O handler."""
