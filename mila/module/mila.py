@@ -47,7 +47,7 @@ class MilaIO(TaskIO):
     def db_required(function: callable):
         """Ensure that the database is initialized when needed."""
 
-        async def wrapper(self: "MilaStorage", *args, **kwargs):
+        async def wrapper(self: "MilaIO", *args, **kwargs):
             """Initialize the database if needed."""
             # pylint: disable=protected-access
             # pylint: disable=not-callable
