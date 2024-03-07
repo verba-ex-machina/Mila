@@ -71,8 +71,7 @@ class MilaIO(TaskIO):
     @db_required
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send tasks to the I/O handler."""
-        processes = [self._process_task(task) for task in task_list]
-        await asyncio.gather(*processes)
+        await asyncio.gather(*[self._process_task(task) for task in task_list])
 
     async def _process_task(self, task):
         try:
