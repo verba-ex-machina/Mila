@@ -71,7 +71,7 @@ class MilaStorage(TaskStorage):
         )
         return thread
 
-    # pylint: disable=no-self-argument
+    @staticmethod
     def db_required(function: callable):
         """Ensure that the database is initialized when needed."""
 
