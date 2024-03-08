@@ -1,7 +1,6 @@
 """Define essential Mila Framework data types."""
 
-import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from typing import Optional
 
 from mila.base.constants import STATES
@@ -48,14 +47,6 @@ class MilaTask:
     def __hash__(self) -> int:
         """Return the hash of the task."""
         return hash(str(self))
-
-    def __repr__(self) -> str:
-        """Return the string representation of the task."""
-        return json.dumps(asdict(self))
-
-    def __str__(self) -> str:
-        """Return the string representation of the task."""
-        return self.__repr__()
 
     def copy(self) -> "MilaTask":
         """Return a copy of the task."""
