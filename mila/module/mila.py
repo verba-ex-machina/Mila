@@ -73,7 +73,9 @@ class MilaIO(TaskIO):
         """Send tasks to the I/O handler."""
         await asyncio.gather(*[self._process_task(task) for task in task_list])
 
-    async def _process_task(self, task):
+    async def _process_task(self, task: MilaTask) -> None:
+        """Process a single task."""
+        # Consider moving this to within the assistants themselves.
         try:
             assistant = ASSISTANTS[task.assignee].spawn()
         except KeyError as exc:
