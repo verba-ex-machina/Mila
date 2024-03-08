@@ -77,7 +77,7 @@ class MilaIO(TaskIO):
         """Process a single task."""
         # Consider moving this to within the assistants themselves.
         try:
-            assistant = ASSISTANTS[task.assignee].spawn()
+            assistant = await ASSISTANTS[task.assignee].spawn()
         except KeyError as exc:
             raise ValueError(
                 f"Failed to send task: Unknown assistant {task.assignee}"
