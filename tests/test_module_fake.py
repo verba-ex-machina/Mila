@@ -17,7 +17,6 @@ async def test_fake_io():
             """Move source to destination."""
             task = task.copy()
             task.destination = task.source.copy()
-            task.source["handler"] = FakeIO.__name__
             return task
 
         # Phase 1
