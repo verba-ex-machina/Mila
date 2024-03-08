@@ -8,7 +8,7 @@ import pytest
 from mila import MilaProc
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
-from mila.module.fake import FakeDB, FakeIO
+from mila.module.fake import FakeIO
 
 from .common import make_task
 
@@ -66,7 +66,7 @@ class DemoIO(TaskIO):
 @pytest.mark.asyncio
 async def test_milaproc():
     """Test the MilaProc class."""
-    async with MilaProc(db=FakeDB, task_io_handlers=[DemoIO, FakeIO]) as mila:
+    async with MilaProc(task_io_handlers=[DemoIO, FakeIO]) as mila:
         await mila.run()
     # Ensure the DemoIO handler was setup and torn down.
     # This tests the MilaProc task IO handler lifecycle.

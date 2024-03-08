@@ -1,4 +1,2 @@
 discord.py
 openai
-aiosqlite
-sqlalchemy[asyncio]

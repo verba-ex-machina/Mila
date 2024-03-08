@@ -2,18 +2,8 @@
 
 from typing import List
 
-from mila.base.interfaces import TaskDB, TaskIO
+from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
-
-
-class FakeDB(TaskDB):
-    """Implement a fake TaskDB adapter."""
-
-    async def setup(self) -> None:
-        """Prepare the FakeDB storage channel."""
-
-    async def teardown(self) -> None:
-        """Close the FakeDB storage channel."""
 
 
 class FakeIO(TaskIO):

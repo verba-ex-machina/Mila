@@ -6,27 +6,6 @@ from typing import List
 from .types import MilaTask
 
 
-class TaskDB(ABC):
-    """Define the interface for a standard Mila Task database."""
-
-    async def __aenter__(self) -> "TaskDB":
-        """Enter the database."""
-        await self.setup()
-        return self
-
-    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
-        """Exit the database."""
-        await self.teardown()
-
-    @abstractmethod
-    async def setup(self) -> None:
-        """Prepare the database."""
-
-    @abstractmethod
-    async def teardown(self) -> None:
-        """Teardown the database."""
-
-
 class TaskIO(ABC):
     """Define the interface for a standard Mila comms channel."""
 
