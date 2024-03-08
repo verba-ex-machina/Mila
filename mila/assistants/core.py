@@ -1,12 +1,14 @@
 """Define core functionality for Mila Framework assistants."""
 
+import asyncio
 import json
 from dataclasses import dataclass, field
-from typing import Dict, Iterable
+from typing import Dict, Iterable, List
 
 from openai.types.beta.assistant import Assistant
 
 from mila.base.constants import LLM, STATES
+from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask, MilaTool
 
 MSG_FORMAT = """
@@ -29,9 +31,10 @@ in your response.
 
 
 @dataclass
-class MilaAssistant:
+class MilaAssistant(TaskIO):
     """Define a Mila assistant."""
 
+    # pylint: disable=too-many-instance-attributes
     name: str
     description: str
     instructions: str
@@ -39,10 +42,25 @@ class MilaAssistant:
     model: str
     metadata: dict = field(default_factory=dict)
 
-    async def handle_task(self, task: MilaTask) -> MilaTask:
+    _assistant: Assistant = field(init=False)
+    _id: str = field(init=False)
+
+    async def setup(self) -> None:
+        """Prepare the assistant for use."""
+        self._assistant = await self._get_assistant()
+        self._id = await self._assistant.id()
+
+    async def send(self, task_list: List[MilaTask]) -> None:
+        """Process tasks sent to the assistant."""
+        coros = [self._handle_task(task) for task in task_list]
+        await asyncio.gather(*coros)
+
+    async def recv(self) -> List[MilaTask]:
+        """Retrieve outbound responses from the assistant."""
+        return []
+
+    async def _handle_task(self, task: MilaTask) -> None:
         """Handle an incoming MilaTask."""
-        assistant = await self._get_assistant()
-        assistant_id = await assistant.id()
         thread = await LLM.beta.threads.create(
             messages=[
                 {
@@ -57,13 +75,13 @@ class MilaAssistant:
         )
         run = await LLM.beta.threads.runs.create(
             thread_id=thread.id,
-            assistant_id=assistant_id,
+            assistant_id=self._id,
         )
         task.state = STATES.PROCESSING
-        task.meta["assistant_id"] = assistant_id
+        task.meta["assistant_id"] = self._id
         task.meta["thread_id"] = thread.id
         task.meta["run_id"] = run.id
-        return task
+        # The task never gets saved anywhere.
 
     async def _get_assistant(self) -> Assistant:
         """Retrieve an OpenAI Assistant based on this MilaAssistant."""

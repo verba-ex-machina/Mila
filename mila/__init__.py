@@ -3,10 +3,10 @@
 import asyncio
 from typing import List
 
-from .base.constants import STATES, TICK
-from .base.interfaces import TaskIO
-from .base.types import MilaTask
-from .module.mila import MilaIO
+from mila.base.constants import STATES, TICK
+from mila.base.interfaces import TaskDB, TaskIO
+from mila.base.types import MilaTask
+from mila.module.mila import MilaIO
 
 
 class MilaProc:
@@ -14,8 +14,9 @@ class MilaProc:
 
     # pylint: disable=too-few-public-methods
 
-    def __init__(self, task_io_handlers: List[TaskIO]) -> None:
+    def __init__(self, db: TaskDB, task_io_handlers: List[TaskIO]) -> None:
         """Initialize the Mila Framework."""
+        self.db: TaskDB = db
         self.task_io_handlers: List[TaskIO] = [
             MilaIO(),
         ]
