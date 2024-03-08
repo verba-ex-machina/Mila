@@ -45,10 +45,6 @@ class MilaTask:
     meta: dict = field(default_factory=dict)
     assignee: Optional[str] = "Overmind"  # Unassigned? Overmind.
 
-    def __bytes__(self) -> bytes:
-        """Return the bytes representation of the task."""
-        return self.__repr__().encode()
-
     def __hash__(self) -> int:
         """Return the hash of the task."""
         return hash(str(self))
