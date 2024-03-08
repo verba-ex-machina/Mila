@@ -1,6 +1,5 @@
 """Define core functionality for Mila Framework assistants."""
 
-import asyncio
 import json
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, List
@@ -40,15 +39,12 @@ class MilaAssistant:
 
     async def send(self, task_list: List[MilaTask]) -> None:
         """Process tasks sent to the assistant."""
-        coros = [self._handle_task(task) for task in task_list]
-        await asyncio.gather(*coros)
+        for task in task_list:
+            print(MSG_FORMAT.format(context=task.context, query=task.content))
 
     async def recv(self) -> List[MilaTask]:
         """Retrieve outbound responses from the assistant."""
         return []
-
-    async def _handle_task(self, task: MilaTask) -> None:
-        """Handle an incoming MilaTask."""
 
     def __hash__(self) -> int:
         """Return the hash of the assistant."""

@@ -42,7 +42,7 @@ class MilaTask:
     destination: dict = field(default_factory=dict)
     state: str = STATES.NEW
     meta: dict = field(default_factory=dict)
-    assignee: Optional[str] = "Overmind"  # Unassigned? Overmind.
+    assignee: Optional[str] = None
 
     def __hash__(self) -> int:
         """Return the hash of the task."""

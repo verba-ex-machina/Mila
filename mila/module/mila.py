@@ -24,6 +24,9 @@ class MilaIO(TaskIO):
 
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send assigned tasks the assistants."""
+        for task in task_list:
+            if not task.assignee:
+                task.assignee = "Overmind"
         # For now we're just dropping invalid tasks without notification.
         coros = [
             assistant.send(
