@@ -6,8 +6,26 @@ from typing import Dict, Iterable
 
 from openai.types.beta.assistant import Assistant
 
-from mila.base.constants import LLM
-from mila.base.types import MilaTool
+from mila.base.constants import LLM, STATES
+from mila.base.types import MilaTask, MilaTool
+
+MSG_FORMAT = """
+A new request has arrived. Here is the context:
+
+```
+{context}
+```
+
+Here is the request:
+
+> {query}
+
+Please respond appropriately to the user's request, per the terms of your
+instructions. Use whatever tools are at your disposal to provide the best
+possible response. If you need help, you can ask other assistants for their
+input by delegating tasks to them. If you encounter problems, report them
+in your response.
+"""
 
 
 @dataclass
@@ -21,7 +39,33 @@ class MilaAssistant:
     model: str
     metadata: dict = field(default_factory=dict)
 
-    async def spawn(self) -> Assistant:
+    async def handle_task(self, task: MilaTask) -> MilaTask:
+        """Handle an incoming MilaTask."""
+        assistant = await self._get_assistant()
+        assistant_id = await assistant.id()
+        thread = await LLM.beta.threads.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": (
+                        " ".join(MSG_FORMAT.strip().split("\n")).format(
+                            context=task.context, query=task.content
+                        )
+                    ),
+                }
+            ],
+        )
+        run = await LLM.beta.threads.runs.create(
+            thread_id=thread.id,
+            assistant_id=assistant_id,
+        )
+        task.state = STATES.PROCESSING
+        task.meta["assistant_id"] = assistant_id
+        task.meta["thread_id"] = thread.id
+        task.meta["run_id"] = run.id
+        return task
+
+    async def _get_assistant(self) -> Assistant:
         """Retrieve an OpenAI Assistant based on this MilaAssistant."""
         assistants = await LLM.beta.assistants.list(limit=100)
         if not self.metadata.get("hash"):
