@@ -37,7 +37,7 @@ class MilaProc:
             *[handler.teardown() for handler in self.task_io_handlers]
         )
 
-    async def _collect_from_handler(self, handler: TaskIO) -> List[MilaTask]:
+    async def _collect_tasks_from(self, handler: TaskIO) -> List[MilaTask]:
         """Collect inbound tasks from a single handler."""
         task_list = await handler.recv()
         for task in task_list:
@@ -50,7 +50,7 @@ class MilaProc:
         """Collect all inbound tasks from all handlers."""
         for task_list in await asyncio.gather(
             *[
-                self._collect_from_handler(handler)
+                self._collect_tasks_from(handler)
                 for handler in self.task_io_handlers
             ]
         ):
