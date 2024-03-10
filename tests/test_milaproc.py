@@ -19,7 +19,7 @@ class Results:
 
     received: bool = False
     sent: bool = False
-    initialized: bool = False
+    set_up: bool = False
     torn_down: bool = False
 
 
@@ -31,7 +31,7 @@ class DemoIO(TaskIO):
 
     async def setup(self) -> None:
         """Set up the Demo IO handler."""
-        RESULTS.initialized = True
+        RESULTS.set_up = True
 
     async def teardown(self) -> None:
         """Tear down the Demo IO handler."""
@@ -40,7 +40,6 @@ class DemoIO(TaskIO):
     async def recv(self) -> List[MilaTask]:
         """Receive a task."""
         if not RESULTS.received:
-            # The first message will be to FakeIO, which will echo it back.
             RESULTS.received = True
             task = make_task()
             task.source = {
@@ -50,7 +49,6 @@ class DemoIO(TaskIO):
                 "handler": "FakeIO",
             }
             return [task]
-        # If the test message was already sent, send an exit command.
         task = make_task()
         task.content = "exit"
         return [task]
@@ -58,7 +56,6 @@ class DemoIO(TaskIO):
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send a task."""
         for task in task_list:
-            # Ensure we're the intended recipient.
             if task.destination["handler"] == "DemoIO":
                 RESULTS.sent = True
 
@@ -67,12 +64,9 @@ class DemoIO(TaskIO):
 async def test_milaproc():
     """Test the MilaProc class."""
     async with MilaProc(task_io_handlers=[DemoIO, FakeIO]) as mila:
+        assert RESULTS.set_up
         await mila.run()
-    # Ensure the DemoIO handler was setup and torn down.
-    # This tests the MilaProc task IO handler lifecycle.
-    assert RESULTS.initialized
+        assert RESULTS.received
+        assert RESULTS.sent
+        assert not RESULTS.torn_down
     assert RESULTS.torn_down
-    # Ensure the DemoIO handler received and sent a message.
-    # This tests the MilaProc task routing logic.
-    assert RESULTS.received
-    assert RESULTS.sent
