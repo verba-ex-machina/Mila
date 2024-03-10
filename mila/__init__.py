@@ -3,6 +3,7 @@
 import asyncio
 from typing import List
 
+from mila.base.commands import POWER_WORD_KILL
 from mila.base.constants import STATES, TICK
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
@@ -41,7 +42,8 @@ class MilaProc:
         """Collect inbound tasks from a single handler."""
         task_list = await handler.recv()
         for task in task_list:
-            task.source["handler"] = handler.__class__.__name__
+            if task != POWER_WORD_KILL:
+                task.source["handler"] = handler.__class__.__name__
         return task_list
 
     async def _collect_inbound_tasks(
@@ -67,10 +69,9 @@ class MilaProc:
 
     async def _process_task(self, task: MilaTask) -> MilaTask:
         """Process a single task."""
-        if task.content == "exit":
+        if task == POWER_WORD_KILL:
             self.running = False
-            task.state = STATES.COMPLETE
-        if not task.destination:
+        elif not task.destination:
             task.destination["handler"] = MilaIO.__name__
         return task
 
@@ -94,13 +95,15 @@ class MilaProc:
                     [
                         task
                         for task in tasks
-                        if task.destination["handler"]
+                        if task == POWER_WORD_KILL
+                        or task.destination["handler"]
                         == handler.__class__.__name__
                     ]
                 )
                 for handler in self.task_io_handlers
             ]
         )
+        tasks = [task for task in tasks if task != POWER_WORD_KILL]
         return [
             task
             for task in tasks

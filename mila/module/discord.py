@@ -3,12 +3,14 @@
 import asyncio
 import os
 import queue
+import signal
 from multiprocessing import Process, Queue
 from typing import List
 
 import discord
 from discord.ext import tasks
 
+from mila.base.commands import POWER_WORD_KILL
 from mila.base.constants import TICK
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
@@ -30,6 +32,7 @@ class DiscordClient(discord.Client):
             "recv": recv_queue,
             "send": send_queue,
         }
+        self.owner_id = None
 
     async def _get_context(self, message: discord.Message) -> str:
         """Pull the message history and format it for Mila."""
@@ -50,16 +53,15 @@ class DiscordClient(discord.Client):
         return await self._sub_usernames(context)
 
     @tasks.loop(seconds=TICK)
-    async def _handle_received_tasks(self) -> None:
+    async def _handle_mila_tasks(self) -> None:
         """Handle tasks received from Mila."""
         try:
             task: MilaTask = self._queue["send"].get_nowait()
         except queue.Empty:
             pass
         else:
-            if task.context == "COMMAND":
-                if task.content == "EXIT":
-                    await self.teardown_hook()
+            if task == POWER_WORD_KILL:
+                await self.teardown_hook()
             else:
                 await self._send_message(task)
 
@@ -82,6 +84,29 @@ class DiscordClient(discord.Client):
                 await reply.edit(content=response.strip())
         else:
             await reply.edit(content=task.content)
+
+    async def _raise_error(self, task: MilaTask, error: str) -> None:
+        """Raise an error related to a user-supplied command."""
+        await self._send_response(
+            task, f"Apologies, {task.source['author']['name']}! {error}"
+        )
+
+    async def _link_account(self, task: MilaTask) -> None:
+        """Send a greeting to a new user."""
+        self.owner_id = task.source["author"]["id"]
+        await self._send_response(
+            task,
+            (
+                f"Hello, {task.source['author']['name']}! "
+                + "I am now linked to your Discord account."
+            ),
+        )
+
+    async def _send_response(self, task: MilaTask, response: str) -> None:
+        """Send a response to a user."""
+        task.destination = task.source
+        task.content = response
+        self._queue["send"].put(task)
 
     async def _make_task(self, message: discord.Message) -> MilaTask:
         """Create a MilaTask from a Discord message."""
@@ -121,7 +146,29 @@ class DiscordClient(discord.Client):
             or message.channel.type == discord.ChannelType.private
         ):
             task = await self._make_task(message)
-            self._queue["recv"].put(task)
+            if task.content == "::link":
+                if not self.owner_id:
+                    await self._link_account(task)
+                else:
+                    await self._raise_error(
+                        task,
+                        (
+                            "We are already linked!"
+                            if task.source["author"]["id"] == self.owner_id
+                            else "I'm already linked with a Discord account."
+                        ),
+                    )
+            elif task.content == "::exit":
+                if task.source["author"]["id"] == self.owner_id:
+                    task = POWER_WORD_KILL
+                    self._queue["recv"].put(task)
+                    await self.teardown_hook()
+                else:
+                    await self._raise_error(
+                        task, "You are not authorized to do that."
+                    )
+            else:
+                self._queue["recv"].put(task)
 
     async def on_ready(self) -> None:
         """Log in to Discord."""
@@ -132,12 +179,12 @@ class DiscordClient(discord.Client):
     async def setup_hook(self) -> None:
         """Set up the Discord client."""
         # pylint: disable=E1101
-        self._handle_received_tasks.start()
+        self._handle_mila_tasks.start()
 
     async def teardown_hook(self) -> None:
         """Tear down the Discord client."""
         # pylint: disable=E1101
-        self._handle_received_tasks.stop()
+        self._handle_mila_tasks.stop()
         self.status = discord.Status.offline
         self.activity = discord.Game(name="Electric Sheep")
         await self.change_presence(status=self.status, activity=self.activity)
@@ -191,20 +238,32 @@ class DiscordIO(TaskIO):
 
     async def teardown(self) -> None:
         """Stop the Discord Client."""
-        kill_msg = MilaTask(content="EXIT", context="COMMAND")
-        self._send_queue.put(kill_msg)
+        self._send_queue.put(POWER_WORD_KILL)
         self._process.join()
 
 
 async def demo():
     """Run an echo-server demo of the Discord module."""
     running = True
+
+    def _terminate():
+        """Terminate the demo."""
+        nonlocal running
+        running = False
+
+    def sigint_handler(signum, frame):
+        """Handle SIGINT."""
+        # pylint: disable=unused-argument
+        _terminate()
+
+    signal.signal(signal.SIGINT, sigint_handler)
+
     async with DiscordIO() as discord_io:
         async with FakeIO() as fakeio:
             while running:
                 task_list = await discord_io.recv()
-                if any(task.content == "exit" for task in task_list):
-                    running = False
+                if any(task == POWER_WORD_KILL for task in task_list):
+                    _terminate()
                     break
                 await fakeio.send(task_list)
                 await discord_io.send(await fakeio.recv())

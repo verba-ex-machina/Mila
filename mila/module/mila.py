@@ -4,12 +4,15 @@ import asyncio
 from typing import List
 
 from mila.assistants import ASSISTANTS
+from mila.base.commands import POWER_WORD_KILL
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
 
 
 class MilaIO(TaskIO):
     """Mila Framework I/O handler class."""
+
+    _bypass: List[MilaTask] = []
 
     async def recv(self) -> List[MilaTask]:
         """Retrieve responses from the assistants."""
@@ -20,12 +23,17 @@ class MilaIO(TaskIO):
                 outbound.extend(await coro)
             except asyncio.CancelledError:
                 pass
+        if self._bypass:
+            outbound.extend(self._bypass)
+            self._bypass = []
         return outbound
 
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send assigned tasks the assistants."""
         for task in task_list:
-            if not task.assignee:
+            if task == POWER_WORD_KILL:
+                self._bypass.append(task)
+            elif not task.assignee:
                 task.assignee = "Overmind"
         # For now we're just dropping invalid tasks without notification.
         coros = [

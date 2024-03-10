@@ -6,6 +6,7 @@ from typing import List
 import pytest
 
 from mila import MilaProc
+from mila.base.commands import POWER_WORD_KILL
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
 from mila.module.fake import FakeIO
@@ -49,13 +50,13 @@ class DemoIO(TaskIO):
                 "handler": "FakeIO",
             }
             return [task]
-        task = make_task()
-        task.content = "exit"
-        return [task]
+        return [POWER_WORD_KILL]
 
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send a task."""
         for task in task_list:
+            if task == POWER_WORD_KILL:
+                continue
             if task.destination["handler"] == "DemoIO":
                 RESULTS.sent = True
 
