@@ -4,7 +4,7 @@ import asyncio
 from typing import List
 
 from mila.assistants import ASSISTANTS
-from mila.base.commands import POWER_WORD_KILL
+from mila.base.commands import COMMANDS
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
 
@@ -31,7 +31,7 @@ class MilaIO(TaskIO):
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send assigned tasks the assistants."""
         for task in task_list:
-            if task == POWER_WORD_KILL:
+            if task in COMMANDS:
                 self._bypass.append(task)
             elif not task.assignee:
                 task.assignee = "Overmind"
