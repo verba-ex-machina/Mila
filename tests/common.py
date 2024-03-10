@@ -10,6 +10,5 @@ def make_task(data: str = "None") -> MilaTask:
         context="context",
         content="prompt",
         source={"handler": data},
-        destination={},
         state=STATES.NEW,
     )
