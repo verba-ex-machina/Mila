@@ -14,8 +14,7 @@ async def test_fake_io():
     async with FakeIO() as fake_io:
 
         def copy_src_to_dest(task: MilaTask) -> MilaTask:
-            """Move source to destination."""
-            task = task.copy()
+            """Copy source to destination."""
             task.destination = task.source.copy()
             return task
 
