@@ -33,12 +33,16 @@ class MilaIO(TaskIO):
         for task in task_list:
             if task in COMMANDS:
                 self._bypass.append(task)
-            elif not task.assignee:
-                task.assignee = "Overmind"
+            elif not task.assignment:
+                task.assignment = "Overmind"
         # For now we're just dropping invalid tasks without notification.
         coros = [
             assistant.send(
-                [task for task in task_list if task.assignee == assistant.name]
+                [
+                    task
+                    for task in task_list
+                    if task.assignment == assistant.name
+                ]
             )
             for assistant in ASSISTANTS.values()
         ]

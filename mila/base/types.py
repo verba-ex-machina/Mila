@@ -67,7 +67,7 @@ class MilaTask:
     state: str = STATES.NEW
     source: HandlerReference = field(default_factory=HandlerReference)
     destination: HandlerReference = field(default_factory=HandlerReference)
-    assignee: Optional[str] = None
+    assignment: Optional[str] = None
 
     def __hash__(self) -> int:
         """Return the hash of the task."""
@@ -81,5 +81,5 @@ class MilaTask:
             state=self.state,
             source=self.source.copy(),
             destination=self.destination.copy(),
-            assignee=self.assignee,
+            assignment=self.assignment,
         )
