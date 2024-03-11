@@ -31,6 +31,5 @@ register_assistant(
         instructions=" ".join(INSTRUCTIONS.strip().split("\n")),
         tools=OVERMIND_TOOLS,
         model="gpt-3.5-turbo-1106",
-        metadata={},
     )
 )

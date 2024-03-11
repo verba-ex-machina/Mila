@@ -35,7 +35,7 @@ class MilaAssistant:
     instructions: str
     tools: Iterable[MilaTool]
     model: str
-    metadata: dict = field(default_factory=dict)
+    meta: dict = field(default_factory=dict)
 
     async def send(self, task_list: List[MilaTask]) -> None:
         """Process tasks sent to the assistant."""
@@ -61,7 +61,7 @@ class MilaAssistant:
                 "instructions": self.instructions,
                 "tools": [tool.definition for tool in self.tools],
                 "model": self.model,
-                "metadata": self.metadata,
+                "meta": self.meta,
             }
         )
 
