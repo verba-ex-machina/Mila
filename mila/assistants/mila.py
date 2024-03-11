@@ -3,13 +3,25 @@
 from mila.assistants.util import assistant_dict, register_assistant
 from mila.base.types import MilaAssistant, MilaTool
 
+
+async def delegate() -> str:
+    """Delegate a task to another assistant."""
+    return "Sorry, this hasn't been implemented yet."
+
+
 MILA_TOOLS = [
     MilaTool(
         name="get_assistants",
         function=assistant_dict,
         properties={},
         required=[],
-    )
+    ),
+    MilaTool(
+        name="delegate",
+        function=delegate,
+        properties={},
+        required=[],
+    ),
 ]
 
 
