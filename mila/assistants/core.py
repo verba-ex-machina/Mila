@@ -29,13 +29,12 @@ in your response.
 class MilaAssistant:
     """Define a Mila assistant."""
 
-    # pylint: disable=too-many-instance-attributes
     name: str
     description: str
     instructions: str
     tools: Iterable[MilaTool]
     model: str
-    meta: dict = field(default_factory=dict)
+    meta: Dict[str, str] = field(default_factory=dict)
 
     async def send(self, task_list: List[MilaTask]) -> None:
         """Process tasks sent to the assistant."""
