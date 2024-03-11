@@ -24,7 +24,7 @@ register_assistant(
     MilaAssistant(
         name="Overmind",
         description="The orchestrator of the Mila Framework.",
-        instructions=" ".join(INSTRUCTIONS.strip().split("\n")),
+        instructions=INSTRUCTIONS,
         tools=OVERMIND_TOOLS,
         model="gpt-3.5-turbo-1106",
     )

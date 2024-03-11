@@ -110,6 +110,18 @@ class MilaAssistant:
     model: str
     metadata: Dict[str, str] = field(default_factory=dict)
 
+    @staticmethod
+    def _format(original: str) -> str:
+        """Format input according to rules."""
+        stripped = "\n".join([line.strip() for line in original.split("\n")])
+        paragraphs = stripped.split("\n\n")
+        return "\n\n".join(
+            [
+                " ".join([line.strip() for line in paragraph.split("\n")])
+                for paragraph in paragraphs
+            ]
+        ).strip()
+
     def __hash__(self) -> int:
         """Return the hash of the assistant."""
         return hash(str(self))
@@ -120,7 +132,7 @@ class MilaAssistant:
             {
                 "name": self.name,
                 "description": self.description,
-                "instructions": self.instructions,
+                "instructions": self._format(self.instructions),
                 "tools": [tool.definition for tool in self.tools],
                 "model": self.model,
                 "metadata": self.metadata,
