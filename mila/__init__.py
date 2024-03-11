@@ -57,14 +57,6 @@ class MilaProc:
             tasks.extend(task_list)
         return tasks
 
-    async def _handle_unprocessed_tasks(
-        self, tasks: List[MilaTask]
-    ) -> List[MilaTask]:
-        for task in tasks:
-            print(f"Unroutable task: {task}")
-            task.meta.state = STATES.COMPLETE
-        return tasks
-
     async def _process_task(self, task: MilaTask) -> MilaTask:
         """Process a single task."""
         if task == POWER_WORD_KILL:
@@ -109,6 +101,14 @@ class MilaProc:
                 handler.__class__.__name__ for handler in self.task_io_handlers
             ]
         ]
+
+    async def _handle_unprocessed_tasks(
+        self, tasks: List[MilaTask]
+    ) -> List[MilaTask]:
+        for task in tasks:
+            print(f"Unroutable task: {task}")
+            task.meta.state = STATES.COMPLETE
+        return tasks
 
     async def run(self) -> None:
         """Launch the Mila Framework."""
