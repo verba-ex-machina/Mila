@@ -43,7 +43,7 @@ class MilaProc:
         task_list = await handler.recv()
         for task in task_list:
             if task not in COMMANDS:
-                task.source.handler = handler.__class__.__name__
+                task.src.handler = handler.__class__.__name__
         return task_list
 
     async def _collect_inbound_tasks(
@@ -64,15 +64,15 @@ class MilaProc:
     ) -> List[MilaTask]:
         for task in tasks:
             print(f"Unroutable task: {task}")
-            task.state = STATES.COMPLETE
+            task.meta.state = STATES.COMPLETE
         return tasks
 
     async def _process_task(self, task: MilaTask) -> MilaTask:
         """Process a single task."""
         if task == POWER_WORD_KILL:
             self.running = False
-        elif not task.destination.handler:
-            task.destination.handler = MilaIO.__name__
+        elif not task.dst.handler:
+            task.dst.handler = MilaIO.__name__
         return task
 
     async def _process_tasks(self, tasks: List[MilaTask]) -> List[MilaTask]:
@@ -82,7 +82,7 @@ class MilaProc:
             for task in await asyncio.gather(
                 *[self._process_task(task) for task in tasks]
             )
-            if task.state != STATES.COMPLETE
+            if task.meta.state != STATES.COMPLETE
         ]
 
     async def _route_outbound_tasks(
@@ -96,8 +96,7 @@ class MilaProc:
                         task
                         for task in tasks
                         if task in COMMANDS
-                        or task.destination.handler
-                        == handler.__class__.__name__
+                        or task.dst.handler == handler.__class__.__name__
                     ]
                 )
                 for handler in self.task_io_handlers
@@ -107,7 +106,7 @@ class MilaProc:
             task
             for task in tasks
             if task not in COMMANDS
-            and task.destination.handler
+            and task.dst.handler
             not in [
                 handler.__class__.__name__ for handler in self.task_io_handlers
             ]

@@ -68,10 +68,8 @@ class DiscordClient(discord.Client):
     async def _send_message(self, task: MilaTask) -> None:
         """Send a message."""
         # This currently assumes every message is a reply to another message.
-        channel = await self.fetch_channel(task.destination.meta["channel_id"])
-        message = await channel.fetch_message(
-            task.destination.meta["message_id"]
-        )
+        channel = await self.fetch_channel(task.dst.meta["channel_id"])
+        message = await channel.fetch_message(task.dst.meta["message_id"])
         reply = await message.reply("_Responding..._")
         if len(task.content) > 2000:
             chunks = task.content.split("\n")
@@ -90,23 +88,23 @@ class DiscordClient(discord.Client):
     async def _raise_error(self, task: MilaTask, error: str) -> None:
         """Raise an error related to a user-supplied command."""
         await self._send_response(
-            task, f"Apologies, {task.source.user.name}! {error}"
+            task, f"Apologies, {task.src.user.name}! {error}"
         )
 
     async def _link_account(self, task: MilaTask) -> None:
         """Send a greeting to a new user."""
-        self.owner_id = task.source.user.id
+        self.owner_id = task.src.user.id
         await self._send_response(
             task,
             (
-                f"Hello, {task.source.user.name}! "
+                f"Hello, {task.src.user.name}! "
                 + "I am now linked to your Discord account."
             ),
         )
 
     async def _send_response(self, task: MilaTask, response: str) -> None:
         """Send a response to a user."""
-        task.destination = task.source
+        task.dst = task.src
         task.content = response
         self._queue["send"].put(task)
 
@@ -116,12 +114,12 @@ class DiscordClient(discord.Client):
             context=await self._get_context(message),
             content=message.content,
         )
-        task.source.user.id = message.author.id
-        task.source.user.name = message.author.name
-        task.source.user.nick = message.author.display_name
-        task.source.meta["channel_id"] = message.channel.id
-        task.source.meta["message_id"] = message.id
-        task.source.meta["guild"] = (
+        task.src.user.id = message.author.id
+        task.src.user.name = message.author.name
+        task.src.user.nick = message.author.display_name
+        task.src.meta["channel_id"] = message.channel.id
+        task.src.meta["message_id"] = message.id
+        task.src.meta["guild"] = (
             {}
             if not message.guild
             else {
@@ -152,12 +150,12 @@ class DiscordClient(discord.Client):
                         task,
                         (
                             "We are already linked!"
-                            if task.source.user.id == self.owner_id
+                            if task.src.user.id == self.owner_id
                             else "I'm already linked with a Discord account."
                         ),
                     )
             elif task.content == "::exit":
-                if task.source.user.id == self.owner_id:
+                if task.src.user.id == self.owner_id:
                     task = POWER_WORD_KILL
                     self._queue["recv"].put(task)
                     await self.teardown_hook()

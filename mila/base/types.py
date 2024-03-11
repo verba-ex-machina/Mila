@@ -33,8 +33,8 @@ class MilaTool:
 
 
 @dataclass
-class UserReference:
-    """Represent a user associated with a given task."""
+class UserMeta:
+    """Store user metadata."""
 
     id: Optional[str] = None
     name: Optional[str] = None
@@ -42,19 +42,34 @@ class UserReference:
 
 
 @dataclass
-class HandlerReference:
-    """Store reference information about the assigned IO handler."""
+class HandlerMeta:
+    """Store handler metadata."""
 
-    user: UserReference = field(default_factory=UserReference)
     handler: Optional[str] = None
+    user: UserMeta = field(default_factory=UserMeta)
     meta: dict = field(default_factory=dict)
 
-    def copy(self) -> "HandlerReference":
+    def copy(self) -> "HandlerMeta":
         """Return a copy of the handler reference."""
-        return HandlerReference(
+        return HandlerMeta(
             handler=self.handler,
             user=self.user,
             meta=self.meta.copy(),
+        )
+
+
+@dataclass
+class TaskMeta:
+    """Store task metadata."""
+
+    state: str = STATES.NEW
+    assignment: Optional[str] = None
+
+    def copy(self) -> "TaskMeta":
+        """Return a copy of the task metadata."""
+        return TaskMeta(
+            state=self.state,
+            assignment=self.assignment,
         )
 
 
@@ -64,10 +79,9 @@ class MilaTask:
 
     context: str
     content: str
-    state: str = STATES.NEW
-    source: HandlerReference = field(default_factory=HandlerReference)
-    destination: HandlerReference = field(default_factory=HandlerReference)
-    assignment: Optional[str] = None
+    src: HandlerMeta = field(default_factory=HandlerMeta)
+    dst: HandlerMeta = field(default_factory=HandlerMeta)
+    meta: TaskMeta = field(default_factory=TaskMeta)
 
     def __hash__(self) -> int:
         """Return the hash of the task."""
@@ -78,8 +92,7 @@ class MilaTask:
         return MilaTask(
             context=self.context,
             content=self.content,
-            state=self.state,
-            source=self.source.copy(),
-            destination=self.destination.copy(),
-            assignment=self.assignment,
+            src=self.src.copy(),
+            dst=self.dst.copy(),
+            meta=self.meta.copy(),
         )
