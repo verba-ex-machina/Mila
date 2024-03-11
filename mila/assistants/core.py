@@ -40,10 +40,9 @@ class MilaAssistant:
     async def send(self, task_list: List[MilaTask]) -> None:
         """Process tasks sent to the assistant."""
         for task in task_list:
-            prompt = " ".join(
+            print(
                 PROMPT.strip().format(context=task.context, query=task.content)
             )
-            print(prompt)
 
     async def recv(self) -> List[MilaTask]:
         """Retrieve outbound responses from the assistant."""

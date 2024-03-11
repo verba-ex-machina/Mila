@@ -43,12 +43,8 @@ class DemoIO(TaskIO):
         if not RESULTS.received:
             RESULTS.received = True
             task = make_task()
-            task.source = {
-                "handler": "DemoIO",
-            }
-            task.destination = {
-                "handler": "FakeIO",
-            }
+            task.source.handler = "DemoIO"
+            task.destination.handler = "FakeIO"
             return [task]
         return [POWER_WORD_KILL]
 
@@ -57,7 +53,7 @@ class DemoIO(TaskIO):
         for task in task_list:
             if task == POWER_WORD_KILL:
                 continue
-            if task.destination["handler"] == "DemoIO":
+            if task.destination.handler == "DemoIO":
                 RESULTS.sent = True
 
 

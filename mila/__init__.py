@@ -43,7 +43,7 @@ class MilaProc:
         task_list = await handler.recv()
         for task in task_list:
             if task not in COMMANDS:
-                task.source["handler"] = handler.__class__.__name__
+                task.source.handler = handler.__class__.__name__
         return task_list
 
     async def _collect_inbound_tasks(
@@ -71,8 +71,8 @@ class MilaProc:
         """Process a single task."""
         if task == POWER_WORD_KILL:
             self.running = False
-        elif not task.destination:
-            task.destination["handler"] = MilaIO.__name__
+        elif not task.destination.handler:
+            task.destination.handler = MilaIO.__name__
         return task
 
     async def _process_tasks(self, tasks: List[MilaTask]) -> List[MilaTask]:
@@ -96,7 +96,7 @@ class MilaProc:
                         task
                         for task in tasks
                         if task in COMMANDS
-                        or task.destination["handler"]
+                        or task.destination.handler
                         == handler.__class__.__name__
                     ]
                 )
@@ -107,7 +107,7 @@ class MilaProc:
             task
             for task in tasks
             if task not in COMMANDS
-            and task.destination["handler"]
+            and task.destination.handler
             not in [
                 handler.__class__.__name__ for handler in self.task_io_handlers
             ]

@@ -33,15 +33,41 @@ class MilaTool:
 
 
 @dataclass
+class UserReference:
+    """Represent a user associated with a given task."""
+
+    id: Optional[str] = None
+    name: Optional[str] = None
+    nick: Optional[str] = None
+
+
+@dataclass
+class HandlerReference:
+    """Store reference information about the assigned IO handler."""
+
+    user: UserReference = field(default_factory=UserReference)
+    handler: Optional[str] = None
+    meta: dict = field(default_factory=dict)
+
+    def copy(self) -> "HandlerReference":
+        """Return a copy of the handler reference."""
+        return HandlerReference(
+            handler=self.handler,
+            user=self.user,
+            meta=self.meta.copy(),
+        )
+
+
+@dataclass
 class MilaTask:
     """Define a Mila task."""
 
     context: str
     content: str
-    source: dict = field(default_factory=dict)
-    destination: dict = field(default_factory=dict)
     state: str = STATES.NEW
     meta: dict = field(default_factory=dict)
+    source: HandlerReference = field(default_factory=HandlerReference)
+    destination: HandlerReference = field(default_factory=HandlerReference)
     assignee: Optional[str] = None
 
     def __hash__(self) -> int:

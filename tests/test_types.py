@@ -9,5 +9,5 @@ def test_mila_task():
     hash(task)
     task2 = task.copy()
     assert task == task2
-    task2.destination["handler"] = "data2"
+    task2.destination.handler = "data2"
     assert task != task2
