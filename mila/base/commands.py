@@ -2,7 +2,6 @@
 
 from mila.base.types import MilaTask
 
-
 POWER_WORD_KILL = MilaTask(
     content="TERMINATE",
     context="COMMAND",
