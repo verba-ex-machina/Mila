@@ -9,7 +9,7 @@ async def delegate() -> str:
     return "Sorry, this hasn't been implemented yet."
 
 
-MILA_TOOLS = [
+TOOLS = [
     MilaTool(
         name="get_assistants",
         function=assistant_dict,
@@ -41,7 +41,7 @@ register_assistant(
         name="Mila",
         description="The figurehead of the Mila Framework.",
         instructions=INSTRUCTIONS,
-        tools=MILA_TOOLS,
+        tools=TOOLS,
         model="gpt-3.5-turbo-1106",
     )
 )
