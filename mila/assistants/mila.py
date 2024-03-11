@@ -27,7 +27,7 @@ to handle the request, report the problem in your response.
 register_assistant(
     MilaAssistant(
         name="Mila",
-        description="The face of the Mila Framework.",
+        description="The figurehead of the Mila Framework.",
         instructions=INSTRUCTIONS,
         tools=MILA_TOOLS,
         model="gpt-3.5-turbo-1106",
