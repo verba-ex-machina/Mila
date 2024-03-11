@@ -1,11 +1,10 @@
-"""Test the fake module."""
+"""Test the Fake Module."""
 
 import pytest
 
 from mila.base.types import MilaTask
-from mila.module.fake import FakeIO
-
-from .common import make_task
+from mila.io.fake import FakeIO
+from tests.common import make_task
 
 
 @pytest.mark.asyncio

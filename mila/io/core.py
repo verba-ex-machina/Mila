@@ -1,4 +1,4 @@
-"""Provide Mila Framework modules."""
+"""Provide Mila Framework IO modules."""
 
 import asyncio
 from typing import List
@@ -9,8 +9,8 @@ from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
 
 
-class MilaIO(TaskIO):
-    """Mila Framework I/O handler class."""
+class CoreIO(TaskIO):
+    """Mila Framework Core I/O handler class."""
 
     _bypass: List[MilaTask] = []
 

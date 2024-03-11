@@ -9,9 +9,8 @@ from mila import MilaProc
 from mila.base.commands import POWER_WORD_KILL
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
-from mila.module.fake import FakeIO
-
-from .common import make_task
+from mila.io.fake import FakeIO
+from tests.common import make_task
 
 
 @dataclass

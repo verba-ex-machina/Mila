@@ -8,7 +8,7 @@ from mila.base.commands import POWER_WORD_KILL
 from mila.base.constants import STATES, TICK
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
-from mila.module.mila import MilaIO
+from mila.io.core import CoreIO
 
 
 class MilaProc:
@@ -17,7 +17,7 @@ class MilaProc:
     def __init__(self, task_io_handlers: List[TaskIO]) -> None:
         """Initialize the Mila Framework."""
         self.task_io_handlers: List[TaskIO] = [
-            MilaIO(),
+            CoreIO(),
         ]
         self.task_io_handlers.extend(
             [handler() for handler in task_io_handlers]
@@ -63,7 +63,7 @@ class MilaProc:
         if task == POWER_WORD_KILL:
             self.running = False
         elif not task.dst.handler:
-            task.dst.handler = MilaIO.__name__
+            task.dst.handler = CoreIO.__name__
         return task
 
     async def _process_tasks(self, tasks: List[MilaTask]) -> List[MilaTask]:

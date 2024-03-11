@@ -1,4 +1,4 @@
-"""Test the assistant classes."""
+"""General tests for Assistants."""
 
 import pytest
 

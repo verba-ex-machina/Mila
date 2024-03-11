@@ -5,7 +5,7 @@ from typing import List
 
 from mila import MilaProc
 from mila.base.interfaces import TaskIO
-from mila.module.discord import DiscordIO
+from mila.io.discord import DiscordIO
 
 TASK_IO_HANDLERS: List[TaskIO] = [DiscordIO]
 

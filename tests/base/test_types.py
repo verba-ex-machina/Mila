@@ -1,6 +1,6 @@
 """Test Mila types."""
 
-from .common import make_task
+from tests.common import make_task
 
 
 def test_mila_task():
