@@ -3,10 +3,16 @@
 from mila.base.collections import ASSISTANTS
 from mila.base.interfaces import AssistantBase
 from mila.base.types import MilaAssistant
+from typing import List
 
 
-async def get_assistants() -> dict:
-    """Retrieve a list of available assistants."""
+def assistant_list() -> List[AssistantBase]:
+    """Retrieve all registered AssistantBase objects."""
+    return ASSISTANTS.values()
+
+
+async def assistant_dict() -> dict:
+    """Retrieve the assistant registry as a dict."""
     return {
         name: assistant.meta.description
         for name, assistant in ASSISTANTS.items()

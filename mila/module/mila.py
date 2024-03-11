@@ -3,7 +3,7 @@
 import asyncio
 from typing import List
 
-from mila import assistants
+from mila.assistants.util import assistant_list
 from mila.base.commands import COMMANDS
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
@@ -17,7 +17,7 @@ class MilaIO(TaskIO):
     async def recv(self) -> List[MilaTask]:
         """Retrieve responses from the assistants."""
         outbound: List[MilaTask] = []
-        coros = [assistant.recv() for assistant in assistants.available()]
+        coros = [assistant.recv() for assistant in assistant_list()]
         for coro in asyncio.as_completed(coros):
             try:
                 outbound.extend(await coro)
@@ -44,6 +44,6 @@ class MilaIO(TaskIO):
                     if task.meta.assignment == assistant.meta.name
                 ]
             )
-            for assistant in assistants.available()
+            for assistant in assistant_list()
         ]
         await asyncio.gather(*coros)

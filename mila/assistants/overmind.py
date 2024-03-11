@@ -1,12 +1,12 @@
 """Provide the Overmind Assistant for the Mila Framework."""
 
-from mila.assistants.util import get_assistants, register_assistant
+from mila.assistants.util import assistant_dict, register_assistant
 from mila.base.types import MilaAssistant, MilaTool
 
 OVERMIND_TOOLS = [
     MilaTool(
         name="get_assistants",
-        function=get_assistants,
+        function=assistant_dict,
         properties={},
         required=[],
     )
