@@ -1,3 +1,3 @@
 """Manage Assistants within the Mila Framework."""
 
-import mila.assistants.overmind
+import mila.assistants.mila

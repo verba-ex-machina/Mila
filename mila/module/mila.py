@@ -34,7 +34,7 @@ class MilaIO(TaskIO):
             if task in COMMANDS:
                 self._bypass.append(task)
             elif not task.meta.assignment:
-                task.meta.assignment = "Overmind"
+                task.meta.assignment = "Mila"
         # For now we're just dropping invalid tasks without notification.
         coros = [
             assistant.send(
