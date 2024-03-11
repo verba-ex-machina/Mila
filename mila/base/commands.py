@@ -6,5 +6,3 @@ POWER_WORD_KILL = MilaTask(
     content="TERMINATE",
     context="COMMAND",
 )
-
-COMMANDS = [POWER_WORD_KILL]

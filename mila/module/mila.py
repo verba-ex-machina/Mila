@@ -4,7 +4,7 @@ import asyncio
 from typing import List
 
 from mila.assistants.util import assistant_list
-from mila.base.commands import COMMANDS
+from mila.base.collections import COMMANDS
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
 
