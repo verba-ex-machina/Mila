@@ -6,7 +6,7 @@ from typing import Dict, Iterable, List
 
 from mila.base.types import MilaTask, MilaTool
 
-MSG_FORMAT = """
+PROMPT = """
 A new request has arrived. Here is the context:
 
 ```
@@ -40,7 +40,10 @@ class MilaAssistant:
     async def send(self, task_list: List[MilaTask]) -> None:
         """Process tasks sent to the assistant."""
         for task in task_list:
-            print(MSG_FORMAT.format(context=task.context, query=task.content))
+            prompt = " ".join(
+                PROMPT.strip().format(context=task.context, query=task.content)
+            )
+            print(prompt)
 
     async def recv(self) -> List[MilaTask]:
         """Retrieve outbound responses from the assistant."""
@@ -52,19 +55,16 @@ class MilaAssistant:
 
     def __repr__(self) -> str:
         """Return the string representation of the assistant."""
-        as_dict = {
-            "name": self.name,
-            "description": self.description,
-            "instructions": self.instructions,
-            "tools": [tool.definition for tool in self.tools],
-            "model": self.model,
-            "metadata": self.metadata,
-        }
-        return json.dumps(as_dict)
-
-    def __str__(self) -> str:
-        """Return the string representation of the assistant."""
-        return self.__repr__()
+        return json.dumps(
+            {
+                "name": self.name,
+                "description": self.description,
+                "instructions": self.instructions,
+                "tools": [tool.definition for tool in self.tools],
+                "model": self.model,
+                "metadata": self.metadata,
+            }
+        )
 
 
 ASSISTANTS: Dict[str, MilaAssistant] = {}
