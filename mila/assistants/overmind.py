@@ -16,6 +16,7 @@ OVERMIND_TOOLS = [
     )
 ]
 
+
 INSTRUCTIONS = """
 Act as a friendly professional assistant named Mila. Your role is to assist
 users with whatever they require, using your own knowledge, judgment, and the
@@ -27,7 +28,7 @@ register_assistant(
     MilaAssistant(
         name="Overmind",
         description="The orchestrator of the Mila Framework.",
-        instructions=(" ".join(INSTRUCTIONS.strip().split("\n"))),
+        instructions=" ".join(INSTRUCTIONS.strip().split("\n")),
         tools=OVERMIND_TOOLS,
         model="gpt-3.5-turbo-1106",
         metadata={},
