@@ -65,7 +65,6 @@ class MilaTask:
     context: str
     content: str
     state: str = STATES.NEW
-    meta: dict = field(default_factory=dict)
     source: HandlerReference = field(default_factory=HandlerReference)
     destination: HandlerReference = field(default_factory=HandlerReference)
     assignee: Optional[str] = None
@@ -79,9 +78,8 @@ class MilaTask:
         return MilaTask(
             context=self.context,
             content=self.content,
+            state=self.state,
             source=self.source.copy(),
             destination=self.destination.copy(),
-            state=self.state,
-            meta=self.meta.copy(),
             assignee=self.assignee,
         )
