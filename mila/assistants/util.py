@@ -1,9 +1,10 @@
 """Define utility functions for Mila Framework assistants."""
 
+from typing import List
+
 from mila.base.collections import ASSISTANTS
 from mila.base.interfaces import AssistantBase
 from mila.base.types import MilaAssistant
-from typing import List
 
 
 def assistant_list() -> List[AssistantBase]:
