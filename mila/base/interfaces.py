@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from .types import MilaTask
+from .types import MilaAssistant, MilaTask
 
 
 class TaskIO(ABC):
@@ -31,3 +31,45 @@ class TaskIO(ABC):
 
     async def teardown(self) -> None:
         """Teardown the comms channel."""
+
+
+BASE_PROMPT = """
+A new request has arrived. Here is the context:
+
+```
+{context}
+```
+
+Here is the request:
+
+> {query}
+
+Please respond appropriately to the user's request, per the terms of your
+instructions. Use whatever tools are at your disposal to provide the best
+possible response. If you need help, you can ask other assistants for their
+input by delegating tasks to them. If you encounter problems, report them
+in your response.
+"""
+
+
+class AssistantBase(TaskIO):
+    """Mila Framework I/O handler class."""
+
+    meta: MilaAssistant = None
+
+    def __init__(self, assistant: MilaAssistant) -> None:
+        """Initialize the assistant."""
+        self.meta = assistant
+
+    async def send(self, task_list: List[MilaTask]) -> None:
+        """Process tasks sent to the assistant."""
+        for task in task_list:
+            print(
+                BASE_PROMPT.strip().format(
+                    context=task.context, query=task.content
+                )
+            )
+
+    async def recv(self) -> List[MilaTask]:
+        """Retrieve outbound responses from the assistant."""
+        return []

@@ -1,7 +1,8 @@
 """Define essential Mila Framework data types."""
 
+import json
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Dict, Iterable, Optional
 
 from mila.base.constants import STATES
 
@@ -95,4 +96,33 @@ class MilaTask:
             src=self.src.copy(),
             dst=self.dst.copy(),
             meta=self.meta.copy(),
+        )
+
+
+@dataclass
+class MilaAssistant:
+    """Define a Mila assistant."""
+
+    name: str
+    description: str
+    instructions: str
+    tools: Iterable[MilaTool]
+    model: str
+    metadata: Dict[str, str] = field(default_factory=dict)
+
+    def __hash__(self) -> int:
+        """Return the hash of the assistant."""
+        return hash(str(self))
+
+    def __repr__(self) -> str:
+        """Return the string representation of the assistant."""
+        return json.dumps(
+            {
+                "name": self.name,
+                "description": self.description,
+                "instructions": self.instructions,
+                "tools": [tool.definition for tool in self.tools],
+                "model": self.model,
+                "metadata": self.metadata,
+            }
         )

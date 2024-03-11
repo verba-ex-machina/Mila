@@ -13,8 +13,6 @@ from mila.module.mila import MilaIO
 class MilaProc:
     """Mila Framework process class."""
 
-    # pylint: disable=too-few-public-methods
-
     def __init__(self, task_io_handlers: List[TaskIO]) -> None:
         """Initialize the Mila Framework."""
         self.task_io_handlers: List[TaskIO] = [
