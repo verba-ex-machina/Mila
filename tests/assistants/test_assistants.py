@@ -8,8 +8,8 @@ from mila.assistants.util import (
     register_assistant,
 )
 from mila.base.collections import ASSISTANTS
-from mila.base.interfaces import AssistantBase
-from mila.base.types import MilaAssistant
+from mila.base.interfaces import MilaAssistant
+from mila.base.types import AssistantDefinition
 
 
 @pytest.mark.asyncio
@@ -34,7 +34,7 @@ async def test_assistant_dict():
 @pytest.mark.asyncio
 async def test_register_assistant():
     """Test the register_assistant function."""
-    test_assistant = MilaAssistant(
+    test_assistant = AssistantDefinition(
         name="TestAssistant",
         description="A test assistant.",
         instructions="Do nothing.",
@@ -43,4 +43,4 @@ async def test_register_assistant():
         metadata={"test": "test"},
     )
     register_assistant(test_assistant)
-    assert ASSISTANTS["TestAssistant"] == AssistantBase(test_assistant)
+    assert ASSISTANTS["TestAssistant"] == MilaAssistant(test_assistant)

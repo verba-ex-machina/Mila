@@ -100,7 +100,7 @@ class MilaTask:
 
 
 @dataclass
-class MilaAssistant:
+class AssistantDefinition:
     """Define a Mila assistant."""
 
     name: str

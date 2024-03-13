@@ -3,7 +3,7 @@
 from typing import Dict
 
 from mila.base.commands import POWER_WORD_KILL
-from mila.base.interfaces import AssistantBase
+from mila.base.interfaces import MilaAssistant
 
-ASSISTANTS: Dict[str, AssistantBase] = {}
+ASSISTANTS: Dict[str, MilaAssistant] = {}
 COMMANDS = [POWER_WORD_KILL]

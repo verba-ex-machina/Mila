@@ -1,7 +1,7 @@
 """Provide the Primary Assistant for the Mila Framework."""
 
 from mila.assistants.util import assistant_dict, register_assistant
-from mila.base.types import MilaAssistant, MilaTool
+from mila.base.types import AssistantDefinition, MilaTool
 
 
 async def delegate() -> str:
@@ -37,7 +37,7 @@ to handle the request, report the problem in your response.
 """
 
 register_assistant(
-    MilaAssistant(
+    AssistantDefinition(
         name="Mila",
         description="The figurehead of the Mila Framework.",
         instructions=INSTRUCTIONS,

@@ -3,11 +3,11 @@
 from typing import List
 
 from mila.base.collections import ASSISTANTS
-from mila.base.interfaces import AssistantBase
-from mila.base.types import MilaAssistant
+from mila.base.interfaces import MilaAssistant
+from mila.base.types import AssistantDefinition
 
 
-def assistant_list() -> List[AssistantBase]:
+def assistant_list() -> List[MilaAssistant]:
     """Retrieve all registered AssistantBase objects."""
     return ASSISTANTS.values()
 
@@ -20,6 +20,6 @@ async def assistant_dict() -> dict:
     }
 
 
-def register_assistant(assistant: MilaAssistant) -> None:
+def register_assistant(assistant: AssistantDefinition) -> None:
     """Register an assistant with the framework."""
-    ASSISTANTS[assistant.name] = AssistantBase(assistant)
+    ASSISTANTS[assistant.name] = MilaAssistant(assistant)

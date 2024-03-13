@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from mila.base.prompts import NEW_QUERY
-from mila.base.types import MilaAssistant, MilaTask
+from mila.base.types import AssistantDefinition, MilaTask
 
 
 class TaskIO(ABC):
@@ -34,16 +34,16 @@ class TaskIO(ABC):
         """Teardown the comms channel."""
 
 
-class AssistantBase(TaskIO):
+class MilaAssistant(TaskIO):
     """Mila Framework I/O handler class."""
 
-    meta: MilaAssistant = None
+    meta: AssistantDefinition = None
 
-    def __init__(self, assistant: MilaAssistant) -> None:
+    def __init__(self, assistant: AssistantDefinition) -> None:
         """Initialize the assistant."""
         self.meta = assistant
 
-    def __eq__(self, __value: "AssistantBase") -> bool:
+    def __eq__(self, __value: "MilaAssistant") -> bool:
         """Compare two assistants."""
         return self.meta == __value.meta
 
