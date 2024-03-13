@@ -8,7 +8,6 @@ from mila.assistants.util import (
     register_assistant,
 )
 from mila.base.collections import ASSISTANTS
-from mila.base.interfaces import MilaAssistant
 from mila.base.types import AssistantDefinition
 
 
@@ -28,7 +27,7 @@ async def test_assistant_dict():
     assert len(adict) == len(ASSISTANTS)
     for name, assistant in ASSISTANTS.items():
         assert name in adict
-        assert adict[name] == assistant.meta.description
+        assert adict[name] == assistant.description
 
 
 @pytest.mark.asyncio
@@ -43,4 +42,4 @@ async def test_register_assistant():
         metadata={"test": "test"},
     )
     register_assistant(test_assistant)
-    assert ASSISTANTS["TestAssistant"] == MilaAssistant(test_assistant)
+    assert ASSISTANTS["TestAssistant"] == test_assistant
