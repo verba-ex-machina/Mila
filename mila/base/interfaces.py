@@ -3,7 +3,6 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from mila.base.prompts import NEW_QUERY
 from mila.base.types import AssistantDefinition, MilaTask
 
 
@@ -47,15 +46,12 @@ class MilaAssistant(TaskIO, ABC):
         """Compare two assistants."""
         return self.meta == __value.meta
 
-    async def send(self, task_list: List[MilaTask]) -> None:
-        """Process tasks sent to the assistant."""
-        for task in task_list:
-            print(
-                NEW_QUERY.strip().format(
-                    context=task.context, query=task.content
-                )
-            )
 
-    async def recv(self) -> List[MilaTask]:
-        """Retrieve outbound responses from the assistant."""
-        return []
+class MilaLLM(ABC):
+    """Mila Framework LLM interface."""
+
+    # pylint: disable=too-few-public-methods
+
+    @abstractmethod
+    def get_assistant(self, definition: AssistantDefinition) -> MilaAssistant:
+        """Return an assistant for the given definition."""

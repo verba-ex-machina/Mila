@@ -3,9 +3,10 @@
 import asyncio
 from typing import List
 
+from mila.assistants.fake import FakeAssistant
 from mila.assistants.util import assistant_list
 from mila.base.collections import COMMANDS
-from mila.base.interfaces import MilaAssistant, TaskIO
+from mila.base.interfaces import TaskIO
 from mila.base.types import AssistantDefinition, MilaTask
 
 
@@ -18,7 +19,7 @@ class CoreIO(TaskIO):
         self, definition: AssistantDefinition
     ) -> List[MilaTask]:
         """Receive tasks from a single assistant."""
-        return await MilaAssistant(definition).recv()
+        return await FakeAssistant(definition).recv()
 
     async def recv(self) -> List[MilaTask]:
         """Retrieve responses from the assistants."""
@@ -40,7 +41,7 @@ class CoreIO(TaskIO):
         self, definition: AssistantDefinition, task_list: List[MilaTask]
     ) -> None:
         """Send tasks to a single assistant."""
-        await MilaAssistant(definition).send(task_list)
+        await FakeAssistant(definition).send(task_list)
 
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send assigned tasks the assistants."""

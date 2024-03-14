@@ -1,14 +1,15 @@
 """Provide a FakeLLM implementation."""
 
-from mila.base.interfaces import MilaAssistant
+from mila.assistants.fake import FakeAssistant
+from mila.base.interfaces import MilaAssistant, MilaLLM
 from mila.base.types import AssistantDefinition
 
 
-class FakeLLM:
+class FakeLLM(MilaLLM):
     """Fake LLM implementation."""
 
     # pylint: disable=too-few-public-methods
 
-    def get_assistant(self, definition: AssistantDefinition):
+    def get_assistant(self, definition: AssistantDefinition) -> MilaAssistant:
         """Return a fake assistant."""
-        return MilaAssistant(definition)
+        return FakeAssistant(definition)
