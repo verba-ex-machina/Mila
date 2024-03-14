@@ -34,7 +34,7 @@ class TaskIO(ABC):
         """Teardown the comms channel."""
 
 
-class MilaAssistant(TaskIO):
+class MilaAssistant(TaskIO, ABC):
     """Mila Framework I/O handler class."""
 
     meta: AssistantDefinition = None
