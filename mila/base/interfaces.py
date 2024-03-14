@@ -53,5 +53,7 @@ class MilaLLM(ABC):
     # pylint: disable=too-few-public-methods
 
     @abstractmethod
-    def get_assistant(self, definition: AssistantDefinition) -> MilaAssistant:
+    async def get_assistant(
+        self, definition: AssistantDefinition
+    ) -> MilaAssistant:
         """Return an assistant for the given definition."""

@@ -10,6 +10,7 @@ from mila.base.commands import POWER_WORD_KILL
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
 from mila.io.fake import FakeIO
+from mila.llm.fake import FakeLLM
 from tests.common import make_task
 
 
@@ -59,7 +60,9 @@ class DemoIO(TaskIO):
 @pytest.mark.asyncio
 async def test_milaproc():
     """Test the MilaProc class."""
-    async with MilaProc(task_io_handlers=[DemoIO, FakeIO]) as mila:
+    async with MilaProc(
+        llm=FakeLLM, task_io_handlers=[DemoIO, FakeIO]
+    ) as mila:
         assert RESULTS.set_up
         await mila.run()
         assert RESULTS.received

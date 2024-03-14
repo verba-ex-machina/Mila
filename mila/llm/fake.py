@@ -10,6 +10,8 @@ class FakeLLM(MilaLLM):
 
     # pylint: disable=too-few-public-methods
 
-    def get_assistant(self, definition: AssistantDefinition) -> MilaAssistant:
+    async def get_assistant(
+        self, definition: AssistantDefinition
+    ) -> MilaAssistant:
         """Return a fake assistant."""
         return FakeAssistant(definition)

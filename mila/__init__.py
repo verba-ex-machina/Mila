@@ -6,7 +6,7 @@ from typing import List
 from mila.base.collections import COMMANDS
 from mila.base.commands import POWER_WORD_KILL
 from mila.base.constants import STATES, TICK
-from mila.base.interfaces import TaskIO
+from mila.base.interfaces import MilaLLM, TaskIO
 from mila.base.types import MilaTask
 from mila.io.core import CoreIO
 
@@ -14,12 +14,16 @@ from mila.io.core import CoreIO
 class MilaProc:
     """Mila Framework process class."""
 
-    def __init__(self, task_io_handlers: List[TaskIO]) -> None:
+    _llm: MilaLLM
+    _task_io_handlers: List[TaskIO]
+
+    def __init__(self, llm: MilaLLM, task_io_handlers: List[TaskIO]) -> None:
         """Initialize the Mila Framework."""
-        self.task_io_handlers: List[TaskIO] = [
-            CoreIO(),
+        self._llm = llm()
+        self._task_io_handlers = [
+            CoreIO(llm=self._llm),
         ]
-        self.task_io_handlers.extend(
+        self._task_io_handlers.extend(
             [handler() for handler in task_io_handlers]
         )
         self.running = False
@@ -27,14 +31,14 @@ class MilaProc:
     async def __aenter__(self) -> "MilaProc":
         """Set up the Mila Framework."""
         await asyncio.gather(
-            *[handler.setup() for handler in self.task_io_handlers]
+            *[handler.setup() for handler in self._task_io_handlers]
         )
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         """Tear down the Mila Framework."""
         await asyncio.gather(
-            *[handler.teardown() for handler in self.task_io_handlers]
+            *[handler.teardown() for handler in self._task_io_handlers]
         )
 
     async def _collect_tasks_from(self, handler: TaskIO) -> List[MilaTask]:
@@ -52,7 +56,7 @@ class MilaProc:
         for task_list in await asyncio.gather(
             *[
                 self._collect_tasks_from(handler)
-                for handler in self.task_io_handlers
+                for handler in self._task_io_handlers
             ]
         ):
             tasks.extend(task_list)
@@ -90,7 +94,7 @@ class MilaProc:
                         or task.dst.handler == handler.__class__.__name__
                     ]
                 )
-                for handler in self.task_io_handlers
+                for handler in self._task_io_handlers
             ]
         )
         return [
@@ -99,7 +103,8 @@ class MilaProc:
             if task not in COMMANDS
             and task.dst.handler
             not in [
-                handler.__class__.__name__ for handler in self.task_io_handlers
+                handler.__class__.__name__
+                for handler in self._task_io_handlers
             ]
         ]
 
