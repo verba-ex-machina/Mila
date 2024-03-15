@@ -1,4 +1,4 @@
-"""Provide interface fakes for testing purposes."""
+"""Provide a Fake I/O module."""
 
 from typing import List
 

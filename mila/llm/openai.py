@@ -1,4 +1,4 @@
-"""Provide Mila Framework OpenAI LLM integration."""
+"""Provide OpenAI LLM integration."""
 
 from typing import List
 

@@ -8,8 +8,6 @@ from mila.base.types import AssistantDefinition
 class FakeLLM(MilaLLM):
     """Fake LLM implementation."""
 
-    # pylint: disable=too-few-public-methods
-
     async def get_assistant(
         self, definition: AssistantDefinition
     ) -> MilaAssistant:

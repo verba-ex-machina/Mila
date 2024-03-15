@@ -1,4 +1,4 @@
-"""Provide Mila Framework IO modules."""
+"""Provide Mila Framework I/O modules."""
 
 import asyncio
 from typing import List

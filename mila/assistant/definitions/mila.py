@@ -1,4 +1,4 @@
-"""Provide the Primary Assistant for the Mila Framework."""
+"""Provide the Primary Assistant definition for the Mila Framework."""
 
 from mila.assistant.util import assistant_dict, register_assistant
 from mila.base.types import AssistantDefinition, MilaTool
