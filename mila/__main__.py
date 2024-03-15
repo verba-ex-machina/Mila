@@ -6,10 +6,10 @@ from typing import List
 from mila import MilaProc
 from mila.base.interfaces import MilaLLM, TaskIO
 from mila.io.discord import DiscordIO
-from mila.llm.fake import FakeLLM
+from mila.llm.openai import OpenAILLM
 
 TASK_IO_HANDLERS: List[TaskIO] = [DiscordIO]
-LLM_BACKEND: MilaLLM = FakeLLM
+LLM_BACKEND: MilaLLM = OpenAILLM
 
 
 async def main():
