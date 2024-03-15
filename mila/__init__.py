@@ -19,7 +19,7 @@ class MilaProc:
 
     def __init__(self, llm: MilaLLM, task_io_handlers: List[TaskIO]) -> None:
         """Initialize the Mila Framework."""
-        self._llm = llm()
+        self._llm = llm
         self._task_io_handlers = [
             CoreIO(llm=self._llm),
         ]

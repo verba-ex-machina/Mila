@@ -15,3 +15,9 @@ class FakeLLM(MilaLLM):
     ) -> MilaAssistant:
         """Return a fake assistant."""
         return FakeAssistant(definition)
+
+    async def setup(self) -> None:
+        """Prepare the LLM."""
+
+    async def teardown(self) -> None:
+        """Teardown the LLM."""

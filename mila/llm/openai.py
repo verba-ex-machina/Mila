@@ -110,3 +110,19 @@ class OpenAILLM(MilaLLM):
         """List all OpenAI assistants."""
         response = await self._llm.beta.assistants.list(limit=100)
         return response.data
+
+    async def oai_assistant_delete(self, assistant_id: str) -> None:
+        """Delete the specified OpenAI assistant."""
+        await self._llm.beta.assistants.delete(assistant_id)
+
+    async def setup(self) -> None:
+        """Perform OpenAI LLM setup."""
+
+    async def teardown(self) -> None:
+        """Perform OpenAI LLM teardown."""
+        for assistant in await self.oai_assistant_list():
+            # Don't delete assistants that aren't part of Mila.
+            # All of ours use the "hash" metadata key.
+            # This isn't a perfect solution, but it'll do for now.
+            if "hash" in assistant.metadata.keys():
+                await self.oai_assistant_delete(assistant.id)

@@ -10,8 +10,8 @@ from tests.common import make_assistant
 @pytest.mark.asyncio
 async def test_fake_llm():
     """Test the fake LLM."""
-    fake_llm = FakeLLM()
-    definition = make_assistant()
-    assistant = await fake_llm.get_assistant(definition)
-    assert isinstance(assistant, MilaAssistant)
-    assert assistant.meta == definition
+    async with FakeLLM() as fake_llm:
+        definition = make_assistant()
+        assistant = await fake_llm.get_assistant(definition)
+        assert isinstance(assistant, MilaAssistant)
+        assert assistant.meta == definition

@@ -6,17 +6,29 @@ from typing import List
 from mila.base.types import AssistantDefinition, MilaTask
 
 
-class TaskIO(ABC):
-    """Define the interface for a standard Mila comms channel."""
+class ContextManager(ABC):
+    """Define the interface for a standard context manager."""
 
-    async def __aenter__(self) -> "TaskIO":
-        """Enter the comms channel."""
+    async def __aenter__(self) -> "ContextManager":
+        """Enter the context manager."""
         await self.setup()
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
-        """Exit the comms channel."""
+        """Exit the context manager."""
         await self.teardown()
+
+    @abstractmethod
+    async def setup(self) -> None:
+        """Prepare the context manager."""
+
+    @abstractmethod
+    async def teardown(self) -> None:
+        """Teardown the context manager."""
+
+
+class TaskIO(ContextManager, ABC):
+    """Define the interface for a standard Mila comms channel."""
 
     @abstractmethod
     async def recv(self) -> List[MilaTask]:
@@ -47,7 +59,7 @@ class MilaAssistant(TaskIO, ABC):
         return self.meta == __value.meta
 
 
-class MilaLLM(ABC):
+class MilaLLM(ContextManager, ABC):
     """Mila Framework LLM interface."""
 
     # pylint: disable=too-few-public-methods
