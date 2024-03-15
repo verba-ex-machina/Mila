@@ -183,7 +183,13 @@ class DiscordClient(discord.Client):
         self._handle_mila_tasks.stop()
         self.status = discord.Status.offline
         self.activity = discord.Game(name="Electric Sheep")
-        await self.change_presence(status=self.status, activity=self.activity)
+        try:
+            await self.change_presence(
+                status=self.status, activity=self.activity
+            )
+        except AttributeError:
+            # The client is already offline.
+            pass
         await self.http.close()
         await self.close()
 
