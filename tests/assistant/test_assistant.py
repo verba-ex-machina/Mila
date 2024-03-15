@@ -2,7 +2,7 @@
 
 import pytest
 
-from mila.assistants.util import (
+from mila.assistant.util import (
     assistant_dict,
     assistant_list,
     register_assistant,

@@ -2,7 +2,7 @@
 
 import pytest
 
-from mila.assistants.fake import FakeAssistant
+from mila.assistant.fake import FakeAssistant
 from tests.common import make_assistant, make_task
 
 
