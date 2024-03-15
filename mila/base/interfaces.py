@@ -38,9 +38,9 @@ class MilaAssistant(TaskIO, ABC):
 
     meta: AssistantDefinition = None
 
-    def __init__(self, assistant: AssistantDefinition) -> None:
+    def __init__(self, definition: AssistantDefinition) -> None:
         """Initialize the assistant."""
-        self.meta = assistant
+        self.meta = definition
 
     def __eq__(self, __value: "MilaAssistant") -> bool:
         """Compare two assistants."""

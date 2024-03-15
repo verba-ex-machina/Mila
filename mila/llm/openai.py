@@ -12,14 +12,12 @@ from mila.base.types import AssistantDefinition
 class OpenAIAssistant(MilaAssistant):
     """Mila Framework OpenAI Assistant class."""
 
-    _llm: AsyncOpenAI = None
+    _llm: "OpenAILLM" = None
     _assistant: Assistant = None
 
-    def __init__(
-        self, assistant: AssistantDefinition, llm: AsyncOpenAI
-    ) -> None:
+    def __init__(self, definition: AssistantDefinition, llm: MilaLLM) -> None:
         """Initialize the OpenAI assistant."""
-        super().__init__(assistant)
+        super().__init__(definition)
         self._llm = llm
 
     @staticmethod
@@ -36,32 +34,18 @@ class OpenAIAssistant(MilaAssistant):
 
     async def setup(self) -> None:
         """Set up the assistant."""
-        assistant_list = await self._llm.beta.assistants.list(limit=100)
-        for assistant in assistant_list.data:
+        for assistant in await self._llm.oai_assistant_list():
             if assistant.name == self.meta.name:
                 if (
                     "hash" not in assistant.metadata.keys()
                     or assistant.metadata["hash"] != hash(self.meta)
                 ):
-                    await self._llm.beta.assistants.update(
-                        assistant_id=assistant.id,
-                        name=self.meta.name,
-                        description=self.meta.description,
-                        instructions=self.meta.instructions,
-                        tools=[tool.definition for tool in self.meta.tools],
-                        model=self.meta.model,
-                        metadata=self.meta.metadata,
+                    self._assistant = await self._llm.oai_assistant_update(
+                        assistant.id, self.meta
                     )
+                    return
                 self._assistant = assistant
-                return
-        self._assistant = await self._llm.beta.assistants.create(
-            name=self.meta.name,
-            description=self.meta.description,
-            instructions=self.meta.instructions,
-            tools=[tool.definition for tool in self.meta.tools],
-            model=self.meta.model,
-            metadata=self.meta.metadata,
-        )
+        self._assistant = await self._llm.oai_assistant_create(self.meta)
 
     @_requires_assistant
     async def recv(self) -> List[MilaTask]:
@@ -77,8 +61,6 @@ class OpenAIAssistant(MilaAssistant):
 class OpenAILLM(MilaLLM):
     """Mila Framework OpenAI LLM class."""
 
-    # pylint: disable=too-few-public-methods
-
     _llm: AsyncOpenAI = None
 
     def __init__(self) -> None:
@@ -89,4 +71,42 @@ class OpenAILLM(MilaLLM):
         self, definition: AssistantDefinition
     ) -> MilaAssistant:
         """Return an assistant for the given definition."""
-        return OpenAIAssistant(definition, self._llm)
+        return OpenAIAssistant(definition=definition, llm=self)
+
+    async def oai_assistant_update(
+        self, assistant_id: str, definition: AssistantDefinition
+    ) -> None:
+        """Update the specified OpenAI assistant."""
+        return await self._llm.beta.assistants.update(
+            assistant_id=assistant_id,
+            name=definition.name,
+            description=definition.description,
+            instructions=definition.instructions,
+            tools=[tool.definition for tool in definition.tools],
+            model=definition.model,
+            metadata={
+                "hash": hash(definition),
+                **definition.metadata,
+            },
+        )
+
+    async def oai_assistant_create(
+        self, definition: AssistantDefinition
+    ) -> Assistant:
+        """Create a new OpenAI assistant."""
+        return await self._llm.beta.assistants.create(
+            name=definition.name,
+            description=definition.description,
+            instructions=definition.instructions,
+            tools=[tool.definition for tool in definition.tools],
+            model=definition.model,
+            metadata={
+                "hash": hash(definition),
+                **definition.metadata,
+            },
+        )
+
+    async def oai_assistant_list(self) -> List[Assistant]:
+        """List all OpenAI assistants."""
+        response = await self._llm.beta.assistants.list(limit=100)
+        return response.data
