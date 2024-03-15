@@ -1,16 +1,15 @@
 """Provide OpenAI LLM integration."""
 
 import asyncio
-from typing import List, Dict
+from typing import Dict, List
 
 from openai import AsyncOpenAI
 from openai.types.beta.assistant import Assistant
-from openai.types.beta.thread import Thread
 from openai.types.beta.threads.run import Run
 
 from mila.base.interfaces import MilaAssistant, MilaLLM, MilaTask
-from mila.base.types import AssistantDefinition
 from mila.base.prompts import NEW_QUERY
+from mila.base.types import AssistantDefinition
 
 
 class OpenAIAssistant(MilaAssistant):
@@ -61,16 +60,12 @@ class OpenAIAssistant(MilaAssistant):
 
     async def _handle_task(self, task: MilaTask) -> None:
         """Handle a single task."""
-        new_thread = await self._llm.oai_thread_create(
-            task=task
-        )
-        new_run = await self._llm.oai_run_create(
-            assistant_id=self._assistant.id,
-            thread_id=new_thread.id,
+        new_run = await self._llm.oai_run_and_thread_create(
+            assistant_id=self._assistant.id, task=task
         )
         self._runs.append(new_run.id)
         self._tasks[new_run.id] = task
-        self._threads[new_run.id] = new_thread.id
+        self._threads[new_run.id] = new_run.thread_id
 
     @_requires_assistant
     async def send(self, task_list: List[MilaTask]) -> None:
@@ -136,25 +131,24 @@ class OpenAILLM(MilaLLM):
         """Delete the specified OpenAI assistant."""
         await self._llm.beta.assistants.delete(assistant_id)
 
-    async def oai_run_create(self, assistant_id: str, thread_id: str) -> Run:
-        """Create a new OpenAI run."""
-        return await self._llm.beta.threads.runs.create(
-            thread_id=thread_id,
+    async def oai_run_and_thread_create(
+        self, assistant_id: str, task: MilaTask
+    ) -> Run:
+        """Create a new OpenAI run and thread."""
+        run = await self._llm.beta.threads.create_and_run(
             assistant_id=assistant_id,
+            thread={
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": NEW_QUERY.format(
+                            context=task.context, query=task.content
+                        ),
+                    }
+                ],
+            },
         )
-
-    async def oai_thread_create(self, task: MilaTask) -> Thread:
-        """Create a new OpenAI thread."""
-        return await self._llm.beta.threads.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": NEW_QUERY.format(
-                        context=task.context, query=task.content
-                    ),
-                }
-            ],
-        )
+        return run
 
     async def teardown(self) -> None:
         """Perform OpenAI LLM teardown."""
