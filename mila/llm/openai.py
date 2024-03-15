@@ -115,9 +115,6 @@ class OpenAILLM(MilaLLM):
         """Delete the specified OpenAI assistant."""
         await self._llm.beta.assistants.delete(assistant_id)
 
-    async def setup(self) -> None:
-        """Perform OpenAI LLM setup."""
-
     async def teardown(self) -> None:
         """Perform OpenAI LLM teardown."""
         for assistant in await self.oai_assistant_list():
