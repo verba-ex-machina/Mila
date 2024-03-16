@@ -3,6 +3,7 @@
 import asyncio
 from typing import List
 
+import mila.assistant
 from mila.base.collections import COMMANDS
 from mila.base.commands import POWER_WORD_KILL
 from mila.base.constants import STATES, TICK

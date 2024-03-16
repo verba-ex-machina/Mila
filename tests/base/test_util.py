@@ -2,12 +2,8 @@
 
 import pytest
 
-from mila.assistant.util import (
-    assistant_dict,
-    assistant_list,
-    register_assistant,
-)
 from mila.base.collections import ASSISTANTS
+from mila.base.util import assistant_dict, assistant_list, register_assistant
 from tests.common import make_assistant
 
 

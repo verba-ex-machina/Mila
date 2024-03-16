@@ -1,7 +1,7 @@
 """Provide the Primary Assistant definition for the Mila Framework."""
 
-from mila.assistant.util import assistant_dict, register_assistant
 from mila.base.types import AssistantDefinition, MilaTool, ToolProperty
+from mila.base.util import assistant_dict, register_assistant
 
 
 async def delegate(assistant: str, instructions: str) -> str:
