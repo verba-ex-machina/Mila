@@ -14,7 +14,7 @@ from mila.base.commands import POWER_WORD_KILL
 from mila.base.constants import TICK
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
-from mila.io.fake import FakeIO
+from mila.module.fake import FakeIO
 
 
 class DiscordClient(discord.Client):
