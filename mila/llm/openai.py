@@ -202,7 +202,7 @@ class OpenAILLM(MilaLLM):
         self, definition: AssistantDefinition
     ) -> MilaAssistant:
         """Return an assistant for the given definition."""
-        return OpenAIAssistant(definition=definition, llm=self)
+        return OpenAIAssistant(definition=definition, llm=self._llm)
 
     async def _assistant_delete(self, assistant_id: str) -> None:
         """Delete the specified OpenAI assistant."""
