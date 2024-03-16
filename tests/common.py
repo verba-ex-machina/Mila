@@ -1,6 +1,26 @@
 """Provide common functions across tests."""
 
-from mila.base.types import AssistantDefinition, MilaTask
+from mila.base.types import (
+    AssistantDefinition,
+    MilaTask,
+    MilaTool,
+    ToolProperty,
+)
+
+
+def make_tool() -> MilaTool:
+    """Make a MilaTool."""
+    tool = MilaTool(
+        name="print",
+        function=print,
+        properties={
+            "content": ToolProperty(
+                type="string", description="Content to print."
+            )
+        },
+        required=["content"],
+    )
+    return tool
 
 
 def make_assistant() -> AssistantDefinition:
@@ -9,7 +29,7 @@ def make_assistant() -> AssistantDefinition:
         name="test assistant",
         description="test assistant description",
         instructions="test assistant instructions",
-        tools=[],
+        tools=[make_tool()],
         model="gpt-3.5-turbo",
         metadata={},
     )

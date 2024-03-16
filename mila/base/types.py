@@ -2,9 +2,18 @@
 
 import json
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, Optional
+from typing import Dict, Iterable, List, Optional
 
 from mila.base.constants import STATES
+
+
+@dataclass
+class ToolProperty:
+    """Define a single property in a tool."""
+
+    type: str
+    description: Optional[str] = None
+    enum: Optional[List[str]] = None
 
 
 @dataclass
@@ -13,8 +22,8 @@ class MilaTool:
 
     name: str
     function: callable
-    properties: dict = field(default_factory=dict)
-    required: list = field(default_factory=list)
+    properties: Dict[str, ToolProperty] = field(default_factory=dict)
+    required: List[str] = field(default_factory=list)
 
     @property
     def definition(self) -> dict:
