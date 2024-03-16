@@ -1,11 +1,12 @@
 """Provide OpenAI LLM integration."""
 
 import asyncio
-from typing import Dict, List
+import json
+from typing import Dict, List, Union
 
 from openai import AsyncOpenAI
 from openai.types.beta.assistant import Assistant
-from openai.types.beta.threads.run import Run
+from openai.types.beta.threads.run import RequiredActionFunctionToolCall, Run
 
 from mila.base.interfaces import MilaAssistant, MilaLLM, MilaTask
 from mila.base.prompts import NEW_QUERY
@@ -53,10 +54,71 @@ class OpenAIAssistant(MilaAssistant):
                 self._assistant = assistant
         self._assistant = await self._llm.oai_assistant_create(self.meta)
 
+    async def _perform_actions(self, run_id: str) -> None:
+        """Perform an action on a run."""
+        tool_outputs = []
+        thread_id = self._threads[run_id]
+        run = await self._llm._llm.beta.threads.runs.retrieve(
+            thread_id=thread_id, run_id=run_id
+        )
+        tool_calls = run.required_action.submit_tool_outputs.tool_calls
+        tool_runs = [self._run_tool(tool_call) for tool_call in tool_calls]
+        tool_outputs = asyncio.gather(*tool_runs)
+        if tool_outputs:
+            await self._llm._llm.beta.threads.runs.submit_tool_outputs(
+                thread_id=thread_id,
+                run_id=run_id,
+                tool_outputs=tool_outputs,
+            )
+
+    async def _run_tool(
+        self, tool_call: RequiredActionFunctionToolCall
+    ) -> dict:
+        """Run a tool."""
+        tool_name = tool_call.function.name
+        arguments = json.loads(tool_call.function.arguments)
+        for tool in self.meta.tools:
+            if tool.name == tool_name:
+                response = await tool.function(**arguments)
+                return {
+                    "tool_call_id": tool_call.id,
+                    "output": response,
+                }
+        raise RuntimeError(f"Tool not found: {tool_name}")
+
+    async def _check_run(self, run_id: str) -> Union[None, MilaTask]:
+        """Check the status of a run."""
+        run = await self._llm._llm.beta.threads.runs.retrieve(
+            thread_id=self._threads[run_id], run_id=run_id
+        )
+        if not run.status == "completed":
+            if run.status in ["cancelled", "expired", "failed"]:
+                raise RuntimeError(f"Run failed: {run.status}")
+            if run.status == "requires_action":
+                await self._perform_actions(run_id)
+            return None
+        return await self._complete_run(run_id)
+
+    async def _complete_run(self, run_id: str) -> MilaTask:
+        """Complete a run."""
+        task = self._tasks[run_id]
+        thread_id = self._threads[run_id]
+        messages = await self._llm._llm.beta.threads.messages.list(
+            thread_id=thread_id
+        )
+        task.content = messages.data[0].content[0].text.value
+        task.dst = task.src.copy()
+        task.src.handler = self.meta.name
+        self._runs.remove(run_id)
+        return task
+
     @_requires_assistant
     async def recv(self) -> List[MilaTask]:
         """Receive outbound tasks from the assistant."""
-        raise NotImplementedError
+        coros = [self._check_run(run_id) for run_id in self._runs]
+        task_list = await asyncio.gather(*coros)
+        outbound_tasks = [task for task in task_list if task]
+        return outbound_tasks
 
     async def _handle_task(self, task: MilaTask) -> None:
         """Handle a single task."""
