@@ -1,4 +1,4 @@
-"""Provide a FakeLLM implementation."""
+"""Provide the Fake module."""
 
 from mila.assistant.fake import FakeAssistant
 from mila.base.interfaces import MilaAssistant, MilaLLM
