@@ -198,7 +198,7 @@ class DiscordIO(TaskIO):
     """Implement a Discord TaskIO adapter."""
 
     def __init__(self) -> None:
-        """Initialize the DiscordIO."""
+        """Initialize the DiscordIO adapter."""
         super().__init__()
         self._client = None
         self._process = None
@@ -248,15 +248,11 @@ async def demo():
     """Run an echo-server demo of the Discord module."""
     running = True
 
-    def _terminate():
-        """Terminate the demo."""
-        nonlocal running
-        running = False
-
-    def sigint_handler(signum, frame):
+    def sigint_handler(signum: int, frame: object) -> None:
         """Handle SIGINT."""
         # pylint: disable=unused-argument
-        _terminate()
+        nonlocal running
+        running = False
 
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -265,7 +261,7 @@ async def demo():
             while running:
                 task_list = await discord_io.recv()
                 if any(task == POWER_WORD_KILL for task in task_list):
-                    _terminate()
+                    sigint_handler(signal.SIGINT, None)
                     break
                 await fakeio.send(task_list)
                 await discord_io.send(await fakeio.recv())
