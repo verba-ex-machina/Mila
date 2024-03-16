@@ -7,8 +7,8 @@ from typing import List
 
 from mila import MilaProc
 from mila.base.interfaces import TaskIO
-from mila.llm.openai import OpenAILLM
 from mila.module.discord import DiscordIO
+from mila.module.openai import OpenAILLM
 
 TASK_IO_HANDLERS: List[TaskIO] = [DiscordIO]
 
