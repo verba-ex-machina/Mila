@@ -1,3 +1,3 @@
 """Manage Assistants within the Mila Framework."""
 
-import mila.assistant.mila
+import mila.assistants.mila
