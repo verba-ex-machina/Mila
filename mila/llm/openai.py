@@ -60,10 +60,12 @@ class OpenAIAssistant(MilaAssistant):
         response = await self._llm.beta.assistants.list(limit=100)
         return response.data
 
-    async def _update(self, definition: AssistantDefinition) -> None:
+    async def _update(
+        self, assistant_id: str, definition: AssistantDefinition
+    ) -> None:
         """Update the specified OpenAI assistant."""
         return await self._llm.beta.assistants.update(
-            assistant_id=self._assistant.id,
+            assistant_id=assistant_id,
             name=definition.name,
             description=definition.description,
             instructions=definition.instructions,
@@ -83,7 +85,9 @@ class OpenAIAssistant(MilaAssistant):
                     "hash" not in assistant.metadata.keys()
                     or assistant.metadata["hash"] != hash(self.meta)
                 ):
-                    self._assistant = await self._update(self.meta)
+                    self._assistant = await self._update(
+                        assistant.id, self.meta
+                    )
                     return
                 self._assistant = assistant
         self._assistant = await self._create(self.meta)
@@ -97,7 +101,7 @@ class OpenAIAssistant(MilaAssistant):
         )
         tool_calls = run.required_action.submit_tool_outputs.tool_calls
         tool_runs = [self._run_tool(tool_call) for tool_call in tool_calls]
-        tool_outputs = asyncio.gather(*tool_runs)
+        tool_outputs = await asyncio.gather(*tool_runs)
         if tool_outputs:
             await self._llm.beta.threads.runs.submit_tool_outputs(
                 thread_id=thread_id,
@@ -116,7 +120,7 @@ class OpenAIAssistant(MilaAssistant):
                 response = await tool.function(**arguments)
                 return {
                     "tool_call_id": tool_call.id,
-                    "output": response,
+                    "output": str(response),
                 }
         raise RuntimeError(f"Tool not found: {tool_name}")
 
