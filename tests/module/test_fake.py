@@ -1,10 +1,36 @@
-"""Test the Fake Module."""
+"""Test the Fake module."""
 
 import pytest
 
+from mila.assistant.fake import FakeAssistant
+from mila.base.interfaces import MilaAssistant
 from mila.base.types import MilaTask
 from mila.io.fake import FakeIO
-from tests.common import make_task
+from mila.llm.fake import FakeLLM
+from tests.common import make_assistant, make_task
+
+
+@pytest.mark.asyncio
+async def test_fake_assistant():
+    """Test the FakeAssistant."""
+    definition = make_assistant()
+    assistant = FakeAssistant(definition)
+    assert assistant.meta == definition
+    task = make_task()
+    await assistant.send([task])
+    response = await assistant.recv()
+    response_task = response[0]
+    assert response_task.content == task.content
+
+
+@pytest.mark.asyncio
+async def test_fake_llm():
+    """Test the fake LLM."""
+    async with FakeLLM() as fake_llm:
+        definition = make_assistant()
+        assistant = await fake_llm.get_assistant(definition)
+        assert isinstance(assistant, MilaAssistant)
+        assert assistant.meta == definition
 
 
 @pytest.mark.asyncio

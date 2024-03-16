@@ -12,15 +12,6 @@ from tests.common import make_assistant
 
 
 @pytest.mark.asyncio
-async def test_assistant_list():
-    """Test the assistant_list function."""
-    alist = assistant_list()
-    assert len(alist) == len(ASSISTANTS)
-    for assistant in ASSISTANTS.values():
-        assert assistant in alist
-
-
-@pytest.mark.asyncio
 async def test_assistant_dict():
     """Test the assistant_dict function."""
     adict = await assistant_dict()
@@ -28,6 +19,15 @@ async def test_assistant_dict():
     for name, assistant in ASSISTANTS.items():
         assert name in adict
         assert adict[name] == assistant.description
+
+
+@pytest.mark.asyncio
+async def test_assistant_list():
+    """Test the assistant_list function."""
+    alist = assistant_list()
+    assert len(alist) == len(ASSISTANTS)
+    for assistant in ASSISTANTS.values():
+        assert assistant in alist
 
 
 @pytest.mark.asyncio
