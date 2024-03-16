@@ -15,6 +15,18 @@ class ToolProperty:
     description: Optional[str] = None
     enum: Optional[List[str]] = None
 
+    @property
+    def definition(self) -> dict:
+        """Get the property definition."""
+        definition = {
+            "type": self.type,
+        }
+        if self.description:
+            definition["description"] = self.description
+        if self.enum:
+            definition["enum"] = self.enum
+        return definition
+
 
 @dataclass
 class MilaTool:
@@ -35,7 +47,10 @@ class MilaTool:
                 "description": self.function.__doc__,
                 "parameters": {
                     "type": "object",
-                    "properties": self.properties,
+                    "properties": {
+                        name: prop.definition
+                        for name, prop in self.properties.items()
+                    },
                     "required": self.required,
                 },
             },

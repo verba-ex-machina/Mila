@@ -8,11 +8,16 @@ from mila.base.types import (
 )
 
 
+async def _aprint(content: str) -> None:
+    """Print content."""
+    print(content)
+
+
 def make_tool() -> MilaTool:
     """Make a MilaTool."""
     tool = MilaTool(
         name="print",
-        function=print,
+        function=_aprint,
         properties={
             "content": ToolProperty(
                 type="string", description="Content to print."

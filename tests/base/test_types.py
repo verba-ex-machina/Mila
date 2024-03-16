@@ -3,7 +3,7 @@
 import json
 from typing import Optional
 
-from mila.base.types import AssistantDefinition, MilaTool
+from mila.base.types import AssistantDefinition, MilaTool, ToolProperty
 from tests.common import make_task
 
 
@@ -28,14 +28,14 @@ def test_mila_tool():
         name="test tool",
         function=test_function,
         properties={
-            "a": {
-                "type": "string",
-                "description": "a test string",
-            },
-            "b": {
-                "type": "integer",
-                "description": "a test integer",
-            },
+            "a": ToolProperty(
+                type="string",
+                description="a test string",
+            ),
+            "b": ToolProperty(
+                type="integer",
+                description="a test integer",
+            ),
         },
         required=["a"],
     )

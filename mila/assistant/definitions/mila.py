@@ -1,12 +1,37 @@
 """Provide the Primary Assistant definition for the Mila Framework."""
 
 from mila.assistant.util import assistant_dict, register_assistant
-from mila.base.types import AssistantDefinition, MilaTool
+from mila.base.types import AssistantDefinition, MilaTool, ToolProperty
 
 
-async def delegate() -> str:
-    """Delegate a task to another assistant."""
-    return "Sorry, this hasn't been implemented yet."
+async def delegate(assistant: str, instructions: str) -> str:
+    """Delegate a task to another assistant.
+
+    Tasks should only be delegated as needed, or if explicitly requested
+    by the user.
+
+    Args:
+        assistant (str): The name of the selected assistant.
+        instructions (str): An actionable request for the assistant.
+
+    Returns:
+        str: The response from the delegated assistant.
+
+    Instructions should be provided as a one-line string, without any
+    formatting or special characters.
+
+    Tasks should be delegated as appropriate, and responses provided by
+    the delegated assistant should be considered in your response back
+    to the user.
+    """
+    print(
+        (
+            "Attempted Delegation:\n"
+            f"  - Assistant: {assistant}\n"
+            f"  - Instructions: {instructions}"
+        )
+    )
+    return "I don't really have the capacity to answer this query."
 
 
 TOOLS = [
@@ -19,8 +44,20 @@ TOOLS = [
     MilaTool(
         name="delegate",
         function=delegate,
-        properties={},
-        required=[],
+        properties={
+            "assistant": ToolProperty(
+                type="string",
+                description="The name of the selected assistant.",
+            ),
+            "instructions": ToolProperty(
+                type="string",
+                description="An actionable request for the assistant.",
+            ),
+        },
+        required=[
+            "assistant",
+            "instructions",
+        ],
     ),
 ]
 
