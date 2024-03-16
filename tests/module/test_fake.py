@@ -4,7 +4,7 @@ import pytest
 
 from mila.base.interfaces import MilaAssistant
 from mila.base.types import MilaTask
-from mila.module.fake import FakeAssistant, FakeIO, FakeLLM
+from mila.modules.fake import FakeAssistant, FakeIO, FakeLLM
 from tests.common import make_assistant, make_task
 
 

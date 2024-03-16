@@ -9,7 +9,7 @@ from mila.base.commands import POWER_WORD_KILL
 from mila.base.constants import STATES, TICK
 from mila.base.interfaces import MilaLLM, TaskIO
 from mila.base.types import MilaTask
-from mila.module.core import CoreIO
+from mila.modules.core import CoreIO
 
 
 class MilaProc:
