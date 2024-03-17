@@ -38,22 +38,24 @@ TOOLS = [
     MilaTool(
         name="get_assistants",
         function=assistant_dict,
-        properties={},
+        properties=[],
         required=[],
     ),
     MilaTool(
         name="delegate",
         function=delegate,
-        properties={
-            "assistant": ToolProperty(
+        properties=[
+            ToolProperty(
+                name="assistant",
                 type="string",
                 description="The name of the selected assistant.",
             ),
-            "instructions": ToolProperty(
+            ToolProperty(
+                name="instructions",
                 type="string",
                 description="An actionable request for the assistant.",
             ),
-        },
+        ],
         required=[
             "assistant",
             "instructions",

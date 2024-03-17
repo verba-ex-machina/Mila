@@ -18,11 +18,11 @@ def make_tool() -> MilaTool:
     tool = MilaTool(
         name="print",
         function=_aprint,
-        properties={
-            "content": ToolProperty(
-                type="string", description="Content to print."
+        properties=[
+            ToolProperty(
+                name="content", type="string", description="Content to print."
             )
-        },
+        ],
         required=["content"],
     )
     return tool

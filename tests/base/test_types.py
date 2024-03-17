@@ -4,7 +4,7 @@ import json
 from typing import Optional
 
 from mila.base.types import AssistantDefinition, MilaTool, ToolProperty
-from tests.common import make_task
+from tests.common import make_task, make_tool
 
 
 def test_mila_task():
@@ -27,16 +27,18 @@ def test_mila_tool():
     tool = MilaTool(
         name="test tool",
         function=test_function,
-        properties={
-            "a": ToolProperty(
+        properties=[
+            ToolProperty(
+                name="a",
                 type="string",
                 description="a test string",
             ),
-            "b": ToolProperty(
+            ToolProperty(
+                name="b",
                 type="integer",
                 description="a test integer",
             ),
-        },
+        ],
         required=["a"],
     )
     assert tool.definition == {
@@ -65,17 +67,8 @@ def test_mila_tool():
 def test_assistant_definition():
     """Test the AssistantDefinition class."""
 
-    def test_function() -> bool:
-        """A function which always returns true."""
-        return True
-
-    tool = MilaTool(
-        name="test tool",
-        function=test_function,
-        properties={},
-        required=[],
-    )
-    definition = {
+    tool: MilaTool = make_tool()
+    expected = {
         "name": "test",
         "description": "a test assistant",
         "instructions": "do nothing",
@@ -85,6 +78,6 @@ def test_assistant_definition():
             "test": "test",
         },
     }
-    assistant = AssistantDefinition(**definition)
-    definition["tools"] = [tool.definition for tool in assistant.tools]
-    assert str(assistant) == json.dumps(definition)
+    actual = AssistantDefinition(**expected)
+    expected["tools"] = [tool.definition for tool in expected["tools"]]
+    assert str(actual) == json.dumps(expected)

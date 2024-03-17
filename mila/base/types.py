@@ -11,6 +11,7 @@ from mila.base.constants import STATES
 class ToolProperty:
     """Define a single property in a tool."""
 
+    name: str
     type: str
     description: Optional[str] = None
     enum: Optional[List[str]] = None
@@ -34,7 +35,7 @@ class MilaTool:
 
     name: str
     function: callable
-    properties: Dict[str, ToolProperty] = field(default_factory=dict)
+    properties: List[ToolProperty] = field(default_factory=list)
     required: List[str] = field(default_factory=list)
 
     @property
@@ -48,8 +49,7 @@ class MilaTool:
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        name: prop.definition
-                        for name, prop in self.properties.items()
+                        prop.name: prop.definition for prop in self.properties
                     },
                     "required": self.required,
                 },
