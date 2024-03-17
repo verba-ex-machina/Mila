@@ -57,15 +57,15 @@ class CoreIO(TaskIO):
             elif not task.meta.assignment:
                 task.meta.assignment = "Mila"
         # For now we're just dropping invalid tasks without notification.
-        for definition in assistant_list():
-            assigned_tasks = [
-                task
-                for task in task_list
-                if task.meta.assignment == definition.name
-            ]
-            if assigned_tasks:
-                print(
-                    f"{self.__class__.__name__}: Sending "
-                    f"{len(assigned_tasks)} task(s) to {definition.name}."
-                )
-                await self._send_to(definition, assigned_tasks)
+        coros = [
+            self._send_to(
+                definition,
+                [
+                    task
+                    for task in task_list
+                    if task.meta.assignment == definition.name
+                ],
+            )
+            for definition in assistant_list()
+        ]
+        await asyncio.gather(*coros)
