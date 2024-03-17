@@ -101,7 +101,9 @@ class OpenAIAssistant(MilaAssistant):
         )
         tool_calls = run.required_action.submit_tool_outputs.tool_calls
         tool_runs = [self._run_tool(tool_call) for tool_call in tool_calls]
-        tool_outputs = await asyncio.gather(*tool_runs)
+        tool_outputs = [
+            output for output in await asyncio.gather(*tool_runs) if output
+        ]
         if tool_outputs:
             await self._llm.beta.threads.runs.submit_tool_outputs(
                 thread_id=thread_id,
@@ -115,14 +117,17 @@ class OpenAIAssistant(MilaAssistant):
         """Run a tool."""
         tool_name = tool_call.function.name
         arguments = json.loads(tool_call.function.arguments)
+        output = {}
         for tool in self.meta.tools:
             if tool.name == tool_name:
                 response = await tool.function(**arguments)
-                return {
+                output = {
                     "tool_call_id": tool_call.id,
                     "output": str(response),
                 }
-        raise RuntimeError(f"Tool not found: {tool_name}")
+        if not output:
+            print(f"{self.meta.name}: Tool {tool_name} not found.")
+        return output
 
     async def _check_run(self, run_id: str) -> Union[None, MilaTask]:
         """Check the status of a run."""
@@ -131,7 +136,9 @@ class OpenAIAssistant(MilaAssistant):
         )
         if not run.status == "completed":
             if run.status in ["cancelled", "expired", "failed"]:
-                raise RuntimeError(f"Run failed: {run.status}")
+                raise RuntimeError(
+                    f"{self.meta.name}: Run failed. ({run.status})"
+                )
             if run.status == "requires_action":
                 await self._perform_actions(run_id)
             return None
@@ -139,6 +146,7 @@ class OpenAIAssistant(MilaAssistant):
 
     async def _complete_run(self, run_id: str) -> MilaTask:
         """Complete a run."""
+        self._runs.remove(run_id)
         task = self._tasks[run_id]
         thread_id = self._threads[run_id]
         messages = await self._llm.beta.threads.messages.list(
@@ -147,7 +155,6 @@ class OpenAIAssistant(MilaAssistant):
         task.content = messages.data[0].content[0].text.value
         task.dst = task.src.copy()
         task.src.handler = self.meta.name
-        self._runs.remove(run_id)
         return task
 
     @_requires_assistant
@@ -185,12 +192,15 @@ class OpenAIAssistant(MilaAssistant):
         self._runs.append(new_run.id)
         self._tasks[new_run.id] = task
         self._threads[new_run.id] = new_run.thread_id
+        print(f"{self.meta.name}: Task assigned to run {new_run.id}.")
 
     @_requires_assistant
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send tasks to the assistant."""
-        coros = [self._handle_task(task) for task in task_list]
-        await asyncio.gather(*coros)
+        if task_list:
+            print(f"{self.meta.name}: Received {len(task_list)} tasks.")
+            coros = [self._handle_task(task) for task in task_list]
+            await asyncio.gather(*coros)
 
 
 class OpenAILLM(MilaLLM):
