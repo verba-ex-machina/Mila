@@ -2,8 +2,8 @@
 
 import asyncio
 import json
+from dataclasses import dataclass, field
 from typing import Dict, List, Union
-from dataclasses import field, dataclass
 
 from openai import AsyncOpenAI
 from openai.types.beta.assistant import Assistant
@@ -104,7 +104,7 @@ class OpenAIAssistant(MilaAssistant):
         thread_id = self._threads[run_id]
         print(
             f"{self.meta.name}: Performing actions for run {run_id} in",
-            f"thread {thread_id}."
+            f"thread {thread_id}.",
         )
         run = await self._llm.beta.threads.runs.retrieve(
             thread_id=thread_id, run_id=run_id
@@ -177,7 +177,9 @@ class OpenAIAssistant(MilaAssistant):
         """Receive outbound tasks from the assistant."""
         outbound_tasks = []
         if self._runs:
-            print(f"{self.meta.name}: Retrieving outbound tasks. ({self._runs})")
+            print(
+                f"{self.meta.name}: Retrieving outbound tasks. ({self._runs})"
+            )
             coros = [self._check_run(run_id) for run_id in self._runs]
             task_list = await asyncio.gather(*coros)
             outbound_tasks = [task for task in task_list if task]
