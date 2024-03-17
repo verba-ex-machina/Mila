@@ -167,12 +167,13 @@ class OpenAIAssistant(MilaAssistant):
     @_requires_assistant
     async def recv(self) -> List[MilaTask]:
         """Receive outbound tasks from the assistant."""
-        outbound_tasks = []
-        if self._runs:
-            coros = [self._check_run(run_id) for run_id in self._runs]
-            task_list = await asyncio.gather(*coros)
-            outbound_tasks = [task for task in task_list if task]
-        return outbound_tasks
+        return [
+            task
+            for task in await asyncio.gather(
+                *[self._check_run(run_id) for run_id in self._runs]
+            )
+            if task
+        ]
 
     async def _create_thread_and_run(
         self, assistant_id: str, task: MilaTask
