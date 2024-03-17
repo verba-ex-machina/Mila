@@ -2,7 +2,7 @@
 
 from typing import List
 
-from mila.base.interfaces import MilaAssistant, MilaLLM, TaskIO
+from mila.base.interfaces import MilaAssistant, MilaLLM, TaskIO, TaskTracker
 from mila.base.types import AssistantDefinition, MilaTask
 
 
@@ -63,3 +63,21 @@ class FakeLLM(MilaLLM):
 
     async def teardown(self) -> None:
         """Teardown the LLM."""
+
+
+class FakeTracker(TaskTracker):
+    """Fake task tracker."""
+
+    tasks: dict = {}
+
+    async def add(self, task_id: str, task: MilaTask) -> None:
+        """Add a task to the tracker."""
+        self.tasks[task_id] = task
+
+    async def drop(self, task_id: str) -> None:
+        """Drop a task from the tracker."""
+        del self.tasks[task_id]
+
+    async def get(self, task_id: str) -> MilaTask:
+        """Get a task from the tracker."""
+        return self.tasks[task_id]

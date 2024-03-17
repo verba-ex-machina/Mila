@@ -4,8 +4,20 @@ import pytest
 
 from mila.base.interfaces import MilaAssistant
 from mila.base.types import MilaTask
-from mila.modules.fake import FakeAssistant, FakeIO, FakeLLM
+from mila.modules.fake import FakeAssistant, FakeIO, FakeLLM, FakeTracker
 from tests.common import make_assistant, make_task
+
+
+@pytest.mark.asyncio
+async def test_fake_tracker():
+    """Test the FakeTracker."""
+    tracker = FakeTracker()
+    task = make_task()
+    await tracker.add("task_1", task)
+    assert await tracker.get("task_1") == task
+    await tracker.drop("task_1")
+    with pytest.raises(KeyError):
+        await tracker.get("task_1")
 
 
 @pytest.mark.asyncio

@@ -1,7 +1,7 @@
 """Provide interfaces for Mila Framework objects."""
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Any, List
 
 from mila.base.types import AssistantDefinition, MilaTask
 
@@ -61,3 +61,19 @@ class MilaLLM(ContextManager, ABC):
         self, definition: AssistantDefinition
     ) -> MilaAssistant:
         """Return an assistant for the given definition."""
+
+
+class TaskTracker(ContextManager, ABC):
+    """Define the interface for a standard Mila task tracker."""
+
+    @abstractmethod
+    async def add(self, id: str, task: MilaTask) -> None:
+        """Add a task to the tracker."""
+    
+    @abstractmethod
+    async def get(self, id: str) -> MilaTask:
+        """Get a task from the tracker."""
+    
+    @abstractmethod
+    async def drop(self, id: str) -> None:
+        """Drop a task from the tracker."""
