@@ -1,6 +1,6 @@
 """Provide the Fake module."""
 
-from typing import List
+from typing import Dict, List
 
 from mila.base.interfaces import MilaAssistant, MilaLLM, TaskIO, TaskTracker
 from mila.base.types import AssistantDefinition, MilaTask
@@ -68,6 +68,8 @@ class FakeLLM(MilaLLM):
 class FakeTracker(TaskTracker):
     """Fake task tracker."""
 
+    _tasks: Dict[str, MilaTask]
+
     def __init__(self):
         """Initialize the FakeTracker."""
         self._tasks = {}
@@ -83,8 +85,17 @@ class FakeTracker(TaskTracker):
 
     async def update(self, task_id: str, task: MilaTask) -> None:
         """Update a task in the tracker."""
-        self._tasks[task_id] = task
+        if task_id in self._tasks:
+            self._tasks[task_id] = task
+        else:
+            raise KeyError(f"Task {task_id} not found.")
 
     async def delete(self, task_id: str) -> None:
         """Drop a task from the tracker."""
         del self._tasks[task_id]
+
+    async def by_state(self, state: str) -> List[MilaTask]:
+        """Get tasks by state."""
+        return [
+            task for task in self._tasks.values() if task.meta.state == state
+        ]

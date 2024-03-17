@@ -82,3 +82,8 @@ class TaskTracker(ContextManager, ABC):
     @abstractmethod
     async def delete(self, id: str) -> None:
         """Drop a task from the tracker."""
+
+    @abstractmethod
+    async def by_state(self, state: str) -> List[MilaTask]:
+        """Get a list of tasks by state."""
+        return []
