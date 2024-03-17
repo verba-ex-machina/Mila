@@ -28,7 +28,6 @@ class OpenAIAssistant(MilaAssistant):
         self, definition: AssistantDefinition, llm: AsyncOpenAI
     ) -> None:
         """Initialize the OpenAI assistant."""
-        print(f"Initializing OpenAI assistant {definition.name}.")
         super().__init__(definition)
         self._llm = llm
         self._runs = []
@@ -102,10 +101,6 @@ class OpenAIAssistant(MilaAssistant):
         """Perform an action on a run."""
         tool_outputs = []
         thread_id = self._threads[run_id]
-        print(
-            f"{self.meta.name}: Performing actions for run {run_id} in",
-            f"thread {thread_id}.",
-        )
         run = await self._llm.beta.threads.runs.retrieve(
             thread_id=thread_id, run_id=run_id
         )
@@ -125,10 +120,6 @@ class OpenAIAssistant(MilaAssistant):
         self, tool_call: RequiredActionFunctionToolCall
     ) -> dict:
         """Run a tool."""
-        print(
-            f"{self.meta.name}: Running tool {tool_call.function.name}.\n"
-            f"  - Call: {tool_call}"
-        )
         tool_name = tool_call.function.name
         arguments = json.loads(tool_call.function.arguments)
         output = {}
@@ -140,12 +131,13 @@ class OpenAIAssistant(MilaAssistant):
                     "output": str(response),
                 }
         if not output:
-            print(f"{self.meta.name}: Tool {tool_name} not found.")
+            raise RuntimeError(
+                f"{self.meta.name}: Tool {tool_name} not found."
+            )
         return output
 
     async def _check_run(self, run_id: str) -> Union[None, MilaTask]:
         """Check the status of a run."""
-        print(f"{self.meta.name}: Checking run {run_id}.")
         run = await self._llm.beta.threads.runs.retrieve(
             thread_id=self._threads[run_id], run_id=run_id
         )
@@ -177,9 +169,6 @@ class OpenAIAssistant(MilaAssistant):
         """Receive outbound tasks from the assistant."""
         outbound_tasks = []
         if self._runs:
-            print(
-                f"{self.meta.name}: Retrieving outbound tasks. ({self._runs})"
-            )
             coros = [self._check_run(run_id) for run_id in self._runs]
             task_list = await asyncio.gather(*coros)
             outbound_tasks = [task for task in task_list if task]
@@ -206,22 +195,18 @@ class OpenAIAssistant(MilaAssistant):
 
     async def _handle_task(self, task: MilaTask) -> None:
         """Handle a single task."""
-        print(f"{self.meta.name}: Handling task {task}.")
         new_run = await self._create_thread_and_run(
             assistant_id=self._assistant.id, task=task
         )
         self._runs.append(new_run.id)
         self._tasks[new_run.id] = task
         self._threads[new_run.id] = new_run.thread_id
-        print(f"{self.meta.name}: Task assigned to run {new_run.id}.")
 
     @_requires_assistant
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send tasks to the assistant."""
-        if task_list:
-            print(f"{self.meta.name}: Received {len(task_list)} tasks.")
-            coros = [self._handle_task(task) for task in task_list]
-            await asyncio.gather(*coros)
+        coros = [self._handle_task(task) for task in task_list]
+        await asyncio.gather(*coros)
 
 
 class OpenAILLM(MilaLLM):
