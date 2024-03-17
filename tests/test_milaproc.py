@@ -9,7 +9,7 @@ from mila import MilaProc
 from mila.base.commands import POWER_WORD_KILL
 from mila.base.interfaces import TaskIO
 from mila.base.types import MilaTask
-from mila.modules.fake import FakeIO, FakeLLM
+from mila.modules.fake import FakeIO, FakeLLM, FakeTracker
 from tests.common import make_task
 
 
@@ -60,12 +60,15 @@ class DemoIO(TaskIO):
 async def test_milaproc():
     """Test the MilaProc class."""
     async with FakeLLM() as fake_llm:
-        async with MilaProc(
-            llm=fake_llm, task_io_handlers=[DemoIO, FakeIO]
-        ) as mila:
-            assert RESULTS.set_up
-            await mila.run()
-            assert RESULTS.received
-            assert RESULTS.sent
-            assert not RESULTS.torn_down
-        assert RESULTS.torn_down
+        async with FakeTracker() as fake_tracker:
+            async with MilaProc(
+                llm=fake_llm,
+                task_io_handlers=[DemoIO, FakeIO],
+                task_tracker=fake_tracker,
+            ) as mila:
+                assert RESULTS.set_up
+                await mila.run()
+                assert RESULTS.received
+                assert RESULTS.sent
+                assert not RESULTS.torn_down
+            assert RESULTS.torn_down

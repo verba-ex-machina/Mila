@@ -2,14 +2,11 @@
 
 """Provide a Mila Framework demonstration script."""
 
-import asyncio
-import signal
-import sys
-
-from mila import MilaProc
+import mila
 from mila.base.types import AssistantDefinition, MilaTool, ToolProperty
 from mila.base.util import register_assistant
 from mila.modules.discord import DiscordIO
+from mila.modules.fake import FakeTracker
 from mila.modules.openai import OpenAILLM
 
 
@@ -45,19 +42,7 @@ echo_assistant = AssistantDefinition(
 register_assistant(echo_assistant)
 
 
-def sigint_handler(signum, frame):
-    """Handle SIGINT."""
-    # pylint: disable=unused-argument
-    sys.exit(0)
-
-
-async def main():
-    """Launch the Mila Framework."""
-    signal.signal(signal.SIGINT, sigint_handler)
-    async with OpenAILLM() as llm:
-        async with MilaProc(llm=llm, task_io_handlers=[DiscordIO]) as mila:
-            await mila.run()
-
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    mila.run(
+        llm=OpenAILLM, task_io_handlers=[DiscordIO], task_tracker=FakeTracker
+    )

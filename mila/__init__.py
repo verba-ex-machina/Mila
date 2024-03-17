@@ -1,13 +1,15 @@
 """Provide the Mila Framework."""
 
 import asyncio
+import signal
+import sys
 from typing import List
 
 import mila.assistants
 from mila.base.collections import COMMANDS
 from mila.base.commands import POWER_WORD_KILL
 from mila.base.constants import STATES, TICK
-from mila.base.interfaces import MilaLLM, TaskIO
+from mila.base.interfaces import MilaLLM, TaskIO, TaskTracker
 from mila.base.types import MilaTask
 from mila.modules.core import CoreIO
 
@@ -17,16 +19,23 @@ class MilaProc:
 
     _llm: MilaLLM
     _task_io_handlers: List[TaskIO]
+    _tracker: TaskTracker
 
-    def __init__(self, llm: MilaLLM, task_io_handlers: List[TaskIO]) -> None:
+    def __init__(
+        self,
+        llm: MilaLLM,
+        task_io_handlers: List[TaskIO],
+        task_tracker: TaskTracker,
+    ) -> None:
         """Initialize the Mila Framework."""
         self._llm = llm
         self._task_io_handlers = [
-            CoreIO(llm=self._llm),
+            CoreIO(llm=self._llm, tracker=task_tracker),
         ]
         self._task_io_handlers.extend(
             [handler() for handler in task_io_handlers]
         )
+        self._tracker = task_tracker
         self.running = False
 
     async def __aenter__(self) -> "MilaProc":
@@ -131,3 +140,35 @@ class MilaProc:
             for step in pipeline:
                 task_list = await step(task_list)
             await asyncio.sleep(TICK)
+
+
+def _sigint_handler(signum, frame):
+    """Handle SIGINT."""
+    # pylint: disable=unused-argument
+    sys.exit(0)
+
+
+async def arun(
+    llm: MilaLLM,
+    task_io_handlers: List[TaskIO],
+    task_tracker: TaskTracker,
+) -> None:
+    """Launch the Mila Framework, asynchronously."""
+    signal.signal(signal.SIGINT, _sigint_handler)
+    async with llm() as _llm:
+        async with task_tracker() as _tracker:
+            async with MilaProc(
+                llm=_llm,
+                task_io_handlers=task_io_handlers,
+                task_tracker=_tracker,
+            ) as mila_proc:
+                await mila_proc.run()
+
+
+def run(
+    llm: MilaLLM,
+    task_io_handlers: List[TaskIO],
+    task_tracker: TaskTracker,
+):
+    """Launch the Mila Framework."""
+    asyncio.run(arun(llm, task_io_handlers, task_tracker))

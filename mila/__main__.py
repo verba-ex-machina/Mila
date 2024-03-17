@@ -1,33 +1,18 @@
 """Execute the Mila Framework as an all-in-one module."""
 
-import asyncio
-import signal
-import sys
 from typing import List
 
-from mila import MilaProc
+import mila
 from mila.base.interfaces import TaskIO
 from mila.modules.discord import DiscordIO
+from mila.modules.fake import FakeTracker
 from mila.modules.openai import OpenAILLM
 
 TASK_IO_HANDLERS: List[TaskIO] = [DiscordIO]
 
-
-def sigint_handler(signum, frame):
-    """Handle SIGINT."""
-    # pylint: disable=unused-argument
-    sys.exit(0)
-
-
-async def main():
-    """Launch the Mila Framework."""
-    signal.signal(signal.SIGINT, sigint_handler)
-    async with OpenAILLM() as llm:
-        async with MilaProc(
-            llm=llm, task_io_handlers=TASK_IO_HANDLERS
-        ) as mila:
-            await mila.run()
-
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    mila.run(
+        llm=OpenAILLM,
+        task_io_handlers=[DiscordIO],
+        task_tracker=FakeTracker,
+    )
