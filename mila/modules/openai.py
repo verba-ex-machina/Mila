@@ -207,6 +207,7 @@ class OpenAILLM(MilaLLM):
     """Mila Framework OpenAI LLM class."""
 
     _llm: AsyncOpenAI = None
+    _assistants: Dict[str, OpenAIAssistant] = {}
 
     def __init__(self) -> None:
         """Initialize the OpenAI LLM."""
@@ -216,7 +217,11 @@ class OpenAILLM(MilaLLM):
         self, definition: AssistantDefinition
     ) -> MilaAssistant:
         """Return an assistant for the given definition."""
-        return OpenAIAssistant(definition=definition, llm=self._llm)
+        if definition.name not in self._assistants.keys():
+            self._assistants[definition.name] = OpenAIAssistant(
+                definition=definition, llm=self._llm
+            )
+        return self._assistants[definition.name]
 
     async def _assistant_delete(self, assistant_id: str) -> None:
         """Delete the specified OpenAI assistant."""
