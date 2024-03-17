@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-from dataclasses import dataclass, field
 from typing import Dict, List, Union
 
 from openai import AsyncOpenAI
@@ -14,15 +13,14 @@ from mila.base.prompts import NEW_QUERY
 from mila.base.types import AssistantDefinition
 
 
-@dataclass
 class OpenAIAssistant(MilaAssistant):
     """Mila Framework OpenAI Assistant class."""
 
     _llm: AsyncOpenAI = None
     _assistant: Assistant = None
-    _runs: List[str] = field(default_factory=list)
-    _tasks: Dict[str, MilaTask] = field(default_factory=dict)
-    _threads: Dict[str, str] = field(default_factory=dict)
+    _runs: List[str]
+    _tasks: Dict[str, MilaTask]
+    _threads: Dict[str, str]
 
     def __init__(
         self, definition: AssistantDefinition, llm: AsyncOpenAI
