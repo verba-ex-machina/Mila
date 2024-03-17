@@ -106,9 +106,7 @@ class OpenAIAssistant(MilaAssistant):
         )
         tool_calls = run.required_action.submit_tool_outputs.tool_calls
         tool_runs = [self._run_tool(tool_call) for tool_call in tool_calls]
-        tool_outputs = [
-            output for output in await asyncio.gather(*tool_runs) if output
-        ]
+        tool_outputs = await asyncio.gather(*tool_runs)
         if tool_outputs:
             await self._llm.beta.threads.runs.submit_tool_outputs(
                 thread_id=thread_id,
@@ -129,9 +127,7 @@ class OpenAIAssistant(MilaAssistant):
                     "tool_call_id": tool_call.id,
                     "output": str(response),
                 }
-        raise RuntimeError(
-            f"{self.meta.name}: Tool {tool_name} not found."
-        )
+        raise RuntimeError(f"{self.meta.name}: Tool {tool_name} not found.")
 
     async def _check_run(self, run_id: str) -> Union[None, MilaTask]:
         """Check the status of a run."""
