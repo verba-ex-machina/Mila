@@ -1,6 +1,6 @@
 # Makefile for Mila.
 PYTHON = python3
-PATHS = mila tests
+PATHS = mila tests demo.py
 
 .DEFAULT_GOAL = help
 
@@ -33,5 +33,4 @@ clean:
 	rm -rf */*/__pycache__
 	rm -fr */*/*/__pycache__
 
-# Set one command to run lint, test and clean.
 all: lint test clean
