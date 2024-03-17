@@ -32,17 +32,33 @@ class OpenAIAssistant(MilaAssistant):
         self._tasks = {}
         self._threads = {}
 
-    @staticmethod
-    def _requires_assistant(function: callable) -> callable:
-        """Require an assistant to be set."""
+    async def _check_run(self, run_id: str) -> Union[None, MilaTask]:
+        """Check the status of a run."""
+        run = await self._llm.beta.threads.runs.retrieve(
+            thread_id=self._threads[run_id], run_id=run_id
+        )
+        if not run.status == "completed":
+            if run.status in ["cancelled", "expired", "failed"]:
+                raise RuntimeError(
+                    f"{self.meta.name}: Run failed. ({run.status})"
+                )
+            if run.status == "requires_action":
+                await self._perform_actions(run_id)
+            return None
+        return await self._complete_run(run_id)
 
-        async def wrapper(self: "OpenAIAssistant", *args, **kwargs):
-            # pylint: disable=protected-access
-            if not self._assistant:
-                await self.setup()
-            return await function(self, *args, **kwargs)
-
-        return wrapper
+    async def _complete_run(self, run_id: str) -> MilaTask:
+        """Complete a run."""
+        task = self._tasks[run_id]
+        thread_id = self._threads[run_id]
+        messages = await self._llm.beta.threads.messages.list(
+            thread_id=thread_id
+        )
+        task.content = messages.data[0].content[0].text.value
+        task.dst = task.src.copy()
+        task.src.handler = self.meta.name
+        self._runs.remove(run_id)
+        return task
 
     async def _create(self, definition: AssistantDefinition) -> Assistant:
         """Create a new OpenAI assistant."""
@@ -58,42 +74,38 @@ class OpenAIAssistant(MilaAssistant):
             },
         )
 
+    async def _create_thread_and_run(
+        self, assistant_id: str, task: MilaTask
+    ) -> Run:
+        """Create a new OpenAI run and thread."""
+        run = await self._llm.beta.threads.create_and_run(
+            assistant_id=assistant_id,
+            thread={
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": NEW_QUERY.format(
+                            context=task.context, query=task.content
+                        ),
+                    }
+                ],
+            },
+        )
+        return run
+
+    async def _handle_task(self, task: MilaTask) -> None:
+        """Handle a single task."""
+        new_run = await self._create_thread_and_run(
+            assistant_id=self._assistant.id, task=task
+        )
+        self._runs.append(new_run.id)
+        self._tasks[new_run.id] = task
+        self._threads[new_run.id] = new_run.thread_id
+
     async def _list_assistants(self) -> List[Assistant]:
         """List all OpenAI assistants."""
         response = await self._llm.beta.assistants.list(limit=100)
         return response.data
-
-    async def _update(
-        self, assistant_id: str, definition: AssistantDefinition
-    ) -> None:
-        """Update the specified OpenAI assistant."""
-        return await self._llm.beta.assistants.update(
-            assistant_id=assistant_id,
-            name=definition.name,
-            description=definition.description,
-            instructions=definition.instructions,
-            tools=[tool.definition for tool in definition.tools],
-            model=definition.model,
-            metadata={
-                "hash": hash(definition),
-                **definition.metadata,
-            },
-        )
-
-    async def setup(self) -> None:
-        """Set up the assistant."""
-        for assistant in await self._list_assistants():
-            if assistant.name == self.meta.name:
-                if (
-                    "hash" not in assistant.metadata.keys()
-                    or assistant.metadata["hash"] != hash(self.meta)
-                ):
-                    self._assistant = await self._update(
-                        assistant.id, self.meta
-                    )
-                    return
-                self._assistant = assistant
-        self._assistant = await self._create(self.meta)
 
     async def _perform_actions(self, run_id: str) -> None:
         """Perform an action on a run."""
@@ -127,33 +139,34 @@ class OpenAIAssistant(MilaAssistant):
                 }
         raise RuntimeError(f"{self.meta.name}: Tool {tool_name} not found.")
 
-    async def _check_run(self, run_id: str) -> Union[None, MilaTask]:
-        """Check the status of a run."""
-        run = await self._llm.beta.threads.runs.retrieve(
-            thread_id=self._threads[run_id], run_id=run_id
+    async def _update(
+        self, assistant_id: str, definition: AssistantDefinition
+    ) -> None:
+        """Update the specified OpenAI assistant."""
+        return await self._llm.beta.assistants.update(
+            assistant_id=assistant_id,
+            name=definition.name,
+            description=definition.description,
+            instructions=definition.instructions,
+            tools=[tool.definition for tool in definition.tools],
+            model=definition.model,
+            metadata={
+                "hash": hash(definition),
+                **definition.metadata,
+            },
         )
-        if not run.status == "completed":
-            if run.status in ["cancelled", "expired", "failed"]:
-                raise RuntimeError(
-                    f"{self.meta.name}: Run failed. ({run.status})"
-                )
-            if run.status == "requires_action":
-                await self._perform_actions(run_id)
-            return None
-        return await self._complete_run(run_id)
 
-    async def _complete_run(self, run_id: str) -> MilaTask:
-        """Complete a run."""
-        task = self._tasks[run_id]
-        thread_id = self._threads[run_id]
-        messages = await self._llm.beta.threads.messages.list(
-            thread_id=thread_id
-        )
-        task.content = messages.data[0].content[0].text.value
-        task.dst = task.src.copy()
-        task.src.handler = self.meta.name
-        self._runs.remove(run_id)
-        return task
+    @staticmethod
+    def _requires_assistant(function: callable) -> callable:
+        """Require an assistant to be set."""
+
+        async def wrapper(self: "OpenAIAssistant", *args, **kwargs):
+            # pylint: disable=protected-access
+            if not self._assistant:
+                await self.setup()
+            return await function(self, *args, **kwargs)
+
+        return wrapper
 
     @_requires_assistant
     async def recv(self) -> List[MilaTask]:
@@ -166,39 +179,26 @@ class OpenAIAssistant(MilaAssistant):
             if task
         ]
 
-    async def _create_thread_and_run(
-        self, assistant_id: str, task: MilaTask
-    ) -> Run:
-        """Create a new OpenAI run and thread."""
-        run = await self._llm.beta.threads.create_and_run(
-            assistant_id=assistant_id,
-            thread={
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": NEW_QUERY.format(
-                            context=task.context, query=task.content
-                        ),
-                    }
-                ],
-            },
-        )
-        return run
-
-    async def _handle_task(self, task: MilaTask) -> None:
-        """Handle a single task."""
-        new_run = await self._create_thread_and_run(
-            assistant_id=self._assistant.id, task=task
-        )
-        self._runs.append(new_run.id)
-        self._tasks[new_run.id] = task
-        self._threads[new_run.id] = new_run.thread_id
-
     @_requires_assistant
     async def send(self, task_list: List[MilaTask]) -> None:
         """Send tasks to the assistant."""
         coros = [self._handle_task(task) for task in task_list]
         await asyncio.gather(*coros)
+
+    async def setup(self) -> None:
+        """Set up the assistant."""
+        for assistant in await self._list_assistants():
+            if assistant.name == self.meta.name:
+                if (
+                    "hash" not in assistant.metadata.keys()
+                    or assistant.metadata["hash"] != hash(self.meta)
+                ):
+                    self._assistant = await self._update(
+                        assistant.id, self.meta
+                    )
+                    return
+                self._assistant = assistant
+        self._assistant = await self._create(self.meta)
 
 
 class OpenAILLM(MilaLLM):
