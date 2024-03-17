@@ -153,7 +153,6 @@ class OpenAIAssistant(MilaAssistant):
 
     async def _complete_run(self, run_id: str) -> MilaTask:
         """Complete a run."""
-        self._runs.remove(run_id)
         task = self._tasks[run_id]
         thread_id = self._threads[run_id]
         messages = await self._llm.beta.threads.messages.list(
@@ -162,6 +161,7 @@ class OpenAIAssistant(MilaAssistant):
         task.content = messages.data[0].content[0].text.value
         task.dst = task.src.copy()
         task.src.handler = self.meta.name
+        self._runs.remove(run_id)
         return task
 
     @_requires_assistant
