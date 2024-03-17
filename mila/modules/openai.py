@@ -122,19 +122,16 @@ class OpenAIAssistant(MilaAssistant):
         """Run a tool."""
         tool_name = tool_call.function.name
         arguments = json.loads(tool_call.function.arguments)
-        output = {}
         for tool in self.meta.tools:
             if tool.name == tool_name:
                 response = await tool.function(**arguments)
-                output = {
+                return {
                     "tool_call_id": tool_call.id,
                     "output": str(response),
                 }
-        if not output:
-            raise RuntimeError(
-                f"{self.meta.name}: Tool {tool_name} not found."
-            )
-        return output
+        raise RuntimeError(
+            f"{self.meta.name}: Tool {tool_name} not found."
+        )
 
     async def _check_run(self, run_id: str) -> Union[None, MilaTask]:
         """Check the status of a run."""
