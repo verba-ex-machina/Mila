@@ -18,9 +18,9 @@ class OpenAIAssistant(MilaAssistant):
 
     _llm: AsyncOpenAI = None
     _assistant: Assistant = None
-    _runs: List[str] = []
-    _tasks: Dict[str, MilaTask] = {}
-    _threads: Dict[str, str] = {}
+    _runs: List[str]
+    _tasks: Dict[str, MilaTask]
+    _threads: Dict[str, str]
 
     def __init__(
         self, definition: AssistantDefinition, llm: AsyncOpenAI
@@ -28,6 +28,9 @@ class OpenAIAssistant(MilaAssistant):
         """Initialize the OpenAI assistant."""
         super().__init__(definition)
         self._llm = llm
+        self._runs = []
+        self._tasks = {}
+        self._threads = {}
 
     @staticmethod
     def _requires_assistant(function: callable) -> callable:
@@ -122,7 +125,7 @@ class OpenAIAssistant(MilaAssistant):
                     "tool_call_id": tool_call.id,
                     "output": str(response),
                 }
-        raise RuntimeError(f"Tool not found: {tool_name}")
+        raise RuntimeError(f"{self.meta.name}: Tool {tool_name} not found.")
 
     async def _check_run(self, run_id: str) -> Union[None, MilaTask]:
         """Check the status of a run."""
@@ -131,7 +134,9 @@ class OpenAIAssistant(MilaAssistant):
         )
         if not run.status == "completed":
             if run.status in ["cancelled", "expired", "failed"]:
-                raise RuntimeError(f"Run failed: {run.status}")
+                raise RuntimeError(
+                    f"{self.meta.name}: Run failed. ({run.status})"
+                )
             if run.status == "requires_action":
                 await self._perform_actions(run_id)
             return None
@@ -153,10 +158,13 @@ class OpenAIAssistant(MilaAssistant):
     @_requires_assistant
     async def recv(self) -> List[MilaTask]:
         """Receive outbound tasks from the assistant."""
-        coros = [self._check_run(run_id) for run_id in self._runs]
-        task_list = await asyncio.gather(*coros)
-        outbound_tasks = [task for task in task_list if task]
-        return outbound_tasks
+        return [
+            task
+            for task in await asyncio.gather(
+                *[self._check_run(run_id) for run_id in self._runs]
+            )
+            if task
+        ]
 
     async def _create_thread_and_run(
         self, assistant_id: str, task: MilaTask
@@ -197,6 +205,7 @@ class OpenAILLM(MilaLLM):
     """Mila Framework OpenAI LLM class."""
 
     _llm: AsyncOpenAI = None
+    _assistants: Dict[str, OpenAIAssistant] = {}
 
     def __init__(self) -> None:
         """Initialize the OpenAI LLM."""
@@ -206,7 +215,11 @@ class OpenAILLM(MilaLLM):
         self, definition: AssistantDefinition
     ) -> MilaAssistant:
         """Return an assistant for the given definition."""
-        return OpenAIAssistant(definition=definition, llm=self._llm)
+        if definition.name not in self._assistants.keys():
+            self._assistants[definition.name] = OpenAIAssistant(
+                definition=definition, llm=self._llm
+            )
+        return self._assistants[definition.name]
 
     async def _assistant_delete(self, assistant_id: str) -> None:
         """Delete the specified OpenAI assistant."""
