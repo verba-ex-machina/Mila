@@ -4,7 +4,7 @@ from mila.base.types import AssistantDefinition, MilaTool, ToolProperty
 from mila.base.util import assistant_dict, register_assistant
 
 
-async def delegate(assistant: str, instructions: str) -> str:
+async def delegate(assistant: str, request: str, context: str) -> str:
     """Delegate a task to another assistant.
 
     Tasks should only be delegated as needed, or if explicitly requested
@@ -12,7 +12,8 @@ async def delegate(assistant: str, instructions: str) -> str:
 
     Args:
         assistant (str): The name of the selected assistant.
-        instructions (str): An actionable request for the assistant.
+        request (str): The user's specific request.
+        context (str): Information required to carry out the request.
 
     Returns:
         str: The response from the delegated assistant.
@@ -20,7 +21,9 @@ async def delegate(assistant: str, instructions: str) -> str:
     The instructions provided to the delegate should be clear and concise, yet
     must include all necessary information for the assistant to complete the
     task. Do not assume that the assistant has any prior knowledge of the
-    user's request, nor that their tool-set matches your own.
+    user's request, nor that their tool-set matches your own. The assistant
+    also has no foreknowledge of your conversation with the user, so be sure
+    to include any relevant context.
 
     Tasks should be delegated as appropriate, and responses provided by
     the delegated assistant should be considered in your response back
@@ -30,7 +33,8 @@ async def delegate(assistant: str, instructions: str) -> str:
         (
             "Attempted Delegation:\n"
             f"  - Assistant: {assistant}\n"
-            f"  - Instructions: {instructions}"
+            f"  - Request: {request}\n"
+            f"  - Context: {context}"
         )
     )
     return "I don't really have the capacity to answer this query."
@@ -70,9 +74,16 @@ register_assistant(
                         description="The name of the selected assistant.",
                     ),
                     ToolProperty(
-                        name="instructions",
+                        name="request",
                         type="string",
-                        description="An actionable request for the assistant.",
+                        description="The user's specific request.",
+                    ),
+                    ToolProperty(
+                        name="context",
+                        type="string",
+                        description=(
+                            "Information required to carry out the request."
+                        ),
                     ),
                 ],
                 required=[
