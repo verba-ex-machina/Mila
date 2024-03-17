@@ -68,16 +68,18 @@ class FakeLLM(MilaLLM):
 class FakeTracker(TaskTracker):
     """Fake task tracker."""
 
-    tasks: dict = {}
+    def __init__(self):
+        """Initialize the FakeTracker."""
+        self._tasks = {}
 
     async def add(self, task_id: str, task: MilaTask) -> None:
         """Add a task to the tracker."""
-        self.tasks[task_id] = task
+        self._tasks[task_id] = task
 
     async def drop(self, task_id: str) -> None:
         """Drop a task from the tracker."""
-        del self.tasks[task_id]
+        del self._tasks[task_id]
 
     async def get(self, task_id: str) -> MilaTask:
         """Get a task from the tracker."""
-        return self.tasks[task_id]
+        return self._tasks[task_id]

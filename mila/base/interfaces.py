@@ -69,11 +69,11 @@ class TaskTracker(ContextManager, ABC):
     @abstractmethod
     async def add(self, id: str, task: MilaTask) -> None:
         """Add a task to the tracker."""
-    
+
     @abstractmethod
     async def get(self, id: str) -> MilaTask:
         """Get a task from the tracker."""
-    
+
     @abstractmethod
     async def drop(self, id: str) -> None:
         """Drop a task from the tracker."""
