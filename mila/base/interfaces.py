@@ -67,8 +67,9 @@ class TaskTracker(ContextManager, ABC):
     """Define the interface for a standard Mila task tracker."""
 
     @abstractmethod
-    async def add(self, id: str, task: MilaTask) -> None:
+    async def add(self, task: MilaTask) -> str:
         """Add a task to the tracker."""
+        return "Task ID"
 
     @abstractmethod
     async def get(self, id: str) -> MilaTask:

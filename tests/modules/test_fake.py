@@ -13,11 +13,11 @@ async def test_fake_tracker():
     """Test the FakeTracker."""
     tracker = FakeTracker()
     task = make_task()
-    await tracker.add("task_1", task)
-    assert await tracker.get("task_1") == task
-    await tracker.drop("task_1")
+    task_id = await tracker.add(task)
+    assert await tracker.get(task_id) == task
+    await tracker.drop(task_id)
     with pytest.raises(KeyError):
-        await tracker.get("task_1")
+        await tracker.get(task_id)
 
 
 @pytest.mark.asyncio
