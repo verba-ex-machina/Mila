@@ -67,14 +67,18 @@ class TaskTracker(ContextManager, ABC):
     """Define the interface for a standard Mila task tracker."""
 
     @abstractmethod
-    async def add(self, task: MilaTask) -> str:
+    async def create(self, task: MilaTask) -> str:
         """Add a task to the tracker."""
         return "Task ID"
 
     @abstractmethod
-    async def get(self, id: str) -> MilaTask:
+    async def read(self, id: str) -> MilaTask:
         """Get a task from the tracker."""
 
     @abstractmethod
-    async def drop(self, id: str) -> None:
+    async def update(self, id: str, task: MilaTask) -> None:
+        """Update a task in the tracker."""
+
+    @abstractmethod
+    async def delete(self, id: str) -> None:
         """Drop a task from the tracker."""

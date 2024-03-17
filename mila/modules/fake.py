@@ -72,15 +72,19 @@ class FakeTracker(TaskTracker):
         """Initialize the FakeTracker."""
         self._tasks = {}
 
-    async def add(self, task: MilaTask) -> str:
+    async def create(self, task: MilaTask) -> str:
         """Add a task to the tracker."""
         self._tasks[hash(task)] = task
         return hash(task)
 
-    async def drop(self, task_id: str) -> None:
-        """Drop a task from the tracker."""
-        del self._tasks[task_id]
-
-    async def get(self, task_id: str) -> MilaTask:
+    async def read(self, task_id: str) -> MilaTask:
         """Get a task from the tracker."""
         return self._tasks[task_id]
+
+    async def update(self, task_id: str, task: MilaTask) -> None:
+        """Update a task in the tracker."""
+        self._tasks[task_id] = task
+
+    async def delete(self, task_id: str) -> None:
+        """Drop a task from the tracker."""
+        del self._tasks[task_id]
