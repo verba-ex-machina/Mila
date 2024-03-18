@@ -10,7 +10,7 @@ from mila.base.collections import COMMANDS
 from mila.base.commands import POWER_WORD_KILL
 from mila.base.constants import STATES, TICK
 from mila.base.interfaces import MilaLLM, TaskIO, TaskTracker
-from mila.base.types import MilaTask
+from mila.base.types import Task
 from mila.modules.core import CoreIO
 
 
@@ -51,7 +51,7 @@ class MilaProc:
             *[handler.teardown() for handler in self._task_io_handlers]
         )
 
-    async def _collect_tasks_from(self, handler: TaskIO) -> List[MilaTask]:
+    async def _collect_tasks_from(self, handler: TaskIO) -> List[Task]:
         """Collect inbound tasks from a single handler."""
         task_list = await handler.recv()
         for task in task_list:
@@ -59,9 +59,7 @@ class MilaProc:
                 task.src.handler = handler.__class__.__name__
         return task_list
 
-    async def _collect_inbound_tasks(
-        self, tasks: List[MilaTask]
-    ) -> List[MilaTask]:
+    async def _collect_inbound_tasks(self, tasks: List[Task]) -> List[Task]:
         """Collect all inbound tasks from all handlers."""
         for task_list in await asyncio.gather(
             *[
@@ -72,7 +70,7 @@ class MilaProc:
             tasks.extend(task_list)
         return tasks
 
-    async def _process_task(self, task: MilaTask) -> MilaTask:
+    async def _process_task(self, task: Task) -> Task:
         """Process a single task."""
         if task == POWER_WORD_KILL:
             self.running = False
@@ -80,7 +78,7 @@ class MilaProc:
             task.dst.handler = CoreIO.__name__
         return task
 
-    async def _process_tasks(self, tasks: List[MilaTask]) -> List[MilaTask]:
+    async def _process_tasks(self, tasks: List[Task]) -> List[Task]:
         """Process inbound tasks. Return outbound tasks."""
         return [
             task
@@ -90,9 +88,7 @@ class MilaProc:
             if task.meta.state != STATES.COMPLETE
         ]
 
-    async def _route_outbound_tasks(
-        self, tasks: List[MilaTask]
-    ) -> List[MilaTask]:
+    async def _route_outbound_tasks(self, tasks: List[Task]) -> List[Task]:
         """Send outbound tasks to their respective handlers."""
         await asyncio.gather(
             *[
@@ -118,9 +114,7 @@ class MilaProc:
             ]
         ]
 
-    async def _handle_unprocessed_tasks(
-        self, tasks: List[MilaTask]
-    ) -> List[MilaTask]:
+    async def _handle_unprocessed_tasks(self, tasks: List[Task]) -> List[Task]:
         for task in tasks:
             print(f"Unroutable task: {task}")
             task.meta.state = STATES.COMPLETE

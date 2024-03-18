@@ -1,6 +1,6 @@
 """Provide the Primary Assistant definition for the Mila Framework."""
 
-from mila.base.types import AssistantDefinition, MilaTool, ToolProperty
+from mila.base.types import AssistantDefinition, Tool, ToolProperty
 from mila.base.util import assistant_dict, register_assistant
 
 
@@ -58,13 +58,13 @@ register_assistant(
         for the assistant to complete the task.
         """,
         tools=[
-            MilaTool(
+            Tool(
                 name="get_assistants",
                 function=assistant_dict,
                 properties=[],
                 required=[],
             ),
-            MilaTool(
+            Tool(
                 name="delegate",
                 function=delegate,
                 properties=[

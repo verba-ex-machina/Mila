@@ -8,7 +8,7 @@ from openai import AsyncOpenAI
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.threads.run import RequiredActionFunctionToolCall, Run
 
-from mila.base.interfaces import MilaAssistant, MilaLLM, MilaTask
+from mila.base.interfaces import MilaAssistant, MilaLLM, Task
 from mila.base.prompts import NEW_QUERY
 from mila.base.types import AssistantDefinition
 
@@ -19,7 +19,7 @@ class OpenAIAssistant(MilaAssistant):
     _llm: AsyncOpenAI = None
     _assistant: Assistant = None
     _runs: List[str]
-    _tasks: Dict[str, MilaTask]
+    _tasks: Dict[str, Task]
     _threads: Dict[str, str]
 
     def __init__(
@@ -32,7 +32,7 @@ class OpenAIAssistant(MilaAssistant):
         self._tasks = {}
         self._threads = {}
 
-    async def _check_run(self, run_id: str) -> Union[None, MilaTask]:
+    async def _check_run(self, run_id: str) -> Union[None, Task]:
         """Check the status of a run."""
         run = await self._llm.beta.threads.runs.retrieve(
             thread_id=self._threads[run_id], run_id=run_id
@@ -47,7 +47,7 @@ class OpenAIAssistant(MilaAssistant):
             return None
         return await self._complete_run(run_id)
 
-    async def _complete_run(self, run_id: str) -> MilaTask:
+    async def _complete_run(self, run_id: str) -> Task:
         """Complete a run."""
         task = self._tasks[run_id]
         thread_id = self._threads[run_id]
@@ -75,7 +75,7 @@ class OpenAIAssistant(MilaAssistant):
         )
 
     async def _create_thread_and_run(
-        self, assistant_id: str, task: MilaTask
+        self, assistant_id: str, task: Task
     ) -> Run:
         """Create a new OpenAI run and thread."""
         run = await self._llm.beta.threads.create_and_run(
@@ -93,7 +93,7 @@ class OpenAIAssistant(MilaAssistant):
         )
         return run
 
-    async def _handle_task(self, task: MilaTask) -> None:
+    async def _handle_task(self, task: Task) -> None:
         """Handle a single task."""
         new_run = await self._create_thread_and_run(
             assistant_id=self._assistant.id, task=task
@@ -169,7 +169,7 @@ class OpenAIAssistant(MilaAssistant):
         return wrapper
 
     @_requires_assistant
-    async def recv(self) -> List[MilaTask]:
+    async def recv(self) -> List[Task]:
         """Receive outbound tasks from the assistant."""
         return [
             task
@@ -180,7 +180,7 @@ class OpenAIAssistant(MilaAssistant):
         ]
 
     @_requires_assistant
-    async def send(self, task_list: List[MilaTask]) -> None:
+    async def send(self, task_list: List[Task]) -> None:
         """Send tasks to the assistant."""
         coros = [self._handle_task(task) for task in task_list]
         await asyncio.gather(*coros)

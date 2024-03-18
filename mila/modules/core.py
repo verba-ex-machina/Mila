@@ -5,14 +5,14 @@ from typing import List
 
 from mila.base.collections import COMMANDS
 from mila.base.interfaces import MilaLLM, TaskIO, TaskTracker
-from mila.base.types import AssistantDefinition, MilaTask
+from mila.base.types import AssistantDefinition, Task
 from mila.base.util import assistant_list
 
 
 class CoreIO(TaskIO):
     """Mila Framework Core I/O handler class."""
 
-    _bypass: List[MilaTask] = []
+    _bypass: List[Task] = []
     _llm: MilaLLM = None
     _tracker: TaskTracker = None
 
@@ -21,16 +21,14 @@ class CoreIO(TaskIO):
         self._llm = llm
         self._tracker = tracker
 
-    async def _recv_from(
-        self, definition: AssistantDefinition
-    ) -> List[MilaTask]:
+    async def _recv_from(self, definition: AssistantDefinition) -> List[Task]:
         """Receive tasks from a single assistant."""
         assistant = await self._llm.get_assistant(definition)
         return await assistant.recv()
 
-    async def recv(self) -> List[MilaTask]:
+    async def recv(self) -> List[Task]:
         """Retrieve responses from the assistants."""
-        outbound: List[MilaTask] = []
+        outbound: List[Task] = []
         coros = [
             self._recv_from(definition) for definition in assistant_list()
         ]
@@ -45,13 +43,13 @@ class CoreIO(TaskIO):
         return outbound
 
     async def _send_to(
-        self, definition: AssistantDefinition, task_list: List[MilaTask]
+        self, definition: AssistantDefinition, task_list: List[Task]
     ) -> None:
         """Send tasks to a single assistant."""
         assistant = await self._llm.get_assistant(definition)
         await assistant.send(task_list)
 
-    async def send(self, task_list: List[MilaTask]) -> None:
+    async def send(self, task_list: List[Task]) -> None:
         """Send assigned tasks the assistants."""
         for task in task_list:
             if task in COMMANDS:

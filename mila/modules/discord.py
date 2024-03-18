@@ -13,7 +13,7 @@ from discord.ext import tasks
 from mila.base.commands import POWER_WORD_KILL
 from mila.base.constants import TICK
 from mila.base.interfaces import TaskIO
-from mila.base.types import MilaTask
+from mila.base.types import Task
 from mila.modules.fake import FakeIO
 
 
@@ -56,7 +56,7 @@ class DiscordClient(discord.Client):
     async def _handle_mila_tasks(self) -> None:
         """Handle tasks received from Mila."""
         try:
-            task: MilaTask = self._queue["send"].get_nowait()
+            task: Task = self._queue["send"].get_nowait()
         except queue.Empty:
             pass
         else:
@@ -65,7 +65,7 @@ class DiscordClient(discord.Client):
             else:
                 await self._send_message(task)
 
-    async def _send_message(self, task: MilaTask) -> None:
+    async def _send_message(self, task: Task) -> None:
         """Send a message."""
         # This currently assumes every message is a reply to another message.
         channel = await self.fetch_channel(task.dst.meta["channel_id"])
@@ -85,13 +85,13 @@ class DiscordClient(discord.Client):
         else:
             await reply.edit(content=task.content)
 
-    async def _raise_error(self, task: MilaTask, error: str) -> None:
+    async def _raise_error(self, task: Task, error: str) -> None:
         """Raise an error related to a user-supplied command."""
         await self._send_response(
             task, f"Apologies, {task.src.user.name}! {error}"
         )
 
-    async def _link_account(self, task: MilaTask) -> None:
+    async def _link_account(self, task: Task) -> None:
         """Send a greeting to a new user."""
         self.owner_id = task.src.user.id
         await self._send_response(
@@ -102,15 +102,15 @@ class DiscordClient(discord.Client):
             ),
         )
 
-    async def _send_response(self, task: MilaTask, response: str) -> None:
+    async def _send_response(self, task: Task, response: str) -> None:
         """Send a response to a user."""
         task.dst = task.src
         task.content = response
         self._queue["send"].put(task)
 
-    async def _make_task(self, message: discord.Message) -> MilaTask:
+    async def _make_task(self, message: discord.Message) -> Task:
         """Create a MilaTask from a Discord message."""
-        task = MilaTask(
+        task = Task(
             context=await self._get_context(message),
             content=message.content,
         )
@@ -217,18 +217,18 @@ class DiscordIO(TaskIO):
         )
         self._client.run(os.getenv("DISCORD_TOKEN"))
 
-    async def recv(self) -> List[MilaTask]:
+    async def recv(self) -> List[Task]:
         """Receive all queued tasks from Discord."""
         task_list = []
         while True:
             try:
-                task: MilaTask = self._recv_queue.get_nowait()
+                task: Task = self._recv_queue.get_nowait()
             except queue.Empty:
                 break
             task_list.append(task)
         return task_list
 
-    async def send(self, task_list: List[MilaTask]) -> None:
+    async def send(self, task_list: List[Task]) -> None:
         """Send a list of tasks to Discord."""
         for task in task_list:
             self._send_queue.put(task)

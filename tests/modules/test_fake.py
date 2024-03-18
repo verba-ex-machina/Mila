@@ -4,7 +4,7 @@ import pytest
 
 from mila.base.constants import STATES
 from mila.base.interfaces import MilaAssistant
-from mila.base.types import MilaTask
+from mila.base.types import Task
 from mila.modules.fake import FakeAssistant, FakeIO, FakeLLM, FakeTracker
 from tests.common import make_assistant, make_task
 
@@ -65,7 +65,7 @@ async def test_fake_io():
     """Test the FakeIO class."""
     async with FakeIO() as fake_io:
 
-        def copy_src_to_dest(task: MilaTask) -> MilaTask:
+        def copy_src_to_dest(task: Task) -> Task:
             """Copy source to destination."""
             task.dst = task.src.copy()
             return task

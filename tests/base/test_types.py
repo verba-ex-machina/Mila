@@ -3,7 +3,7 @@
 import json
 from typing import Optional
 
-from mila.base.types import AssistantDefinition, MilaTool, ToolProperty
+from mila.base.types import AssistantDefinition, Tool, ToolProperty
 from tests.common import make_task, make_tool
 
 
@@ -24,7 +24,7 @@ def test_mila_tool():
         """A function which always returns true."""
         return a or b or 1
 
-    tool = MilaTool(
+    tool = Tool(
         name="test tool",
         function=test_function,
         properties=[
@@ -67,7 +67,7 @@ def test_mila_tool():
 def test_assistant_definition():
     """Test the AssistantDefinition class."""
 
-    tool: MilaTool = make_tool()
+    tool: Tool = make_tool()
     expected = {
         "name": "test",
         "description": "a test assistant",

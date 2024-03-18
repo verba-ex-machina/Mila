@@ -3,7 +3,7 @@
 """Provide a Mila Framework demonstration script."""
 
 import mila
-from mila.base.types import AssistantDefinition, MilaTool, ToolProperty
+from mila.base.types import AssistantDefinition, Tool, ToolProperty
 from mila.base.util import register_assistant
 from mila.modules.discord import DiscordIO
 from mila.modules.fake import FakeTracker
@@ -23,7 +23,7 @@ echo_assistant = AssistantDefinition(
     then return the result.
     """,
     tools=[
-        MilaTool(
+        Tool(
             name="echo",
             function=echo,
             properties=[

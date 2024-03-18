@@ -30,7 +30,7 @@ class ToolProperty:
 
 
 @dataclass
-class MilaTool:
+class Tool:
     """Define a single tool in an Assistant's toolkit."""
 
     name: str
@@ -58,7 +58,7 @@ class MilaTool:
 
 
 @dataclass
-class UserMeta:
+class User:
     """Store user metadata."""
 
     id: Optional[str] = None
@@ -67,16 +67,16 @@ class UserMeta:
 
 
 @dataclass
-class HandlerMeta:
+class Handler:
     """Store handler metadata."""
 
     handler: Optional[str] = None
-    user: UserMeta = field(default_factory=UserMeta)
+    user: User = field(default_factory=User)
     meta: dict = field(default_factory=dict)
 
-    def copy(self) -> "HandlerMeta":
+    def copy(self) -> "Handler":
         """Return a copy of the handler reference."""
-        return HandlerMeta(
+        return Handler(
             handler=self.handler,
             user=self.user,
             meta=self.meta.copy(),
@@ -99,22 +99,22 @@ class TaskMeta:
 
 
 @dataclass
-class MilaTask:
+class Task:
     """Define a Mila task."""
 
     context: str
     content: str
-    src: HandlerMeta = field(default_factory=HandlerMeta)
-    dst: HandlerMeta = field(default_factory=HandlerMeta)
+    src: Handler = field(default_factory=Handler)
+    dst: Handler = field(default_factory=Handler)
     meta: TaskMeta = field(default_factory=TaskMeta)
 
     def __hash__(self) -> int:
         """Return the hash of the task."""
         return hash(str(self))
 
-    def copy(self) -> "MilaTask":
+    def copy(self) -> "Task":
         """Return a copy of the task."""
-        return MilaTask(
+        return Task(
             context=self.context,
             content=self.content,
             src=self.src.copy(),
@@ -130,7 +130,7 @@ class AssistantDefinition:
     name: str
     description: str
     instructions: str
-    tools: Iterable[MilaTool]
+    tools: Iterable[Tool]
     model: str
     metadata: Dict[str, str] = field(default_factory=dict)
 

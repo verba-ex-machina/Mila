@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List
 
-from mila.base.types import AssistantDefinition, MilaTask
+from mila.base.types import AssistantDefinition, Task
 
 
 class ContextManager(ABC):
@@ -29,11 +29,11 @@ class TaskIO(ContextManager, ABC):
     """Define the interface for a standard Mila comms channel."""
 
     @abstractmethod
-    async def recv(self) -> List[MilaTask]:
+    async def recv(self) -> List[Task]:
         """Receive a list of tasks from the comms channel."""
 
     @abstractmethod
-    async def send(self, task_list: List[MilaTask]) -> None:
+    async def send(self, task_list: List[Task]) -> None:
         """Send a list of tasks to the comms channel."""
 
 
@@ -67,16 +67,16 @@ class TaskTracker(ContextManager, ABC):
     """Define the interface for a standard Mila task tracker."""
 
     @abstractmethod
-    async def create(self, task: MilaTask) -> str:
+    async def create(self, task: Task) -> str:
         """Add a task to the tracker."""
         return "Task ID"
 
     @abstractmethod
-    async def read(self, id: str) -> MilaTask:
+    async def read(self, id: str) -> Task:
         """Get a task from the tracker."""
 
     @abstractmethod
-    async def update(self, id: str, task: MilaTask) -> None:
+    async def update(self, id: str, task: Task) -> None:
         """Update a task in the tracker."""
 
     @abstractmethod
@@ -84,6 +84,6 @@ class TaskTracker(ContextManager, ABC):
         """Drop a task from the tracker."""
 
     @abstractmethod
-    async def by_state(self, state: str) -> List[MilaTask]:
+    async def by_state(self, state: str) -> List[Task]:
         """Get a list of tasks by state."""
         return []

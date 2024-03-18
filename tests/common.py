@@ -1,11 +1,6 @@
 """Provide common functions across tests."""
 
-from mila.base.types import (
-    AssistantDefinition,
-    MilaTask,
-    MilaTool,
-    ToolProperty,
-)
+from mila.base.types import AssistantDefinition, Task, Tool, ToolProperty
 
 
 async def _aprint(content: str) -> None:
@@ -13,9 +8,9 @@ async def _aprint(content: str) -> None:
     print(content)
 
 
-def make_tool() -> MilaTool:
+def make_tool() -> Tool:
     """Make a MilaTool."""
-    tool = MilaTool(
+    tool = Tool(
         name="print",
         function=_aprint,
         properties=[
@@ -41,7 +36,7 @@ def make_assistant() -> AssistantDefinition:
     return assistant
 
 
-def make_task(data: str = "None") -> MilaTask:
+def make_task(data: str = "None") -> Task:
     """Make a MilaTask."""
-    task = MilaTask(context="context", content=data)
+    task = Task(context="context", content=data)
     return task

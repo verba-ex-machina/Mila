@@ -6,7 +6,7 @@ from typing import List
 import mila
 from mila.base.commands import POWER_WORD_KILL
 from mila.base.interfaces import TaskIO
-from mila.base.types import MilaTask
+from mila.base.types import Task
 from mila.modules.fake import FakeIO, FakeLLM, FakeTracker
 from tests.common import make_task
 
@@ -35,7 +35,7 @@ class DemoIO(TaskIO):
         """Tear down the Demo IO handler."""
         RESULTS.torn_down = True
 
-    async def recv(self) -> List[MilaTask]:
+    async def recv(self) -> List[Task]:
         """Receive a task."""
         if not RESULTS.received:
             RESULTS.received = True
@@ -45,7 +45,7 @@ class DemoIO(TaskIO):
             return [task]
         return [POWER_WORD_KILL]
 
-    async def send(self, task_list: List[MilaTask]) -> None:
+    async def send(self, task_list: List[Task]) -> None:
         """Send a task."""
         for task in task_list:
             if task == POWER_WORD_KILL:
