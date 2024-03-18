@@ -1,6 +1,7 @@
 # Project-specific files
 .envrc
 logs/
+brainstorms.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
