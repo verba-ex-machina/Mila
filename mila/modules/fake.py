@@ -2,7 +2,12 @@
 
 from typing import Dict, List
 
-from mila.base.interfaces import MilaAssistant, MilaLLM, TaskIO, TaskTracker
+from mila.base.interfaces import (
+    AssistantProvider,
+    MilaAssistant,
+    TaskIO,
+    TaskTracker,
+)
 from mila.base.types import AssistantDefinition, Task
 
 
@@ -49,7 +54,7 @@ class FakeIO(TaskIO):
         self.tasks.clear()
 
 
-class FakeLLM(MilaLLM):
+class FakeLLM(AssistantProvider):
     """Fake LLM implementation."""
 
     async def get_assistant(

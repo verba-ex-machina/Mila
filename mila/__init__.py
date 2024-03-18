@@ -9,7 +9,7 @@ import mila.assistants
 from mila.base.collections import COMMANDS
 from mila.base.commands import POWER_WORD_KILL
 from mila.base.constants import STATES, TICK
-from mila.base.interfaces import MilaLLM, TaskIO, TaskTracker
+from mila.base.interfaces import AssistantProvider, TaskIO, TaskTracker
 from mila.base.types import Task
 from mila.modules.core import CoreIO
 
@@ -17,13 +17,13 @@ from mila.modules.core import CoreIO
 class MilaProc:
     """Mila Framework process class."""
 
-    _llm: MilaLLM
+    _llm: AssistantProvider
     _task_io_handlers: List[TaskIO]
     _tracker: TaskTracker
 
     def __init__(
         self,
-        llm: MilaLLM,
+        llm: AssistantProvider,
         task_io_handlers: List[TaskIO],
         task_tracker: TaskTracker,
     ) -> None:
@@ -143,7 +143,7 @@ def _sigint_handler(signum, frame):
 
 
 async def arun(
-    llm: MilaLLM,
+    llm: AssistantProvider,
     task_io_handlers: List[TaskIO],
     task_tracker: TaskTracker,
 ) -> None:
@@ -160,7 +160,7 @@ async def arun(
 
 
 def run(
-    llm: MilaLLM,
+    llm: AssistantProvider,
     task_io_handlers: List[TaskIO],
     task_tracker: TaskTracker,
 ):

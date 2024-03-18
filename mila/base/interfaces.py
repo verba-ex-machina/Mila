@@ -51,8 +51,8 @@ class MilaAssistant(TaskIO, ABC):
         return self.meta == __value.meta
 
 
-class MilaLLM(ContextManager, ABC):
-    """Mila Framework LLM interface."""
+class AssistantProvider(ContextManager, ABC):
+    """Mila Framework Assistant provider interface."""
 
     # pylint: disable=too-few-public-methods
 

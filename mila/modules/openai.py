@@ -8,7 +8,7 @@ from openai import AsyncOpenAI
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.threads.run import RequiredActionFunctionToolCall, Run
 
-from mila.base.interfaces import MilaAssistant, MilaLLM, Task
+from mila.base.interfaces import AssistantProvider, MilaAssistant, Task
 from mila.base.prompts import NEW_QUERY
 from mila.base.types import AssistantDefinition
 
@@ -201,7 +201,7 @@ class OpenAIAssistant(MilaAssistant):
         self._assistant = await self._create(self.meta)
 
 
-class OpenAILLM(MilaLLM):
+class OpenAILLM(AssistantProvider):
     """Mila Framework OpenAI LLM class."""
 
     _llm: AsyncOpenAI = None

@@ -4,7 +4,7 @@ import asyncio
 from typing import List
 
 from mila.base.collections import COMMANDS
-from mila.base.interfaces import MilaLLM, TaskIO, TaskTracker
+from mila.base.interfaces import AssistantProvider, TaskIO, TaskTracker
 from mila.base.types import AssistantDefinition, Task
 from mila.base.util import assistant_list
 
@@ -13,10 +13,10 @@ class CoreIO(TaskIO):
     """Mila Framework Core I/O handler class."""
 
     _bypass: List[Task] = []
-    _llm: MilaLLM = None
+    _llm: AssistantProvider = None
     _tracker: TaskTracker = None
 
-    def __init__(self, llm: MilaLLM, tracker: TaskTracker) -> None:
+    def __init__(self, llm: AssistantProvider, tracker: TaskTracker) -> None:
         """Initialize the Core I/O handler."""
         self._llm = llm
         self._tracker = tracker
